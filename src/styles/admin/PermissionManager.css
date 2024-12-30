@@ -1,0 +1,10 @@
+.permission-manager {
+  padding: var(--spacing-unit);
+}
+
+.permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+} 

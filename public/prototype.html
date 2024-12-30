@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM 系統原型</title>
+    <link rel="stylesheet" href="prototype.css">
+    <script src="prototype.js" defer></script>
+</head>
+<body>
+    <!-- 側邊欄 -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="workspace-info">
+                <span class="workspace-icon">🏢</span>
+                <span class="workspace-name">我的工作區</span>
+            </div>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <button class="nav-item active">
+                <span class="nav-icon">📊</span>
+                <span class="nav-text">儀表板</span>
+            </button>
+            <button class="nav-item">
+                <span class="nav-icon">📋</span>
+                <span class="nav-text">表格管理</span>
+            </button>
+            <button class="nav-item">
+                <span class="nav-icon">🔒</span>
+                <span class="nav-text">權限管理</span>
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <span class="user-avatar">U</span>
+                <span class="user-name">測試用戶</span>
+            </div>
+            <button class="logout-button">登出</button>
+        </div>
+    </aside>
+
+    <!-- 主要內容區 -->
+    <main class="main-content">
+        <header class="page-header">
+            <div class="breadcrumb">
+                <span>首頁</span> / <span>儀表板</span>
+            </div>
+            <div class="header-actions">
+                <button class="notification-btn">🔔</button>
+                <button class="user-menu-btn">👤</button>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <!-- 會員統計區 -->
+            <section class="member-stats">
+                <div class="stat-card total-members">
+                    <h3 class="stat-title">會員總數</h3>
+                    <div class="stat-value">13</div>
+                </div>
+                <div class="stat-card investor-members">
+                    <h3 class="stat-title">投資會員數</h3>
+                    <div class="stat-value">0</div>
+                </div>
+            </section>
+            
+            <!-- 會員分類圖表 -->
+            <section class="member-chart">
+                <div class="charts-grid">
+                    <!-- 性別比例圖表 -->
+                    <div class="chart-card">
+                        <h3 class="chart-title">性別比例</h3>
+                        <div class="chart-container">
+                            <div class="pie-chart gender-chart">
+                                <div class="chart-legend">
+                                    <div class="legend-item">
+                                        <span class="legend-color male"></span>
+                                        <span class="legend-label">男: 10 (76.92%)</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <span class="legend-color female"></span>
+                                        <span class="legend-label">女: 3 (23.08%)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 會員數量柱狀圖 -->
+                    <div class="chart-card">
+                        <h3 class="chart-title">會員數量 by 負責人</h3>
+                        <div class="chart-container">
+                            <div class="bar-chart">
+                                <div class="bar" style="height: 100%;">
+                                    <div class="bar-label">13</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 功能卡片區 -->
+            <section class="feature-cards">
+                <div class="feature-card">
+                    <div class="feature-icon">📋</div>
+                    <h3>表格管理</h3>
+                    <p>創建和管理您的數據表格</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>數據分析</h3>
+                    <p>查看詳細的數據分析報告</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>團隊協作</h3>
+                    <p>邀請團隊成員共同協作</p>
+                </div>
+            </section>
+        </div>
+    </main>
+</body>
+</html> 

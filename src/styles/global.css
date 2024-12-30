@@ -1,0 +1,65 @@
+:root {
+  /* 主色調 */
+  --primary-color: #2383E2;
+  --secondary-color: #34C759;
+  --warning-color: #FF9500;
+  --error-color: #FF3B30;
+  
+  /* 中性色調 */
+  --text-primary: #37352F;
+  --text-secondary: #666666;
+  --background: #FFFFFF;
+  --surface: #FBFBFA;
+  --border: #E9E9E8;
+  
+  /* 間距系統 */
+  --spacing-unit: 8px;
+  --spacing-xs: var(--spacing-unit);
+  --spacing-sm: calc(var(--spacing-unit) * 2);
+  --spacing-md: calc(var(--spacing-unit) * 3);
+  --spacing-lg: calc(var(--spacing-unit) * 4);
+  --spacing-xl: calc(var(--spacing-unit) * 6);
+  
+  /* 字體大小 */
+  --font-small: 13px;
+  --font-base: 14px;
+  --font-large: 16px;
+  --font-xl: 20px;
+  --font-2xl: 24px;
+}
+
+/* 響應式斷點 */
+@media (max-width: 768px) {
+  :root {
+    --spacing-unit: 6px;
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  color: var(--text-color);
+  line-height: 1.5;
+  background-color: var(--background-color);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: inherit;
+} 
