@@ -11,6 +11,8 @@
       "ignoreRestSiblings": true
     }],
     "@typescript-eslint/no-explicit-any": "error",
-    "@typescript-eslint/consistent-type-imports": "error"
+    "@typescript-eslint/consistent-type-imports": "error",
+    "react/no-unescaped-entities": "off",
+    "react/jsx-no-comment-textnodes": "off"
   }
 } 
