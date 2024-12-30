@@ -1,4 +1,4 @@
-import { type FC } from 'react'
+import type { FC } from 'react'
 import type { TableData } from '@/types'
 
 interface TableViewProps {
@@ -9,8 +9,6 @@ interface TableViewProps {
 export const TableView: FC<TableViewProps> = ({ data, onRowClick }) => {
   return (
     <div className="table-container">
-      {/* 使用大括號包裹註釋 */}
-      {/* 表格內容 */}
       <table>
         <thead>
           <tr>

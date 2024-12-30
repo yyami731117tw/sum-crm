@@ -1,13 +1,8 @@
 import type { AppProps } from 'next/app'
-import { useEffect } from 'react'
 import Head from 'next/head'
 import '../src/styles/globals.css'
 
 function MyApp({ Component, pageProps }: AppProps) {
-  useEffect(() => {
-    // 這裡可以添加全局初始化邏輯
-  }, [])
-
   return (
     <>
       <Head>

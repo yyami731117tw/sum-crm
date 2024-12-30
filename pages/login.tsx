@@ -16,7 +16,6 @@ const Login: NextPage = () => {
   return (
     <div>
       <h1>登入</h1>
-      {/* 添加登入表單 */}
     </div>
   )
 }

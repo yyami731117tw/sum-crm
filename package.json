@@ -17,8 +17,6 @@
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "@types/jest": "^27.5.2",
-    "@testing-library/react": "^13.4.0",
     "@typescript-eslint/eslint-plugin": "^5.40.1",
     "@typescript-eslint/parser": "^5.40.1",
     "@next/eslint-plugin-next": "^14.0.0",
@@ -26,9 +24,7 @@
     "eslint-config-next": "^14.0.0",
     "eslint-config-prettier": "^8.5.0",
     "prettier": "^2.7.1",
-    "cross-env": "^7.0.3",
-    "msw": "^0.35.0",
-    "xlsx": "^0.18.5"
+    "cross-env": "^7.0.3"
   },
   "scripts": {
     "dev": "next dev",
