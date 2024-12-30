@@ -10,13 +10,17 @@
 本項目已部署在 Vercel 平台上。
 
 ### Vercel 部署步驟
-1. 在 [Vercel](https://vercel.com) 註冊帳號
-2. 導入 GitHub 倉庫
-3. 配置以下環境變量:
-   ```
-   NEXT_PUBLIC_API_URL=你的API地址
-   ```
-4. 點擊 "Deploy" 按鈕開始部署
+1. 在 [Vercel](https://vercel.com) 註冊帳號並登入
+2. 點擊 "New Project" 按鈕
+3. 從 GitHub 導入您的專案倉庫
+4. 配置部署設置：
+   - Framework Preset: Next.js
+   - Build Command: `next build` (確保使用 Next.js 的建置指令)
+   - Output Directory: `.next` (Next.js 的預設輸出目錄)
+5. 配置環境變數（如果需要）:
+   - 在 Vercel 專案設置中找到 "Environment Variables"
+   - 添加所需的環境變數
+6. 點擊 "Deploy" 開始部署
 
 ### 自動部署
 - 推送到 `main` 分支會自動觸發生產環境部署

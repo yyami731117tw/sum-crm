@@ -1,9 +1,9 @@
 // 通用介面定義
 export interface User {
   id: string;
-  username: string;
+  name: string;
   email: string;
-  role: 'admin' | 'user';
+  role: string;
 }
 
 export interface AuthState {
@@ -39,4 +39,10 @@ export interface Permission {
   id: string;
   name: string;
   description: string;
+}
+
+export interface ApiResponse<T> {
+  data: T;
+  message: string;
+  success: boolean;
 } 

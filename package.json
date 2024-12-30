@@ -3,61 +3,31 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.0",
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
+    "next": "^14.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.4.2",
-    "typescript": "^4.8.4",
-    "react-scripts": "5.0.1"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "dev": "cross-env REACT_APP_ENV=development react-scripts start",
-    "dev:mock": "cross-env REACT_APP_ENV=mock react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "release": "standard-version",
-    "prepare-release": "npm run test && npm run build",
-    "lint": "eslint src --ext .ts,.tsx",
-    "lint:fix": "eslint src --ext .ts,.tsx --fix",
-    "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
-    "type-check": "tsc --noEmit"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "typescript": "^5.0.0"
   },
   "devDependencies": {
-    "@types/http-proxy-middleware": "^0.19.3",
-    "cross-env": "^7.0.3",
-    "http-proxy-middleware": "^2.0.6",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
     "@typescript-eslint/eslint-plugin": "^5.40.1",
     "@typescript-eslint/parser": "^5.40.1",
+    "@next/eslint-plugin-next": "^14.0.0",
     "eslint": "^8.25.0",
+    "eslint-config-next": "^14.0.0",
     "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-react": "^7.31.10",
     "prettier": "^2.7.1",
-    "msw": "^0.35.0",
-    "standard-version": "^9.3.0"
+    "cross-env": "^7.0.3"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "dev:mock": "cross-env NEXT_PUBLIC_ENV=mock next dev",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
+    "type-check": "tsc --noEmit"
   }
 } 
