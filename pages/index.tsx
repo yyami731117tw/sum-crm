@@ -1,14 +1,26 @@
 import type { NextPage } from 'next'
-import MainLayout from '@/layouts/MainLayout'
+import { useEffect } from 'react'
+import { useRouter } from 'next/router'
+import { useAuth } from '@/hooks/useAuth'
 
 const Home: NextPage = () => {
+  const { isAuthenticated, loading } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.push('/login')
+    }
+  }, [isAuthenticated, loading, router])
+
+  if (loading) {
+    return <div>Loading...</div>
+  }
+
   return (
-    <MainLayout title="首頁 - B2B CRM">
-      <div className="container">
-        <h1>歡迎使用 B2B CRM 平台</h1>
-        {/* 這裡添加您的首頁內容 */}
-      </div>
-    </MainLayout>
+    <div>
+      <h1>歡迎使用 B2B CRM 平台</h1>
+    </div>
   )
 }
 

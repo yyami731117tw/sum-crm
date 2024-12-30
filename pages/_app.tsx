@@ -1,8 +1,6 @@
 import type { AppProps } from 'next/app'
 import { useEffect } from 'react'
 import Head from 'next/head'
-
-// 導入全局樣式
 import '../src/styles/globals.css'
 
 function MyApp({ Component, pageProps }: AppProps) {

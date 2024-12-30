@@ -12,4 +12,20 @@ export interface PaginatedResponse<T> extends ApiResponse<T> {
     current: number;
     pageSize: number;
   };
+}
+
+// 表格數據類型
+export interface TableData {
+  id: string;
+  title: string;
+  records: number;
+  updatedAt: string;
+}
+
+// 用戶類型
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
 } 
