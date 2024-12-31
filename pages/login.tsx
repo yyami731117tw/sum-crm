@@ -58,7 +58,7 @@ const Login: NextPage = () => {
   }
 
   const handleSignup = () => {
-    router.push('/signup')
+    window.location.href = '/signup'
   }
 
   return (
@@ -72,7 +72,7 @@ const Login: NextPage = () => {
           <div className="flex flex-col items-center">
             <div className="w-24 h-24 mb-4 flex items-center justify-center">
               <img
-                src="https://sum-crm.vercel.app/login-logo.png"
+                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAF0WlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNy4yLWMwMDAgNzkuMWI2NWE3OWI0LCAyMDIyLzA2LzEzLTIyOjAxOjAxICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdEV2dD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlRXZlbnQjIiB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iIHhtbG5zOnBob3Rvc2hvcD0iaHR0cDovL25zLmFkb2JlLmNvbS9waG90b3Nob3AvMS4wLyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgMjQuMCAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMjQtMDEtMDJUMTY6NDc6NDcrMDg6MDAiIHhtcDpNZXRhZGF0YURhdGU9IjIwMjQtMDEtMDJUMTY6NDc6NDcrMDg6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDI0LTAxLTAyVDE2OjQ3OjQ3KzA4OjAwIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjY5ZDM4ZmM1LTM4ZTAtNDY4ZC1hMzA0LTNkZmQ1YzBiNjRhYiIgeG1wTU06RG9jdW1lbnRJRD0iYWRvYmU6ZG9jaWQ6cGhvdG9zaG9wOjI5YzM4ZjZiLTY0ZDAtYzU0OC1iMzM1LTY4ZjM3ZjM5ZjI5YyIgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ4bXAuZGlkOjY5ZDM4ZmM1LTM4ZTAtNDY4ZC1hMzA0LTNkZmQ1YzBiNjRhYiIgZGM6Zm9ybWF0PSJpbWFnZS9wbmciIHBob3Rvc2hvcDpDb2xvck1vZGU9IjMiPiA8eG1wTU06SGlzdG9yeT4gPHJkZjpTZXE+IDxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJjcmVhdGVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjY5ZDM4ZmM1LTM4ZTAtNDY4ZC1hMzA0LTNkZmQ1YzBiNjRhYiIgc3RFdnQ6d2hlbj0iMjAyNC0wMS0wMlQxNjo0Nzo0NyswODowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIDI0LjAgKE1hY2ludG9zaCkiLz4gPC9yZGY6U2VxPiA8L3htcE1NOkhpc3Rvcnk+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+YjqHzwAAIABJREFUeJztnXd4VFX6xz93ZtInk0kmvRdSICEQQu8dBBEFRBQRFBXFtqyuZXXdta2uq+7qz7XXta0NRUWxIYL03kILhBBCSO+9TibJZDLl/v44E0jIJJn0BM7neebJzL3n3nvOvec973nPe97zHoVWq9WiR89VivJyF0CP"
                 alt="多元商 Logo"
                 className="w-full h-full object-contain"
               />
@@ -97,12 +97,12 @@ const Login: NextPage = () => {
                 {error}
                 {showRegisterPrompt && (
                   <div className="mt-2">
-                    <Link
-                      href="/signup"
+                    <button
+                      onClick={handleSignup}
                       className="font-medium text-blue-600 hover:text-blue-500 inline-flex items-center"
                     >
                       立即註冊 <span className="ml-1">→</span>
-                    </Link>
+                    </button>
                   </div>
                 )}
               </div>
@@ -189,12 +189,12 @@ const Login: NextPage = () => {
           <div className="text-center">
             <p className="text-sm text-gray-600">
               還沒有帳號？{' '}
-              <Link
-                href="/signup"
+              <button
+                onClick={handleSignup}
                 className="font-medium text-blue-600 hover:text-blue-500"
               >
                 立即註冊
-              </Link>
+              </button>
             </p>
           </div>
         </div>
