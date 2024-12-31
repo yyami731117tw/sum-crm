@@ -4,7 +4,7 @@ const nextConfig = {
   swcMinify: true,
   poweredByHeader: false,
   images: {
-    domains: [],
+    domains: ['sum-crm.vercel.app'],
     unoptimized: true
   },
   // 生產環境配置
@@ -19,7 +19,10 @@ const nextConfig = {
     ignoreDuringBuilds: true
   },
   // 輸出配置
-  output: 'standalone'
+  output: 'standalone',
+  async redirects() {
+    return []
+  }
 }
 
 module.exports = nextConfig 
