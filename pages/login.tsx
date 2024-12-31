@@ -72,7 +72,7 @@ const Login: NextPage = () => {
           <div className="flex flex-col items-center">
             <div className="w-24 h-24 mb-4 flex items-center justify-center">
               <img
-                src="/login-logo.png"
+                src="https://sum-crm.vercel.app/login-logo.png"
                 alt="多元商 Logo"
                 className="w-full h-full object-contain"
               />
@@ -97,12 +97,12 @@ const Login: NextPage = () => {
                 {error}
                 {showRegisterPrompt && (
                   <div className="mt-2">
-                    <button
-                      onClick={handleSignup}
+                    <Link
+                      href="/signup"
                       className="font-medium text-blue-600 hover:text-blue-500 inline-flex items-center"
                     >
                       立即註冊 <span className="ml-1">→</span>
-                    </button>
+                    </Link>
                   </div>
                 )}
               </div>
@@ -189,12 +189,12 @@ const Login: NextPage = () => {
           <div className="text-center">
             <p className="text-sm text-gray-600">
               還沒有帳號？{' '}
-              <button
-                onClick={handleSignup}
+              <Link
+                href="/signup"
                 className="font-medium text-blue-600 hover:text-blue-500"
               >
                 立即註冊
-              </button>
+              </Link>
             </p>
           </div>
         </div>
