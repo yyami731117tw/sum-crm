@@ -8,21 +8,43 @@ interface SendEmailParams {
 
 export async function sendEmail({ to, subject, html }: SendEmailParams) {
   try {
-    // TODO: 替換為實際的郵件服務配置
-    const response = await axios.post(process.env.EMAIL_SERVICE_URL || '', {
-      to,
-      subject,
-      html,
-      from: process.env.EMAIL_FROM,
-      apiKey: process.env.EMAIL_API_KEY
+    if (!process.env.EMAIL_SERVICE_URL || !process.env.EMAIL_API_KEY) {
+      console.error('郵件服務配置缺失')
+      return {
+        success: false,
+        error: '郵件服務未正確配置'
+      }
+    }
+
+    const response = await axios.post(process.env.EMAIL_SERVICE_URL, {
+      service_id: 'service_default',
+      template_id: 'template_default',
+      user_id: process.env.EMAIL_API_KEY,
+      template_params: {
+        to_email: to,
+        from_name: '多元商會員系統',
+        to_name: to.split('@')[0],
+        subject,
+        message: html,
+        reply_to: process.env.EMAIL_FROM
+      }
     })
 
-    return {
-      success: true,
-      messageId: response.data.messageId
+    if (response.status === 200) {
+      console.log('郵件發送成功:', { to, subject })
+      return {
+        success: true,
+        messageId: response.data.messageId
+      }
+    } else {
+      console.error('郵件發送失敗:', response.data)
+      return {
+        success: false,
+        error: '郵件發送失敗'
+      }
     }
   } catch (error) {
-    console.error('發送郵件失敗:', error)
+    console.error('發送郵件時發生錯誤:', error)
     return {
       success: false,
       error: error instanceof Error ? error.message : '發送郵件失敗'

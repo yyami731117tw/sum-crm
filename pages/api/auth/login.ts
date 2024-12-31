@@ -1,4 +1,18 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { v4 as uuidv4 } from 'uuid'
+import { sign } from 'jsonwebtoken'
+
+// 預設管理員帳號
+const adminUser = {
+  id: 'admin-001',
+  email: 'admin@mbc.com',
+  password: 'admin123',
+  name: '系統管理員',
+  role: 'admin',
+  status: 'active',
+  createdAt: '2024-01-01T00:00:00.000Z',
+  lastLogin: new Date().toISOString()
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -11,18 +25,6 @@ export default async function handler(
   try {
     const { email, step, password } = req.body
     console.log('Login request:', { email, step, password: '***' })
-
-    // 預設管理員帳號
-    const adminUser = {
-      id: 'admin-001',
-      email: 'admin@mbc.com',
-      password: 'admin123',
-      name: '系統管理員',
-      role: 'admin',
-      status: 'active',
-      createdAt: '2024-01-01T00:00:00.000Z',
-      lastLogin: new Date().toISOString()
-    }
 
     // 步驟 1: 檢查電子郵件
     if (step === 1) {
@@ -62,13 +64,27 @@ export default async function handler(
       if (email === adminUser.email) {
         if (password === adminUser.password) {
           console.log('Admin login successful')
-          const token = 'admin-token-' + Date.now() // 生成唯一的 token
+          // 生成 JWT token
+          const token = sign(
+            {
+              id: adminUser.id,
+              email: adminUser.email,
+              name: adminUser.name,
+              role: adminUser.role
+            },
+            process.env.JWT_SECRET || 'your-secret-key',
+            { expiresIn: '24h' }
+          )
+
           return res.status(200).json({
             success: true,
             token,
             user: {
-              ...adminUser,
-              password: undefined // 不要返回密碼
+              id: adminUser.id,
+              email: adminUser.email,
+              name: adminUser.name,
+              role: adminUser.role,
+              status: adminUser.status
             }
           })
         }
