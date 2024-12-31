@@ -70,18 +70,11 @@ const Login: NextPage = () => {
         <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-sm">
           {/* Logo */}
           <div className="flex flex-col items-center">
-            <div className="relative w-24 h-24 mb-4">
-              <Image
+            <div className="w-24 h-24 mb-4 flex items-center justify-center">
+              <img
                 src="/login-logo.png"
                 alt="多元商 Logo"
-                width={96}
-                height={96}
-                style={{
-                  maxWidth: '100%',
-                  height: 'auto',
-                  objectFit: 'contain'
-                }}
-                priority
+                className="w-full h-full object-contain"
               />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">
