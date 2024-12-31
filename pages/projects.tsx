@@ -1,4 +1,4 @@
-import type { NextPage } from 'next'
+import type { NextPage, GetServerSideProps } from 'next'
 import Head from 'next/head'
 import { DashboardNav } from '@/components/dashboard/DashboardNav'
 
@@ -32,6 +32,12 @@ const ProjectsPage: NextPage = () => {
       </div>
     </>
   )
+}
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  }
 }
 
 export default ProjectsPage 
