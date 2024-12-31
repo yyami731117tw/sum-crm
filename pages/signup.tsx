@@ -54,14 +54,19 @@ const Signup: NextPage = () => {
         {/* 左側歡迎區塊 */}
         <div className="hidden lg:flex lg:w-1/2 bg-[#003B6D] text-white">
           <div className="w-full flex flex-col items-center justify-center p-12">
-            <div className="w-32 h-32 flex items-center justify-center mb-8">
+            <div className="relative w-32 h-32 flex items-center justify-center mb-8">
               <Image
                 src="/logo.png"
                 alt="MBC Logo"
                 width={120}
                 height={120}
-                className="w-32 h-32"
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto',
+                  objectFit: 'contain'
+                }}
                 priority
+                unoptimized
               />
             </div>
             <h1 className="text-4xl font-bold mb-4">歡迎您成為</h1>

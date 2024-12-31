@@ -44,23 +44,20 @@ const Login: NextPage = () => {
           setError('')
         } else if (result.error === 'INVALID_PASSWORD') {
           setError('密碼錯誤')
+          setPassword('')  // 清空密碼欄位
         } else {
           setError(result.error || '登入失敗')
         }
       }
     } catch (err) {
-      setError('登入時發生錯誤，請稍後再試')
+      if (showPassword) {
+        setError('密碼錯誤')
+        setPassword('')  // 清空密碼欄位
+      } else {
+        setError('登入時發生錯誤，請稍後再試')
+      }
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleSignup = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    try {
-      await router.push('/signup')
-    } catch (error) {
-      console.error('導向註冊頁面失敗:', error)
     }
   }
 
@@ -73,14 +70,19 @@ const Login: NextPage = () => {
         <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-sm">
           {/* Logo */}
           <div className="flex flex-col items-center">
-            <div className="w-24 h-24 flex items-center justify-center">
+            <div className="relative w-24 h-24 flex items-center justify-center">
               <Image
                 src="/logo.png"
                 alt="MBC Logo"
                 width={96}
                 height={96}
-                className="w-24 h-24"
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto',
+                  objectFit: 'contain'
+                }}
                 priority
+                unoptimized
               />
             </div>
             <h1 className="mt-4 text-2xl font-bold text-gray-900">
@@ -103,12 +105,12 @@ const Login: NextPage = () => {
                 {error}
                 {showRegisterPrompt && (
                   <div className="mt-2">
-                    <button
-                      onClick={handleSignup}
-                      className="font-medium text-blue-600 hover:text-blue-500"
+                    <Link
+                      href="/signup"
+                      className="font-medium text-blue-600 hover:text-blue-500 inline-flex items-center"
                     >
-                      立即註冊 →
-                    </button>
+                      立即註冊 <span className="ml-1">→</span>
+                    </Link>
                   </div>
                 )}
               </div>
@@ -195,12 +197,12 @@ const Login: NextPage = () => {
           <div className="text-center">
             <p className="text-sm text-gray-600">
               還沒有帳號？{' '}
-              <button
-                onClick={handleSignup}
+              <Link
+                href="/signup"
                 className="font-medium text-blue-600 hover:text-blue-500"
               >
                 立即註冊
-              </button>
+              </Link>
             </p>
           </div>
         </div>
