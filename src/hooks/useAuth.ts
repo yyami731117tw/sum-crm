@@ -148,7 +148,7 @@ export function useAuth() {
   }
 
   const isAdmin = () => {
-    return user?.role === 'admin' && user?.status === 'active'
+    return user?.role === 'admin'
   }
 
   return { isAuthenticated, loading, user, login, logout, isAdmin }

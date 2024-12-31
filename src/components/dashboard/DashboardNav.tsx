@@ -13,11 +13,10 @@ export const DashboardNav: FC = () => {
     
     setIsLoggingOut(true)
     try {
-      await logout()
       window.location.href = '/login'
+      await logout()
     } catch (error) {
       console.error('登出失敗:', error)
-      setIsLoggingOut(false)
       window.location.href = '/login'
     }
   }
