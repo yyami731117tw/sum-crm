@@ -7,12 +7,14 @@ import { useState, useEffect } from 'react'
 
 export const DashboardNav: FC = () => {
   const router = useRouter()
-  const { isAdmin, logout, user } = useAuth()
+  const { user, logout } = useAuth()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+
+  const isAdmin = user?.role === 'admin'
 
   useEffect(() => {
     console.log('DashboardNav - Current user:', user)
-    console.log('DashboardNav - Is admin?', isAdmin())
+    console.log('DashboardNav - Is admin?', isAdmin)
   }, [user, isAdmin])
 
   const handleLogout = () => {
@@ -29,7 +31,7 @@ export const DashboardNav: FC = () => {
     router.push(path)
   }
 
-  const showAdminMenu = isAdmin()
+  const showAdminMenu = isAdmin
 
   return (
     <nav className="bg-white shadow">
