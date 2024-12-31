@@ -16,47 +16,29 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  useEffect(() => {
-    checkAuth()
-  }, [])
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
-      const token = Cookies.get('token')
-      
-      if (!token) {
-        setIsAuthenticated(false)
+      const session = await getSession()
+      if (session) {
+        setUser(session)
+        setIsAuthenticated(true)
+      } else {
         setUser(null)
-        setLoading(false)
-        return
-      }
-
-      try {
-        const response = await fetch('/api/auth/verify', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          setUser(data.user)
-          setIsAuthenticated(true)
-        } else {
-          Cookies.remove('token')
-          setIsAuthenticated(false)
-          setUser(null)
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error)
-        Cookies.remove('token')
         setIsAuthenticated(false)
-        setUser(null)
       }
+    } catch (error) {
+      console.error('Auth check failed:', error)
+      clearSession()
+      setUser(null)
+      setIsAuthenticated(false)
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    checkAuth()
+  }, [checkAuth])
 
   const login = async ({ email, password, step }: LoginCredentials) => {
     try {
@@ -74,6 +56,7 @@ export function useAuth() {
         if (data.token) {
           Cookies.set('token', data.token, { 
             expires: 1,
+            path: '/',
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax'
           })
@@ -106,7 +89,7 @@ export function useAuth() {
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
-      Cookies.remove('token')
+      clearSession()
       setUser(null)
       setIsAuthenticated(false)
       router.push('/login')

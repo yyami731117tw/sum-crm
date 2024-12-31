@@ -8,25 +8,42 @@ interface SendEmailParams {
 
 export async function sendEmail({ to, subject, html }: SendEmailParams) {
   try {
-    if (!process.env.EMAIL_SERVICE_URL || !process.env.EMAIL_API_KEY) {
-      console.error('郵件服務配置缺失')
+    if (!process.env.EMAIL_SERVICE_URL || !process.env.EMAIL_USER_ID || 
+        !process.env.EMAIL_SERVICE_ID || !process.env.EMAIL_TEMPLATE_ID) {
+      console.error('郵件服務配置缺失', {
+        serviceUrl: !!process.env.EMAIL_SERVICE_URL,
+        userId: !!process.env.EMAIL_USER_ID,
+        serviceId: !!process.env.EMAIL_SERVICE_ID,
+        templateId: !!process.env.EMAIL_TEMPLATE_ID
+      })
       return {
         success: false,
         error: '郵件服務未正確配置'
       }
     }
 
+    console.log('Sending email with params:', {
+      to,
+      subject,
+      serviceId: process.env.EMAIL_SERVICE_ID,
+      templateId: process.env.EMAIL_TEMPLATE_ID
+    })
+
     const response = await axios.post(process.env.EMAIL_SERVICE_URL, {
-      service_id: 'service_default',
-      template_id: 'template_default',
-      user_id: process.env.EMAIL_API_KEY,
+      service_id: process.env.EMAIL_SERVICE_ID,
+      template_id: process.env.EMAIL_TEMPLATE_ID,
+      user_id: process.env.EMAIL_USER_ID,
       template_params: {
         to_email: to,
         from_name: '多元商會員系統',
         to_name: to.split('@')[0],
-        subject,
-        message: html,
+        subject: subject,
+        content: html,
         reply_to: process.env.EMAIL_FROM
+      }
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
       }
     })
 
@@ -45,6 +62,13 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
     }
   } catch (error) {
     console.error('發送郵件時發生錯誤:', error)
+    if (axios.isAxiosError(error)) {
+      console.error('Axios error details:', {
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      })
+    }
     return {
       success: false,
       error: error instanceof Error ? error.message : '發送郵件失敗'

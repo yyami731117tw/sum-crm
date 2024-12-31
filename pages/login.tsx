@@ -40,7 +40,7 @@ const Login: NextPage = () => {
 
       if (result.success) {
         console.log('Login successful, redirecting to dashboard')
-        router.push('/dashboard')
+        router.replace('/dashboard')
         return
       } else {
         if (result.notRegistered) {

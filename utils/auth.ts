@@ -2,7 +2,7 @@ import Cookies from 'js-cookie'
 import { jwtVerify, SignJWT } from 'jose'
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secret-key')
-const COOKIE_NAME = 'auth_token'
+const COOKIE_NAME = 'token'
 
 export interface UserSession {
   id: string
@@ -23,6 +23,7 @@ export async function createSession(user: UserSession) {
   // 設置 cookie
   Cookies.set(COOKIE_NAME, token, {
     expires: 1, // 1天
+    path: '/',
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax'
   })
@@ -54,7 +55,7 @@ export async function getSession(): Promise<UserSession | null> {
 }
 
 export function clearSession() {
-  Cookies.remove(COOKIE_NAME)
+  Cookies.remove(COOKIE_NAME, { path: '/' })
 }
 
 // 驗證會話數據是否包含所有必要字段
