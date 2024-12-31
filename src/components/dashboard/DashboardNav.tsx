@@ -14,19 +14,24 @@ export const DashboardNav: FC = () => {
             <Link href="/" className="flex items-center space-x-3">
               <Image
                 src="/logo.png"
-                alt="多元商會 Logo"
+                alt="MBC Logo"
                 width={40}
                 height={40}
                 className="w-full h-full object-contain"
+                unoptimized
               />
-              <span className="text-xl font-semibold text-gray-900">MBC天使俱樂部</span>
+              <span className="text-xl font-semibold text-gray-900 whitespace-nowrap">MBC天使俱樂部</span>
             </Link>
             <div className="flex items-center space-x-6">
               <NavLink href="/dashboard">儀表板</NavLink>
               {isAdmin() && (
-                <NavLink href="/admin/users">會員管理</NavLink>
+                <>
+                  <NavLink href="/admin/users">會員管理</NavLink>
+                  <NavLink href="/admin/contracts">合約管理</NavLink>
+                  <NavLink href="/admin/projects">項目管理</NavLink>
+                </>
               )}
-              <NavLink href="/reports">報表</NavLink>
+              <NavLink href="/members">會員資料</NavLink>
               <NavLink href="/settings">設定</NavLink>
             </div>
           </div>

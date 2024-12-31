@@ -3,6 +3,8 @@ import { useRouter } from 'next/router'
 
 interface LoginCredentials {
   email: string
+  password?: string
+  step: number
 }
 
 interface User {
@@ -56,22 +58,36 @@ export function useAuth() {
     }
   }
 
-  const login = async ({ email }: LoginCredentials) => {
+  const login = async ({ email, password, step }: LoginCredentials) => {
     try {
-      // 模擬 API 調用
       const response = await fetch(`${baseUrl}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email, password, step })
       })
 
-      if (!response.ok) {
-        throw new Error('登入失敗')
+      const data = await response.json()
+
+      if (response.status === 404 && data.error === 'NOT_REGISTERED') {
+        return { 
+          success: false, 
+          error: data.message,
+          notRegistered: true 
+        }
       }
 
-      const data = await response.json()
+      if (response.ok && data.exists) {
+        return {
+          success: false,
+          exists: true
+        }
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || '登入失敗')
+      }
 
       if (data.token) {
         localStorage.setItem('token', data.token)
@@ -83,7 +99,10 @@ export function useAuth() {
       return { success: false, error: '登入失敗' }
     } catch (error) {
       console.error('Login error:', error)
-      return { success: false, error: '登入時發生錯誤，請稍後再試' }
+      return { 
+        success: false, 
+        error: '登入時發生錯誤，請稍後再試' 
+      }
     }
   }
 

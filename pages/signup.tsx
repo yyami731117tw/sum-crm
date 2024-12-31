@@ -45,14 +45,10 @@ const Signup: NextPage = () => {
     }
   }
 
-  const handleGoogleSignup = () => {
-    // 處理 Google 註冊邏輯
-  }
-
   return (
     <>
       <Head>
-        <title>註冊 - 多元商會員管理系統</title>
+        <title>註冊 - MBC天使俱樂部</title>
       </Head>
       <div className="min-h-screen flex">
         {/* 左側歡迎區塊 */}
@@ -63,7 +59,8 @@ const Signup: NextPage = () => {
               alt="MBC Logo"
               width={120}
               height={120}
-              className="mb-8 w-full h-full object-contain"
+              className="mb-8"
+              unoptimized
             />
             <h1 className="text-4xl font-bold mb-4">歡迎您成為</h1>
             <h2 className="text-3xl font-bold mb-8">MBC天使俱樂部的夥伴</h2>
@@ -93,31 +90,6 @@ const Signup: NextPage = () => {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Google 註冊按鈕 */}
-              <button
-                type="button"
-                onClick={handleGoogleSignup}
-                className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
-                <Image
-                  src="/google-icon.svg"
-                  alt="Google"
-                  width={20}
-                  height={20}
-                  className="mr-2"
-                />
-                使用 Google 註冊
-              </button>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">或</span>
-                </div>
-              </div>
-
               {/* 電子郵件 */}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">

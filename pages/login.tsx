@@ -10,8 +10,11 @@ const Login: NextPage = () => {
   const router = useRouter()
   const { isAuthenticated, login } = useAuth()
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showRegisterPrompt, setShowRegisterPrompt] = useState(false)
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -22,11 +25,23 @@ const Login: NextPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setShowRegisterPrompt(false)
     setLoading(true)
 
     try {
-      const result = await login({ email })
+      const result = await login({ 
+        email, 
+        password,
+        step: showPassword ? 2 : 1 
+      })
+
       if (!result.success) {
+        if (result.notRegistered) {
+          setShowRegisterPrompt(true)
+        } else if (result.exists) {
+          setShowPassword(true)
+          setError('')
+        }
         setError(result.error || '登入失敗')
       }
     } catch (err) {
@@ -48,11 +63,12 @@ const Login: NextPage = () => {
             <div className="h-24 w-24 relative">
               <Image
                 src="/logo.png"
-                alt="多元商會 Logo"
+                alt="MBC Logo"
                 width={96}
                 height={96}
                 priority
                 className="w-full h-full object-contain"
+                unoptimized
               />
             </div>
             <h1 className="mt-4 text-2xl font-bold text-gray-900">
@@ -70,8 +86,20 @@ const Login: NextPage = () => {
 
           {/* 錯誤提示 */}
           {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="text-sm text-red-700">{error}</div>
+            <div className={`rounded-md ${showRegisterPrompt ? 'bg-blue-50' : 'bg-red-50'} p-4`}>
+              <div className={`text-sm ${showRegisterPrompt ? 'text-blue-700' : 'text-red-700'}`}>
+                {error}
+                {showRegisterPrompt && (
+                  <div className="mt-2">
+                    <Link
+                      href="/signup"
+                      className="font-medium text-blue-600 hover:text-blue-500"
+                    >
+                      立即註冊 →
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -81,31 +109,48 @@ const Login: NextPage = () => {
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 電子郵件
               </label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="請輸入您的電子郵件"
-                />
-              </div>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={showPassword}
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+                placeholder="請輸入您的電子郵件"
+              />
             </div>
 
+            {/* 密碼輸入框 */}
+            {showPassword && (
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  密碼
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="請輸入密碼"
+                />
+              </div>
+            )}
+
             {/* 繼續按鈕 */}
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? '處理中...' : '繼續'}
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? '處理中...' : showPassword ? '登入' : '繼續'}
+            </button>
 
             {/* 分隔線 */}
             <div className="relative">

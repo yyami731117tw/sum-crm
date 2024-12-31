@@ -1,0 +1,37 @@
+import type { NextPage } from 'next'
+import Head from 'next/head'
+import { DashboardNav } from '@/components/dashboard/DashboardNav'
+
+const ProjectsPage: NextPage = () => {
+  return (
+    <>
+      <Head>
+        <title>項目管理 - MBC天使俱樂部</title>
+      </Head>
+      <div>
+        <DashboardNav />
+        <main className="container mx-auto px-6 py-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">項目管理</h1>
+          
+          {/* 項目列表 */}
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-medium text-gray-900">項目列表</h2>
+                <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                  新增項目
+                </button>
+              </div>
+            </div>
+            <div className="px-4 py-5 sm:p-6">
+              {/* 項目列表內容 */}
+              <p className="text-gray-500 text-center py-8">尚無項目資料</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    </>
+  )
+}
+
+export default ProjectsPage 
