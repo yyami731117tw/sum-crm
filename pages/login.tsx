@@ -18,7 +18,7 @@ const Login: NextPage = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/dashboard')
+      router.replace('/dashboard')
     }
   }, [isAuthenticated, router])
 
@@ -35,7 +35,9 @@ const Login: NextPage = () => {
         step: showPassword ? 2 : 1 
       })
 
-      if (!result.success) {
+      if (result.success) {
+        router.replace('/dashboard')
+      } else {
         if (result.notRegistered) {
           setShowRegisterPrompt(true)
           setError('此電子郵件尚未註冊')

@@ -61,19 +61,28 @@ export function useAuth() {
       if (response.ok) {
         const data = await response.json()
         console.log('Auth check response:', data)
-        setIsAuthenticated(true)
-        setUser(data.user)
+        
+        if (data.user) {
+          setIsAuthenticated(true)
+          setUser(data.user)
+        } else {
+          throw new Error('無效的用戶資料')
+        }
       } else {
         // 如果驗證失敗，清除 token
         Cookies.remove('token', { path: '/' })
         localStorage.removeItem('token')
         setIsAuthenticated(false)
         setUser(null)
+        throw new Error('驗證失敗')
       }
     } catch (error) {
       console.error('Auth check failed:', error)
       setIsAuthenticated(false)
       setUser(null)
+      // 清除無效的 token
+      Cookies.remove('token', { path: '/' })
+      localStorage.removeItem('token')
     } finally {
       setLoading(false)
     }
@@ -123,10 +132,17 @@ export function useAuth() {
       }
 
       if (data.token) {
+        // 先設定 token
         localStorage.setItem('token', data.token)
         document.cookie = `token=${data.token}; path=/`
-        setIsAuthenticated(true)
+        
+        // 更新用戶狀態
         setUser(data.user)
+        setIsAuthenticated(true)
+        
+        // 觸發重新驗證
+        await checkAuth()
+        
         return { success: true }
       }
 
