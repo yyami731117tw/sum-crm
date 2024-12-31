@@ -8,17 +8,22 @@ export const DashboardNav: FC = () => {
   const { isAdmin, logout } = useAuth()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     if (isLoggingOut) return
     
     setIsLoggingOut(true)
-    try {
-      window.location.href = '/login'
-      await logout()
-    } catch (error) {
+    
+    // 清除本地存儲和 cookie
+    localStorage.removeItem('token')
+    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
+    
+    // 立即跳轉到登入頁面
+    window.location.href = '/login'
+    
+    // 在背景執行登出 API
+    logout().catch(error => {
       console.error('登出失敗:', error)
-      window.location.href = '/login'
-    }
+    })
   }
 
   return (

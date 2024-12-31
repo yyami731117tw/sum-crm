@@ -51,6 +51,7 @@ export function useAuth() {
         setIsAuthenticated(false)
         setUser(null)
         localStorage.removeItem('token')
+        document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
       }
     } catch (error) {
       console.error('Auth check failed:', error)
@@ -148,7 +149,7 @@ export function useAuth() {
   }
 
   const isAdmin = () => {
-    return user?.role === 'admin'
+    return Boolean(user && user.role === 'admin')
   }
 
   return { isAuthenticated, loading, user, login, logout, isAdmin }
