@@ -75,8 +75,8 @@ const Signup: NextPage = () => {
                 unoptimized
               />
             </div>
-            <h1 className="text-4xl font-bold mb-4">歡迎您成為</h1>
-            <h2 className="text-3xl font-bold mb-8">我們的夥伴</h2>
+            <h1 className="text-4xl font-bold mb-2">歡迎您</h1>
+            <h2 className="text-3xl font-bold mb-8">成為我們的夥伴</h2>
             <p className="text-lg text-center max-w-md opacity-80">
               共享知識、共想未來、共響事業
             </p>
@@ -90,9 +90,12 @@ const Signup: NextPage = () => {
               <h2 className="text-3xl font-bold text-gray-900">開始使用</h2>
               <p className="mt-2 text-sm text-gray-600">
                 已經有帳號了？{' '}
-                <Link href="/login" className="text-blue-600 hover:text-blue-500">
+                <button
+                  onClick={() => window.location.href = '/login'}
+                  className="text-blue-600 hover:text-blue-500"
+                >
                   登入
-                </Link>
+                </button>
               </p>
             </div>
 
