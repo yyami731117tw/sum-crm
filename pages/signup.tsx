@@ -48,7 +48,7 @@ const Signup: NextPage = () => {
   return (
     <>
       <Head>
-        <title>註冊 - MBC天使俱樂部</title>
+        <title>註冊 - 多元商會員管理系統</title>
       </Head>
       <div className="min-h-screen flex">
         {/* 左側歡迎區塊 */}
@@ -56,8 +56,8 @@ const Signup: NextPage = () => {
           <div className="w-full flex flex-col items-center justify-center p-12">
             <div className="relative w-32 h-32 flex items-center justify-center mb-8">
               <Image
-                src="/logo.png"
-                alt="MBC Logo"
+                src="/logo-white.png"
+                alt="多元商 Logo"
                 width={120}
                 height={120}
                 style={{
@@ -70,9 +70,9 @@ const Signup: NextPage = () => {
               />
             </div>
             <h1 className="text-4xl font-bold mb-4">歡迎您成為</h1>
-            <h2 className="text-3xl font-bold mb-8">MBC天使俱樂部的夥伴</h2>
+            <h2 className="text-3xl font-bold mb-8">多元商會員管理系統的夥伴</h2>
             <p className="text-lg text-center max-w-md opacity-80">
-              加入我們的天使投資社群，開啟無限可能
+              共享知識、共想未來、共響事業
             </p>
           </div>
         </div>
