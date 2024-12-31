@@ -140,8 +140,8 @@ export function useAuth() {
       setIsAuthenticated(false)
       setUser(null)
       
-      // 使用 window.location.href 進行強制重導向
-      window.location.href = '/login'
+      // 強制刷新頁面並重導向到登入頁面
+      window.location.replace('/login')
     } catch (error) {
       console.error('Logout failed:', error)
       // 即使發生錯誤，也要確保用戶被登出
@@ -150,9 +150,9 @@ export function useAuth() {
       setIsAuthenticated(false)
       setUser(null)
       
-      // 強制重導向到登入頁面
-      window.location.href = '/login'
-      throw error // 向上傳遞錯誤
+      // 強制刷新頁面並重導向到登入頁面
+      window.location.replace('/login')
+      throw error
     }
   }
 
