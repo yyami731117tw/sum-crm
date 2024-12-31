@@ -37,13 +37,14 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
         to_email: to,
         from_name: '多元商會員系統',
         to_name: to.split('@')[0],
-        subject: subject,
-        content: html,
-        reply_to: process.env.EMAIL_FROM
+        subject,
+        message: html,
+        reply_to: process.env.EMAIL_FROM || 'noreply@sum-crm.vercel.app'
       }
     }, {
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Origin': process.env.NEXT_PUBLIC_BASE_URL || 'https://sum-crm.vercel.app'
       }
     })
 

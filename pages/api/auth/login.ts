@@ -1,17 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { v4 as uuidv4 } from 'uuid'
 import { sign } from 'jsonwebtoken'
 
-// 預設管理員帳號
+// 模擬管理員用戶
 const adminUser = {
-  id: 'admin-001',
-  email: 'admin@mbc.com',
+  id: '1',
+  email: 'admin@sum-crm.com',
   password: 'admin123',
   name: '系統管理員',
   role: 'admin',
-  status: 'active',
-  createdAt: '2024-01-01T00:00:00.000Z',
-  lastLogin: new Date().toISOString()
+  status: 'active'
 }
 
 export default async function handler(
@@ -76,6 +73,9 @@ export default async function handler(
             { expiresIn: '24h' }
           )
 
+          // 設置 cookie
+          res.setHeader('Set-Cookie', `auth=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=86400`);
+
           return res.status(200).json({
             success: true,
             token,
@@ -99,7 +99,6 @@ export default async function handler(
       })
     }
 
-    // 未知步驟
     return res.status(400).json({
       success: false,
       error: 'INVALID_STEP',
@@ -108,9 +107,9 @@ export default async function handler(
 
   } catch (error) {
     console.error('Login error:', error)
-    return res.status(500).json({ 
-      success: false, 
-      message: '登入時發生錯誤' 
+    return res.status(500).json({
+      success: false,
+      message: '登入時發生錯誤'
     })
   }
 } 

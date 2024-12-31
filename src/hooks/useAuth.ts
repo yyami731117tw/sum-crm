@@ -1,7 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/router'
-import Cookies from 'js-cookie'
-import axios from 'axios'
 
 interface LoginCredentials {
   email: string
@@ -12,146 +10,74 @@ interface LoginCredentials {
 interface User {
   id: string
   email: string
-  role: 'admin' | 'user'
   name: string
+  role: string
   status: string
 }
 
+interface LoginResponse {
+  success: boolean
+  error?: string
+  message?: string
+  exists?: boolean
+  token?: string
+  user?: User
+}
+
 export function useAuth() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const router = useRouter()
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || ''
 
-  useEffect(() => {
-    checkAuth()
-  }, [])
-
-  const checkAuth = async () => {
+  // 檢查用戶是否已登入
+  const checkAuth = useCallback(async () => {
     try {
-      // 優先從 cookie 中獲取 token
-      const cookieToken = Cookies.get('token')
-      const localToken = localStorage.getItem('token')
-      const token = cookieToken || localToken
+      const response = await fetch('/api/auth/check')
+      const data = await response.json()
 
-      console.log('Checking auth with token:', token ? 'exists' : 'not found')
-
-      if (!token) {
-        setIsAuthenticated(false)
-        setUser(null)
-        setLoading(false)
-        return
-      }
-
-      // 如果只有其中一個 token，同步另一個
-      if (cookieToken && !localToken) {
-        localStorage.setItem('token', cookieToken)
-      } else if (!cookieToken && localToken) {
-        Cookies.set('token', localToken, { path: '/' })
-      }
-
-      try {
-        const response = await fetch('/api/auth/verify', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          credentials: 'include'
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          console.log('Auth check response:', data)
-          
-          if (data.user) {
-            setIsAuthenticated(true)
-            setUser(data.user)
-          } else {
-            throw new Error('無效的用戶資料')
-          }
-        } else {
-          throw new Error('驗證失敗')
-        }
-      } catch (error) {
-        console.error('Token verification failed:', error)
-        // 如果驗證失敗，清除 token
-        Cookies.remove('token', { path: '/' })
-        localStorage.removeItem('token')
-        setIsAuthenticated(false)
+      if (data.success && data.user) {
+        setUser(data.user)
+      } else {
         setUser(null)
       }
     } catch (error) {
-      console.error('Auth check failed:', error)
-      setIsAuthenticated(false)
+      console.error('Auth check error:', error)
       setUser(null)
-      // 清除無效的 token
-      Cookies.remove('token', { path: '/' })
-      localStorage.removeItem('token')
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const login = async ({ email, password, step }: LoginCredentials) => {
+  useEffect(() => {
+    checkAuth()
+  }, [checkAuth])
+
+  const login = async ({ email, password, step }: LoginCredentials): Promise<LoginResponse> => {
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password, step })
+        body: JSON.stringify({ email, password, step }),
       })
 
       const data = await response.json()
-      console.log('Login response:', data)
 
-      if (response.status === 404 && data.error === 'NOT_REGISTERED') {
-        return { 
-          success: false, 
-          error: data.message,
-          notRegistered: true 
+      if (response.ok) {
+        if (data.token && data.user) {
+          setUser(data.user)
+          // 登入成功後重定向到首頁
+          router.push('/dashboard')
         }
+        return data
       }
 
-      if (response.ok && data.exists) {
-        return {
-          success: false,
-          exists: true
-        }
+      return {
+        success: false,
+        error: data.error,
+        message: data.message
       }
-
-      if (response.status === 401 && data.error === 'INVALID_PASSWORD') {
-        return {
-          success: false,
-          error: 'INVALID_PASSWORD',
-          message: '密碼錯誤'
-        }
-      }
-
-      if (!response.ok) {
-        return {
-          success: false,
-          error: data.error,
-          message: data.message || '登入失敗'
-        }
-      }
-
-      if (data.token) {
-        // 先設定 token
-        localStorage.setItem('token', data.token)
-        Cookies.set('token', data.token, { path: '/' })
-        
-        // 更新用戶狀態
-        setUser(data.user)
-        setIsAuthenticated(true)
-        
-        console.log('Login successful:', data.user)
-        return { success: true }
-      }
-
-      return { success: false, error: '登入失敗' }
     } catch (error: any) {
       console.error('Login error:', error)
       return { 
@@ -164,31 +90,21 @@ export function useAuth() {
 
   const logout = async () => {
     try {
-      // 先清除本地狀態
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+      })
       setUser(null)
-      localStorage.removeItem('token')
-      document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
-      
-      // 立即重定向到登入頁面
-      window.location.replace('/login')
-      
-      // 在背景執行登出 API 請求
-      await axios.post('/api/auth/logout')
+      router.push('/login')
     } catch (error) {
-      console.error('登出時發生錯誤:', error)
-      // 即使 API 請求失敗，也確保用戶被重定向到登入頁面
-      window.location.replace('/login')
+      console.error('Logout error:', error)
     }
   }
 
-  const isAdmin = () => {
-    // 加入除錯日誌
-    console.log('Current user:', user)
-    console.log('Is admin?', Boolean(user?.role === 'admin'))
-    
-    // 確保 user 存在且角色是 admin
-    return Boolean(user?.role === 'admin')
+  return {
+    user,
+    loading,
+    login,
+    logout,
+    checkAuth
   }
-
-  return { isAuthenticated, loading, user, login, logout, isAdmin }
 } 
