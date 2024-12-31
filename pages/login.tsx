@@ -42,6 +42,8 @@ const Login: NextPage = () => {
         } else if (result.exists) {
           setShowPassword(true)
           setError('')
+        } else if (result.error === 'INVALID_PASSWORD') {
+          setError('密碼錯誤')
         } else {
           setError(result.error || '登入失敗')
         }
