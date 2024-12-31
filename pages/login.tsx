@@ -100,12 +100,12 @@ const Login: NextPage = () => {
                 {error}
                 {showRegisterPrompt && (
                   <div className="mt-2">
-                    <a
-                      href="/signup"
+                    <button
+                      onClick={handleSignup}
                       className="font-medium text-blue-600 hover:text-blue-500 inline-flex items-center"
                     >
                       立即註冊 <span className="ml-1">→</span>
-                    </a>
+                    </button>
                   </div>
                 )}
               </div>
@@ -192,12 +192,12 @@ const Login: NextPage = () => {
           <div className="text-center">
             <p className="text-sm text-gray-600">
               還沒有帳號？{' '}
-              <a
-                href="/signup"
+              <button
+                onClick={handleSignup}
                 className="font-medium text-blue-600 hover:text-blue-500"
               >
                 立即註冊
-              </a>
+              </button>
             </p>
           </div>
         </div>

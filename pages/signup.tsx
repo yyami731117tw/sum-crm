@@ -50,6 +50,10 @@ const Signup: NextPage = () => {
     window.location.href = '/api/auth/google'
   }
 
+  const handleLogin = () => {
+    window.location.href = '/login'
+  }
+
   return (
     <>
       <Head>
@@ -91,7 +95,7 @@ const Signup: NextPage = () => {
               <p className="mt-2 text-sm text-gray-600">
                 已經有帳號了？{' '}
                 <button
-                  onClick={() => window.location.href = '/login'}
+                  onClick={handleLogin}
                   className="text-blue-600 hover:text-blue-500"
                 >
                   登入
