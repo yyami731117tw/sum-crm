@@ -67,7 +67,7 @@ export function useAuth() {
         if (data.token && data.user) {
           setUser(data.user)
           // 登入成功後重定向到首頁
-          router.push('/dashboard')
+          router.push('/')
         }
         return data
       }

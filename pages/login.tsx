@@ -45,80 +45,68 @@ const Login: NextPage = () => {
   return (
     <>
       <Head>
-        <title>登入 - 多元商會員管理系統</title>
+        <title>登入 - MBC天使俱樂部</title>
       </Head>
-      <div className="min-h-screen flex">
-        {/* 左側歡迎區塊 */}
-        <div className="hidden lg:flex lg:w-1/2 bg-[#003B6D] text-white">
-          <div className="w-full flex flex-col items-center justify-center p-12">
-            <div className="relative w-32 h-32 flex items-center justify-center mb-8">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div>
+            <div className="flex justify-center">
               <Image
                 src="/logo.png"
-                alt="多元商 Logo"
-                width={120}
-                height={120}
-                style={{
-                  maxWidth: '100%',
-                  height: 'auto',
-                  objectFit: 'contain',
-                  filter: 'brightness(0) invert(1)'
-                }}
+                alt="MBC Logo"
+                width={100}
+                height={100}
                 priority
-                unoptimized
+                className="h-20 w-auto"
               />
             </div>
-            <h1 className="text-4xl font-bold mb-2">歡迎回來</h1>
-            <p className="text-lg text-center max-w-md opacity-80">
-              登入您的帳號以管理會員資料
-            </p>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+              登入您的帳號
+            </h2>
           </div>
-        </div>
 
-        {/* 右側登入表單 */}
-        <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-20 bg-white">
-          <div className="max-w-md w-full mx-auto">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900">會員登入</h2>
-              <p className="mt-2 text-sm text-gray-600">
-                請輸入您的帳號密碼
-              </p>
-            </div>
-
-            {error && (
-              <div className="mb-4 p-4 bg-red-50 rounded-md">
-                <p className="text-sm text-red-700">{error}</p>
+          {error && (
+            <div className="rounded-md bg-red-50 p-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-red-800">{error}</p>
+                </div>
               </div>
-            )}
+            </div>
+          )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            <div className="rounded-md shadow-sm -space-y-px">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  電子郵件
-                </label>
+                <label htmlFor="email" className="sr-only">電子郵件</label>
                 <input
                   id="email"
                   name="email"
                   type="email"
                   autoComplete="email"
                   required
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  placeholder="電子郵件"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
-
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  密碼
-                </label>
-                <div className="mt-1 relative">
+                <label htmlFor="password" className="sr-only">密碼</label>
+                <div className="relative">
                   <input
                     id="password"
                     name="password"
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     required
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                    placeholder="密碼"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
@@ -140,24 +128,26 @@ const Login: NextPage = () => {
                   </button>
                 </div>
               </div>
+            </div>
 
-              <div className="flex items-center justify-between">
-                <div className="text-sm">
-                  <a href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
-                    還沒有帳號？立即註冊
-                  </a>
-                </div>
+            <div className="flex items-center justify-between">
+              <div className="text-sm">
+                <a href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
+                  還沒有帳號？立即註冊
+                </a>
               </div>
+            </div>
 
+            <div>
               <button
                 type="submit"
                 disabled={loading || !email || !password}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? '處理中...' : '登入'}
               </button>
-            </form>
-          </div>
+            </div>
+          </form>
         </div>
       </div>
     </>
