@@ -140,14 +140,9 @@ export function useAuth() {
         method: 'POST',
         credentials: 'include'
       })
-
-      // 直接跳轉到登入頁面
-      window.location.href = '/login'
       
     } catch (error) {
       console.error('登出時發生錯誤:', error)
-      // 即使發生錯誤也要跳轉到登入頁面
-      window.location.href = '/login'
       throw error
     }
   }

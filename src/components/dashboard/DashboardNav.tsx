@@ -14,9 +14,11 @@ export const DashboardNav: FC = () => {
     setIsLoggingOut(true)
     try {
       await logout()
+      window.location.href = '/login'
     } catch (error) {
       console.error('登出失敗:', error)
       setIsLoggingOut(false)
+      window.location.href = '/login'
     }
   }
 
@@ -40,12 +42,12 @@ export const DashboardNav: FC = () => {
             </Link>
             <div className="flex items-center space-x-6">
               <NavLink href="/dashboard">首頁</NavLink>
+              <NavLink href="/members">會員管理</NavLink>
               <NavLink href="/contracts">合約管理</NavLink>
               <NavLink href="/projects">項目管理</NavLink>
               {isAdmin() && (
                 <NavLink href="/admin/people">人員管理</NavLink>
               )}
-              <NavLink href="/members">會員資料</NavLink>
             </div>
           </div>
           <div className="flex items-center space-x-4">
