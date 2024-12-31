@@ -49,12 +49,12 @@ const Login: NextPage = () => {
           setError(result.error || '登入失敗')
         }
       }
-    } catch (err) {
-      if (showPassword) {
+    } catch (err: any) {
+      if (err.error === 'INVALID_PASSWORD' || (showPassword && err.status === 401)) {
         setError('密碼錯誤')
         setPassword('')  // 清空密碼欄位
       } else {
-        setError('登入時發生錯誤，請稍後再試')
+        setError(err.message || '登入時發生錯誤，請稍後再試')
       }
     } finally {
       setLoading(false)
