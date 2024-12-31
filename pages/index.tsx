@@ -4,21 +4,36 @@ import { useRouter } from 'next/router'
 import { useAuth } from '@/hooks/useAuth'
 
 const Home: NextPage = () => {
-  const { isAuthenticated, loading } = useAuth()
   const router = useRouter()
+  const { isAuthenticated, loading } = useAuth()
 
+  // 認證檢查
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.push('/login')
+    const checkAuth = async () => {
+      if (!loading && !isAuthenticated) {
+        await router.push('/login')
+      }
     }
+    checkAuth()
   }, [isAuthenticated, loading, router])
 
+  // 載入中狀態
   if (loading) return <div>Loading...</div>
 
+  // 主要內容
   return (
-    <div>
-      <h1>歡迎使用 B2B CRM 平台</h1>
-    </div>
+    <main className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-4">
+        歡迎使用 B2B CRM 平台
+      </h1>
+      <section className="grid gap-4">
+        {/* 主要內容區塊 */}
+        <div className="bg-white p-4 rounded shadow">
+          <h2 className="text-xl mb-2">儀表板</h2>
+          {/* 這裡可以添加儀表板內容 */}
+        </div>
+      </section>
+    </main>
   )
 }
 
