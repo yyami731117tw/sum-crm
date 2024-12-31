@@ -43,16 +43,11 @@ const Login: NextPage = () => {
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-sm">
           {/* Logo */}
-          <div className="flex justify-center">
-            <div className="h-12 w-12">
-              <Image
-                src="/logo.svg"
-                alt="Logo"
-                width={48}
-                height={48}
-                priority
-              />
+          <div className="flex flex-col items-center">
+            <div className="h-12 w-12 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-2xl font-bold text-white">B</span>
             </div>
+            <h1 className="mt-2 text-xl font-semibold text-gray-900">B2B CRM</h1>
           </div>
           
           {/* 標題 */}

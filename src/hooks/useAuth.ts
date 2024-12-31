@@ -10,55 +10,85 @@ export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || ''
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    setIsAuthenticated(!!token)
-    setLoading(false)
+    checkAuth()
   }, [])
+
+  const checkAuth = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        setIsAuthenticated(false)
+        setLoading(false)
+        return
+      }
+
+      const response = await fetch(`${baseUrl}/api/auth/verify`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        setIsAuthenticated(true)
+      } else {
+        setIsAuthenticated(false)
+        localStorage.removeItem('token')
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error)
+      setIsAuthenticated(false)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const login = async (credentials: LoginCredentials) => {
     try {
-      // TODO: 實際的 API 調用
-      const response = await mockLoginApi(credentials)
-      
-      if (response.success) {
-        localStorage.setItem('token', response.token)
-        document.cookie = `token=${response.token}; path=/`
+      const response = await fetch(`${baseUrl}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(credentials)
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.token) {
+        localStorage.setItem('token', data.token)
+        document.cookie = `token=${data.token}; path=/`
         setIsAuthenticated(true)
         await router.push('/')
         return { success: true }
       }
-      
-      return { success: false, error: '登入失敗' }
+
+      return { success: false, error: data.message || '登入失敗' }
     } catch (error) {
-      console.error('登入錯誤:', error)
+      console.error('Login failed:', error)
       return { success: false, error: '發生錯誤' }
     }
   }
 
   const logout = async () => {
-    localStorage.removeItem('token')
-    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
-    setIsAuthenticated(false)
-    await router.push('/login')
-  }
-
-  return { isAuthenticated, loading, login, logout }
-}
-
-// 模擬 API 調用
-async function mockLoginApi(credentials: LoginCredentials) {
-  // 模擬 API 延遲
-  await new Promise(resolve => setTimeout(resolve, 1000))
-
-  // 模擬驗證
-  if (credentials.email === 'admin@example.com' && credentials.password === 'password') {
-    return {
-      success: true,
-      token: 'mock-jwt-token'
+    try {
+      await fetch(`${baseUrl}/api/auth/logout`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      })
+    } catch (error) {
+      console.error('Logout failed:', error)
+    } finally {
+      localStorage.removeItem('token')
+      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
+      setIsAuthenticated(false)
+      await router.push('/login')
     }
   }
 
-  throw new Error('Invalid credentials')
+  return { isAuthenticated, loading, login, logout }
 } 
