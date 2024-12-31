@@ -120,20 +120,25 @@ export function useAuth() {
           }
         })
       }
-    } catch (error) {
-      console.error('Logout failed:', error)
-    } finally {
+
       // 清除所有認證相關的狀態
       localStorage.removeItem('token')
       document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
       setIsAuthenticated(false)
       setUser(null)
       setLoading(false)
-      
-      // 確保在狀態更新後再進行導航
-      setTimeout(() => {
-        router.push('/login')
-      }, 0)
+
+      // 立即導航到登入頁面
+      await router.replace('/login')
+    } catch (error) {
+      console.error('Logout failed:', error)
+      // 即使發生錯誤，也要確保用戶被登出並導向登入頁面
+      localStorage.removeItem('token')
+      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
+      setIsAuthenticated(false)
+      setUser(null)
+      setLoading(false)
+      await router.replace('/login')
     }
   }
 
