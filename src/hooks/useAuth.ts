@@ -4,7 +4,6 @@ import { useRouter } from 'next/router'
 interface LoginCredentials {
   email: string
   password?: string
-  step: number
 }
 
 interface User {
@@ -52,14 +51,14 @@ export function useAuth() {
     checkAuth()
   }, [checkAuth])
 
-  const login = async ({ email, password, step }: LoginCredentials): Promise<LoginResponse> => {
+  const login = async ({ email, password }: LoginCredentials): Promise<LoginResponse> => {
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password, step }),
+        body: JSON.stringify({ email, password }),
       })
 
       const data = await response.json()
