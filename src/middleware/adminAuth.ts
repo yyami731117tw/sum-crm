@@ -1,29 +1,22 @@
-import { NextApiRequest, NextApiResponse } from 'next'
-import { verify } from 'jsonwebtoken'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-interface DecodedToken {
-  userId: string
-  role: string
-}
+// 公開路由列表
+const publicRoutes = ['/login', '/signup', '/terms', '/privacy']
 
-export function adminAuth(handler: any) {
-  return async (req: NextApiRequest, res: NextApiResponse) => {
-    try {
-      const token = req.headers.authorization?.replace('Bearer ', '')
-      
-      if (!token) {
-        return res.status(401).json({ message: '未授權訪問' })
-      }
+export function middleware(request: NextRequest) {
+  const token = request.cookies.get('token')
+  const { pathname } = request.nextUrl
 
-      const decoded = verify(token, process.env.JWT_SECRET!) as DecodedToken
-
-      if (decoded.role !== 'admin') {
-        return res.status(403).json({ message: '權限不足' })
-      }
-
-      return handler(req, res)
-    } catch (error) {
-      return res.status(401).json({ message: '未授權訪問' })
-    }
+  // 檢查是否是公開路由
+  if (publicRoutes.includes(pathname)) {
+    return NextResponse.next()
   }
+
+  // 如果沒有 token，重定向到登入頁面
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+
+  return NextResponse.next()
 } 
