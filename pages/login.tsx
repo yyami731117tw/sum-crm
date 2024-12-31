@@ -44,20 +44,14 @@ const Login: NextPage = () => {
           setError('')
         } else if (result.error === 'INVALID_PASSWORD') {
           setError('密碼錯誤')
-          setPassword('')  // 清空密碼欄位
-          setShowPassword(true)  // 保持在密碼輸入狀態
+          setPassword('')
+          setShowPassword(true)
         } else {
-          setError(result.error || '登入失敗')
+          setError(result.message || '登入失敗')
         }
       }
     } catch (err: any) {
-      if (err.error === 'INVALID_PASSWORD' || (showPassword && err.status === 401)) {
-        setError('密碼錯誤')
-        setPassword('')  // 清空密碼欄位
-        setShowPassword(true)  // 保持在密碼輸入狀態
-      } else {
-        setError(err.message || '登入時發生錯誤，請稍後再試')
-      }
+      setError(err.message || '登入時發生錯誤，請稍後再試')
     } finally {
       setLoading(false)
     }
@@ -76,17 +70,13 @@ const Login: NextPage = () => {
         <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-sm">
           {/* Logo */}
           <div className="flex flex-col items-center">
-            <div className="relative w-24 h-24 flex items-center justify-center">
+            <div className="relative w-24 h-24">
               <Image
-                src="/logo.png"
+                src="/login-logo.png"
                 alt="MBC Logo"
-                width={96}
-                height={96}
-                style={{
-                  maxWidth: '100%',
-                  height: 'auto',
-                  objectFit: 'contain'
-                }}
+                fill
+                sizes="96px"
+                className="object-contain"
                 priority
                 unoptimized
               />
