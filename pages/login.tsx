@@ -67,14 +67,16 @@ const Login: NextPage = () => {
         <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-sm">
           {/* Logo */}
           <div className="flex flex-col items-center">
-            <div className="h-24 w-24 relative">
+            <div className="relative w-24 h-24">
               <Image
                 src="/logo.png"
                 alt="MBC Logo"
-                fill
-                sizes="96px"
+                width={96}
+                height={96}
                 priority
                 className="object-contain"
+                style={{ width: '100%', height: '100%' }}
+                unoptimized
               />
             </div>
             <h1 className="mt-4 text-2xl font-bold text-gray-900">

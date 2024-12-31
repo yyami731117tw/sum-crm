@@ -2,9 +2,22 @@ import type { FC } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useAuth } from '@/hooks/useAuth'
+import { useState } from 'react'
 
 export const DashboardNav: FC = () => {
   const { isAdmin, logout } = useAuth()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true)
+      await logout()
+    } catch (error) {
+      console.error('登出失敗:', error)
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
 
   return (
     <nav className="bg-white shadow">
@@ -47,10 +60,11 @@ export const DashboardNav: FC = () => {
               ⚙️
             </button>
             <button
-              onClick={logout}
-              className="text-gray-600 hover:text-gray-900 flex items-center space-x-1"
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className="text-gray-600 hover:text-gray-900 flex items-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span>登出</span>
+              <span>{isLoggingOut ? '登出中...' : '登出'}</span>
               <span>🚪</span>
             </button>
           </div>
