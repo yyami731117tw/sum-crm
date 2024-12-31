@@ -9,13 +9,15 @@ export const DashboardNav: FC = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const handleLogout = async () => {
+    if (isLoggingOut) return
+    
     try {
       setIsLoggingOut(true)
       await logout()
     } catch (error) {
       console.error('登出失敗:', error)
-    } finally {
-      setIsLoggingOut(false)
+      // 即使發生錯誤也要嘗試重新導向到登入頁面
+      window.location.href = '/login'
     }
   }
 

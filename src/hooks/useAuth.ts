@@ -87,8 +87,20 @@ export function useAuth() {
         }
       }
 
+      if (response.status === 401 && data.error === 'INVALID_PASSWORD') {
+        return {
+          success: false,
+          error: 'INVALID_PASSWORD',
+          message: '密碼錯誤'
+        }
+      }
+
       if (!response.ok) {
-        throw new Error(data.message || '登入失敗')
+        return {
+          success: false,
+          error: data.error,
+          message: data.message || '登入失敗'
+        }
       }
 
       if (data.token) {
@@ -100,11 +112,12 @@ export function useAuth() {
       }
 
       return { success: false, error: '登入失敗' }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error)
       return { 
         success: false, 
-        error: '登入時發生錯誤，請稍後再試' 
+        error: error.error || 'UNKNOWN_ERROR',
+        message: error.message || '登入時發生錯誤，請稍後再試' 
       }
     }
   }
@@ -126,19 +139,20 @@ export function useAuth() {
       document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
       setIsAuthenticated(false)
       setUser(null)
-      setLoading(false)
-
-      // 立即導航到登入頁面
-      await router.replace('/login')
+      
+      // 使用 window.location.href 進行強制重導向
+      window.location.href = '/login'
     } catch (error) {
       console.error('Logout failed:', error)
-      // 即使發生錯誤，也要確保用戶被登出並導向登入頁面
+      // 即使發生錯誤，也要確保用戶被登出
       localStorage.removeItem('token')
       document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
       setIsAuthenticated(false)
       setUser(null)
-      setLoading(false)
-      await router.replace('/login')
+      
+      // 強制重導向到登入頁面
+      window.location.href = '/login'
+      throw error // 向上傳遞錯誤
     }
   }
 
