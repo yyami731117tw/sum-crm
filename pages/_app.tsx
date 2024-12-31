@@ -7,7 +7,6 @@ function MyApp({ Component, pageProps }: AppProps) {
     <>
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content="B2B CRM Dashboard" />
         <title>B2B CRM</title>
       </Head>
       <Component {...pageProps} />

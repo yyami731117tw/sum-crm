@@ -3,16 +3,14 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { useAuth } from '@/hooks/useAuth'
 import Head from 'next/head'
+import Image from 'next/image'
 
 const Login: NextPage = () => {
   const router = useRouter()
   const { isAuthenticated, login } = useAuth()
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  })
-  const [error, setError] = useState('')
+  const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -26,7 +24,7 @@ const Login: NextPage = () => {
     setLoading(true)
 
     try {
-      const result = await login(formData)
+      const result = await login({ email, password: '' })
       if (!result.success) {
         setError(result.error || '登入失敗')
       }
@@ -37,120 +35,103 @@ const Login: NextPage = () => {
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }))
-  }
-
   return (
     <>
       <Head>
         <title>登入 - B2B CRM</title>
       </Head>
-      <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white flex items-center justify-center p-4">
-        <div className="max-w-md w-full">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-sm">
           {/* Logo */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-blue-600">CRM</h1>
-            <p className="text-gray-600 mt-2">企業客戶關係管理系統</p>
+          <div className="flex justify-center">
+            <div className="h-12 w-12">
+              <Image
+                src="/logo.svg"
+                alt="Logo"
+                width={48}
+                height={48}
+                priority
+              />
+            </div>
           </div>
+          
+          {/* 標題 */}
+          <h2 className="mt-4 text-center text-2xl font-semibold text-gray-900">
+            Sign in
+          </h2>
+
+          {/* 錯誤提示 */}
+          {error && (
+            <div className="rounded-md bg-red-50 p-4">
+              <div className="text-sm text-red-700">{error}</div>
+            </div>
+          )}
 
           {/* 登入表單 */}
-          <div className="bg-white p-8 rounded-lg shadow-md">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-              登入
-            </h2>
-            {error && (
-              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-                {error}
-              </div>
-            )}
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* 電子郵件 */}
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  電子郵件
-                </label>
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email
+              </label>
+              <div className="mt-1">
                 <input
                   id="email"
                   name="email"
                   type="email"
+                  autoComplete="email"
                   required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-                  placeholder="請輸入電子郵件"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Your email address"
                 />
               </div>
+            </div>
 
-              {/* 密碼 */}
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  密碼
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-                  placeholder="請輸入密碼"
-                />
-              </div>
-
-              {/* 記住我 */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input
-                    id="remember"
-                    name="remember"
-                    type="checkbox"
-                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <label
-                    htmlFor="remember"
-                    className="ml-2 text-sm text-gray-600"
-                  >
-                    記住我
-                  </label>
-                </div>
-                <a
-                  href="#"
-                  className="text-sm text-blue-600 hover:text-blue-500"
-                >
-                  忘記密碼？
-                </a>
-              </div>
-
-              {/* 登入按鈕 */}
+            {/* 繼續按鈕 */}
+            <div>
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors ${
-                  loading ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? '登入中...' : '登入'}
+                {loading ? 'Loading...' : 'Continue'}
               </button>
-            </form>
-          </div>
+            </div>
 
-          {/* 其他登入選項 */}
-          <div className="mt-6 text-center">
+            {/* 分隔線 */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">OR</span>
+              </div>
+            </div>
+
+            {/* Google 登入按鈕 */}
+            <div>
+              <button
+                type="button"
+                className="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"
+                  />
+                </svg>
+                Continue with Google
+              </button>
+            </div>
+          </form>
+
+          {/* 註冊連結 */}
+          <div className="text-center">
             <p className="text-sm text-gray-600">
-              還沒有帳號？{' '}
-              <a href="#" className="text-blue-600 hover:text-blue-500">
-                立即註冊
+              Don't have an account?{' '}
+              <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+                Sign up
               </a>
             </p>
           </div>
