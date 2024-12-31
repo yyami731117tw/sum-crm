@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import Cookies from 'js-cookie'
 
 interface LoginCredentials {
   email: string
@@ -124,34 +125,24 @@ export function useAuth() {
 
   const logout = async () => {
     try {
-      const token = localStorage.getItem('token')
-      if (token) {
-        await fetch(`${baseUrl}/api/auth/logout`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        })
-      }
-
-      // 清除所有認證相關的狀態
+      // 清除 cookie
+      Cookies.remove('token')
+      
+      // 清除本地存儲
       localStorage.removeItem('token')
-      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
+      
+      // 更新狀態
       setIsAuthenticated(false)
       setUser(null)
       
-      // 強制刷新頁面並重導向到登入頁面
-      window.location.replace('/login')
+      // 呼叫登出 API
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      })
+      
     } catch (error) {
-      console.error('Logout failed:', error)
-      // 即使發生錯誤，也要確保用戶被登出
-      localStorage.removeItem('token')
-      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
-      setIsAuthenticated(false)
-      setUser(null)
-      
-      // 強制刷新頁面並重導向到登入頁面
-      window.location.replace('/login')
+      console.error('登出時發生錯誤:', error)
       throw error
     }
   }
