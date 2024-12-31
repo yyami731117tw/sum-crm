@@ -19,6 +19,22 @@ interface UserTableProps {
   onStatusChange: (userId: string, status: 'active' | 'inactive') => void
 }
 
+const formatDate = (dateString: string) => {
+  try {
+    return format(new Date(dateString), 'yyyy/MM/dd')
+  } catch (error) {
+    return '-'
+  }
+}
+
+const formatDateTime = (dateString: string) => {
+  try {
+    return format(new Date(dateString), 'yyyy/MM/dd HH:mm')
+  } catch (error) {
+    return '-'
+  }
+}
+
 export const UserTable: FC<UserTableProps> = ({ users, loading, onStatusChange }) => {
   if (loading) {
     return (
@@ -64,10 +80,10 @@ export const UserTable: FC<UserTableProps> = ({ users, loading, onStatusChange }
                 <div className="text-sm text-gray-500">{user.phone}</div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {format(new Date(user.createdAt), 'yyyy/MM/dd')}
+                {formatDate(user.createdAt)}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {format(new Date(user.lastLogin), 'yyyy/MM/dd HH:mm')}
+                {formatDateTime(user.lastLogin)}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <Switch
