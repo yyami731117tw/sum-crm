@@ -25,12 +25,12 @@ const Login: NextPage = () => {
     setLoading(true)
 
     try {
-      const result = await login({ email, password: '' })
+      const result = await login({ email })
       if (!result.success) {
         setError(result.error || '登入失敗')
       }
     } catch (err) {
-      setError('登入時發生錯誤')
+      setError('登入時發生錯誤，請稍後再試')
     } finally {
       setLoading(false)
     }
@@ -47,25 +47,25 @@ const Login: NextPage = () => {
           <div className="flex flex-col items-center">
             <div className="h-24 w-24 relative">
               <Image
-                src="/logo.svg"
+                src="/logo.png"
                 alt="多元商會 Logo"
                 width={96}
                 height={96}
                 priority
-                className="rounded-full"
+                className="w-full h-full object-contain"
               />
             </div>
             <h1 className="mt-4 text-2xl font-bold text-gray-900">
-              多元商會員管理系統
+              MBC天使俱樂部
             </h1>
             <p className="mt-2 text-sm text-gray-600">
-              Multi-Business Club Management System
+              Multi-Business Club Angel System
             </p>
           </div>
           
           {/* 標題 */}
           <h2 className="mt-4 text-center text-2xl font-semibold text-gray-900">
-            Sign in
+            登入
           </h2>
 
           {/* 錯誤提示 */}
@@ -79,7 +79,7 @@ const Login: NextPage = () => {
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
+                電子郵件
               </label>
               <div className="mt-1">
                 <input
@@ -91,7 +91,7 @@ const Login: NextPage = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Your email address"
+                  placeholder="請輸入您的電子郵件"
                 />
               </div>
             </div>
@@ -103,7 +103,7 @@ const Login: NextPage = () => {
                 disabled={loading}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Loading...' : 'Continue'}
+                {loading ? '處理中...' : '繼續'}
               </button>
             </div>
 
@@ -113,7 +113,7 @@ const Login: NextPage = () => {
                 <div className="w-full border-t border-gray-300" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">OR</span>
+                <span className="px-2 bg-white text-gray-500">或</span>
               </div>
             </div>
 
@@ -129,7 +129,7 @@ const Login: NextPage = () => {
                     d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"
                   />
                 </svg>
-                Continue with Google
+                使用 Google 帳號登入
               </button>
             </div>
           </form>
@@ -137,9 +137,9 @@ const Login: NextPage = () => {
           {/* 註冊連結 */}
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
+              還沒有帳號？{' '}
               <Link href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
-                Sign up
+                立即註冊
               </Link>
             </p>
           </div>

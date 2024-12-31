@@ -3,11 +3,17 @@ import { useRouter } from 'next/router'
 
 interface LoginCredentials {
   email: string
-  password: string
+}
+
+interface User {
+  id: string
+  email: string
+  role: 'admin' | 'user'
 }
 
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || ''
@@ -21,6 +27,7 @@ export function useAuth() {
       const token = localStorage.getItem('token')
       if (!token) {
         setIsAuthenticated(false)
+        setUser(null)
         setLoading(false)
         return
       }
@@ -32,43 +39,51 @@ export function useAuth() {
       })
 
       if (response.ok) {
+        const data = await response.json()
         setIsAuthenticated(true)
+        setUser(data.user)
       } else {
         setIsAuthenticated(false)
+        setUser(null)
         localStorage.removeItem('token')
       }
     } catch (error) {
       console.error('Auth check failed:', error)
       setIsAuthenticated(false)
+      setUser(null)
     } finally {
       setLoading(false)
     }
   }
 
-  const login = async (credentials: LoginCredentials) => {
+  const login = async ({ email }: LoginCredentials) => {
     try {
+      // 模擬 API 調用
       const response = await fetch(`${baseUrl}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(credentials)
+        body: JSON.stringify({ email })
       })
+
+      if (!response.ok) {
+        throw new Error('登入失敗')
+      }
 
       const data = await response.json()
 
-      if (response.ok && data.token) {
+      if (data.token) {
         localStorage.setItem('token', data.token)
         document.cookie = `token=${data.token}; path=/`
         setIsAuthenticated(true)
-        await router.push('/')
         return { success: true }
       }
 
-      return { success: false, error: data.message || '登入失敗' }
+      return { success: false, error: '登入失敗' }
     } catch (error) {
-      console.error('Login failed:', error)
-      return { success: false, error: '發生錯誤' }
+      console.error('Login error:', error)
+      return { success: false, error: '登入時發生錯誤，請稍後再試' }
     }
   }
 
@@ -86,9 +101,11 @@ export function useAuth() {
       localStorage.removeItem('token')
       document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
       setIsAuthenticated(false)
-      await router.push('/login')
+      router.push('/login')
     }
   }
 
-  return { isAuthenticated, loading, login, logout }
+  const isAdmin = () => user?.role === 'admin'
+
+  return { isAuthenticated, loading, user, login, logout, isAdmin }
 } 

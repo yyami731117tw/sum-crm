@@ -11,24 +11,16 @@ const Signup: NextPage = () => {
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
     email: '',
-    name: '',
-    company: '',
-    phone: '',
     password: '',
-    confirmPassword: ''
+    name: '',
+    phone: '',
+    birthday: ''
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
-
-    // 驗證密碼
-    if (formData.password !== formData.confirmPassword) {
-      setError('密碼不一致')
-      setLoading(false)
-      return
-    }
 
     try {
       const response = await fetch('/api/auth/signup', {
@@ -53,11 +45,8 @@ const Signup: NextPage = () => {
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }))
+  const handleGoogleSignup = () => {
+    // 處理 Google 註冊邏輯
   }
 
   return (
@@ -65,43 +54,71 @@ const Signup: NextPage = () => {
       <Head>
         <title>註冊 - 多元商會員管理系統</title>
       </Head>
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-sm">
-          {/* Logo */}
-          <div className="flex flex-col items-center">
-            <div className="h-24 w-24 relative">
-              <Image
-                src="/logo.svg"
-                alt="多元商會 Logo"
-                width={96}
-                height={96}
-                priority
-                className="rounded-full"
-              />
-            </div>
-            <h1 className="mt-4 text-2xl font-bold text-gray-900">
-              多元商會員管理系統
-            </h1>
-            <p className="mt-2 text-sm text-gray-600">
-              Multi-Business Club Management System
+      <div className="min-h-screen flex">
+        {/* 左側歡迎區塊 */}
+        <div className="hidden lg:flex lg:w-1/2 bg-[#003B6D] text-white">
+          <div className="w-full flex flex-col items-center justify-center p-12">
+            <Image
+              src="/logo.png"
+              alt="MBC Logo"
+              width={120}
+              height={120}
+              className="mb-8 w-full h-full object-contain"
+            />
+            <h1 className="text-4xl font-bold mb-4">歡迎您成為</h1>
+            <h2 className="text-3xl font-bold mb-8">MBC天使俱樂部的夥伴</h2>
+            <p className="text-lg text-center max-w-md opacity-80">
+              加入我們的天使投資社群，開啟無限可能
             </p>
           </div>
+        </div>
 
-          {/* 標題 */}
-          <h2 className="mt-4 text-center text-2xl font-semibold text-gray-900">
-            註冊新帳號
-          </h2>
-
-          {/* 錯誤提示 */}
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="text-sm text-red-700">{error}</div>
+        {/* 右側註冊表單 */}
+        <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-20 bg-white">
+          <div className="max-w-md w-full mx-auto">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900">開始使用</h2>
+              <p className="mt-2 text-sm text-gray-600">
+                已經有帳號了？{' '}
+                <Link href="/login" className="text-blue-600 hover:text-blue-500">
+                  登入
+                </Link>
+              </p>
             </div>
-          )}
 
-          {/* 註冊表單 */}
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-4">
+            {error && (
+              <div className="mb-4 p-4 bg-red-50 rounded-md">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Google 註冊按鈕 */}
+              <button
+                type="button"
+                onClick={handleGoogleSignup}
+                className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                <Image
+                  src="/google-icon.svg"
+                  alt="Google"
+                  width={20}
+                  height={20}
+                  className="mr-2"
+                />
+                使用 Google 註冊
+              </button>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">或</span>
+                </div>
+              </div>
+
+              {/* 電子郵件 */}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                   電子郵件
@@ -110,59 +127,14 @@ const Signup: NextPage = () => {
                   id="email"
                   name="email"
                   type="email"
-                  autoComplete="email"
                   required
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   value={formData.email}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
               </div>
 
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                  姓名
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="company" className="block text-sm font-medium text-gray-700">
-                  公司名稱
-                </label>
-                <input
-                  id="company"
-                  name="company"
-                  type="text"
-                  required
-                  value={formData.company}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                  聯絡電話
-                </label>
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  required
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
+              {/* 密碼 */}
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                   密碼
@@ -172,45 +144,78 @@ const Signup: NextPage = () => {
                   name="password"
                   type="password"
                   required
-                  value={formData.password}
-                  onChange={handleChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
               </div>
 
+              {/* 姓名 */}
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                  確認密碼
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                  姓名
                 </label>
                 <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
+                  id="name"
+                  name="name"
+                  type="text"
                   required
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
               </div>
-            </div>
 
-            <div>
+              {/* 電話 */}
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                  電話
+                </label>
+                <input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  required
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                />
+              </div>
+
+              {/* 生日 */}
+              <div>
+                <label htmlFor="birthday" className="block text-sm font-medium text-gray-700">
+                  生日
+                </label>
+                <input
+                  id="birthday"
+                  name="birthday"
+                  type="date"
+                  required
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  value={formData.birthday}
+                  onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
+                />
+              </div>
+
+              {/* 註冊按鈕 */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 {loading ? '處理中...' : '註冊'}
               </button>
-            </div>
-          </form>
+            </form>
 
-          {/* 登入連結 */}
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              已經有帳號了？{' '}
-              <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">
-                登入
+            <p className="mt-4 text-xs text-gray-500 text-center">
+              點擊註冊即表示您同意我們的{' '}
+              <Link href="/terms" className="text-blue-600 hover:text-blue-500">
+                服務條款
+              </Link>
+              {' '}和{' '}
+              <Link href="/privacy" className="text-blue-600 hover:text-blue-500">
+                隱私政策
               </Link>
             </p>
           </div>
