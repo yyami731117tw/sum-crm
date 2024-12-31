@@ -5,8 +5,9 @@ export default function Document() {
     <Html lang="zh-TW">
       <Head>
         <meta charSet="utf-8" />
-        <meta name="theme-color" content="#2563EB" />
-        <link rel="icon" href="/favicon.ico" />
+        <meta name="theme-color" content="#0F2942" />
+        <meta name="description" content="多元商會員管理系統 - Multi-Business Club Management System" />
+        <link rel="icon" href="/logo.svg" />
         <link
           rel="preconnect"
           href="https://fonts.googleapis.com"

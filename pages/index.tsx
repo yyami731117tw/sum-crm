@@ -32,7 +32,7 @@ const Home: NextPage = () => {
         <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
             <h1 className="text-2xl font-semibold text-gray-900">
-              儀表板
+              多元商會員管理系統
             </h1>
             <p className="mt-1 text-sm text-gray-500">
               歡迎回來！這是您的業務概覽。

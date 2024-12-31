@@ -1,5 +1,6 @@
 import type { FC } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export const DashboardNav: FC = () => {
   return (
@@ -7,9 +8,15 @@ export const DashboardNav: FC = () => {
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-8">
-            <Link href="/" className="flex items-center space-x-2">
-              <span className="text-blue-600 text-2xl">⚙</span>
-              <span className="text-xl font-semibold">Dashboard</span>
+            <Link href="/" className="flex items-center space-x-3">
+              <Image
+                src="/logo.svg"
+                alt="多元商會 Logo"
+                width={40}
+                height={40}
+                className="rounded-full"
+              />
+              <span className="text-xl font-semibold text-gray-900">多元商會</span>
             </Link>
             <div className="flex items-center space-x-6">
               <NavLink href="/dashboard">儀表板</NavLink>

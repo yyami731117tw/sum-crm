@@ -4,6 +4,7 @@ import { useRouter } from 'next/router'
 import { useAuth } from '@/hooks/useAuth'
 import Head from 'next/head'
 import Image from 'next/image'
+import Link from 'next/link'
 
 const Login: NextPage = () => {
   const router = useRouter()
@@ -38,16 +39,28 @@ const Login: NextPage = () => {
   return (
     <>
       <Head>
-        <title>登入 - B2B CRM</title>
+        <title>登入 - 多元商會員管理系統</title>
       </Head>
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-sm">
           {/* Logo */}
           <div className="flex flex-col items-center">
-            <div className="h-12 w-12 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-2xl font-bold text-white">B</span>
+            <div className="h-24 w-24 relative">
+              <Image
+                src="/logo.svg"
+                alt="多元商會 Logo"
+                width={96}
+                height={96}
+                priority
+                className="rounded-full"
+              />
             </div>
-            <h1 className="mt-2 text-xl font-semibold text-gray-900">B2B CRM</h1>
+            <h1 className="mt-4 text-2xl font-bold text-gray-900">
+              多元商會員管理系統
+            </h1>
+            <p className="mt-2 text-sm text-gray-600">
+              Multi-Business Club Management System
+            </p>
           </div>
           
           {/* 標題 */}
@@ -125,9 +138,9 @@ const Login: NextPage = () => {
           <div className="text-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{' '}
-              <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+              <Link href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
                 Sign up
-              </a>
+              </Link>
             </p>
           </div>
         </div>
