@@ -45,6 +45,7 @@ const Login: NextPage = () => {
         } else if (result.error === 'INVALID_PASSWORD') {
           setError('密碼錯誤')
           setPassword('')  // 清空密碼欄位
+          setShowPassword(true)  // 保持在密碼輸入狀態
         } else {
           setError(result.error || '登入失敗')
         }
@@ -53,12 +54,17 @@ const Login: NextPage = () => {
       if (err.error === 'INVALID_PASSWORD' || (showPassword && err.status === 401)) {
         setError('密碼錯誤')
         setPassword('')  // 清空密碼欄位
+        setShowPassword(true)  // 保持在密碼輸入狀態
       } else {
         setError(err.message || '登入時發生錯誤，請稍後再試')
       }
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSignup = () => {
+    router.push('/signup')
   }
 
   return (
@@ -105,12 +111,12 @@ const Login: NextPage = () => {
                 {error}
                 {showRegisterPrompt && (
                   <div className="mt-2">
-                    <Link
-                      href="/signup"
+                    <button
+                      onClick={handleSignup}
                       className="font-medium text-blue-600 hover:text-blue-500 inline-flex items-center"
                     >
                       立即註冊 <span className="ml-1">→</span>
-                    </Link>
+                    </button>
                   </div>
                 )}
               </div>
@@ -197,12 +203,12 @@ const Login: NextPage = () => {
           <div className="text-center">
             <p className="text-sm text-gray-600">
               還沒有帳號？{' '}
-              <Link
-                href="/signup"
+              <button
+                onClick={handleSignup}
                 className="font-medium text-blue-600 hover:text-blue-500"
               >
                 立即註冊
-              </Link>
+              </button>
             </p>
           </div>
         </div>
