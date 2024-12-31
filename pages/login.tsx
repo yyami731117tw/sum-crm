@@ -18,7 +18,7 @@ const Login: NextPage = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/')
+      router.push('/dashboard')
     }
   }, [isAuthenticated, router])
 
@@ -53,9 +53,13 @@ const Login: NextPage = () => {
     }
   }
 
-  const handleSignup = (e: React.MouseEvent) => {
+  const handleSignup = async (e: React.MouseEvent) => {
     e.preventDefault()
-    router.push('/signup')
+    try {
+      await router.push('/signup')
+    } catch (error) {
+      console.error('導向註冊頁面失敗:', error)
+    }
   }
 
   return (
@@ -67,16 +71,14 @@ const Login: NextPage = () => {
         <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-sm">
           {/* Logo */}
           <div className="flex flex-col items-center">
-            <div className="relative w-24 h-24">
+            <div className="w-24 h-24 flex items-center justify-center">
               <Image
                 src="/logo.png"
                 alt="MBC Logo"
                 width={96}
                 height={96}
+                className="w-24 h-24"
                 priority
-                className="object-contain"
-                style={{ width: '100%', height: '100%' }}
-                unoptimized
               />
             </div>
             <h1 className="mt-4 text-2xl font-bold text-gray-900">

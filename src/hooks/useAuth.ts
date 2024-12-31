@@ -93,6 +93,7 @@ export function useAuth() {
         localStorage.setItem('token', data.token)
         document.cookie = `token=${data.token}; path=/`
         setIsAuthenticated(true)
+        setUser(data.user)
         return { success: true }
       }
 
@@ -108,19 +109,29 @@ export function useAuth() {
 
   const logout = async () => {
     try {
-      await fetch(`${baseUrl}/api/auth/logout`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      })
+      const token = localStorage.getItem('token')
+      if (token) {
+        await fetch(`${baseUrl}/api/auth/logout`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+      }
     } catch (error) {
       console.error('Logout failed:', error)
     } finally {
+      // 清除所有認證相關的狀態
       localStorage.removeItem('token')
       document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
       setIsAuthenticated(false)
-      router.push('/login')
+      setUser(null)
+      setLoading(false)
+      
+      // 確保在狀態更新後再進行導航
+      setTimeout(() => {
+        router.push('/login')
+      }, 0)
     }
   }
 
