@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import type { FC, ReactNode } from 'react'
 import Head from 'next/head'
 
 interface MainLayoutProps {
@@ -6,18 +6,19 @@ interface MainLayoutProps {
   title?: string
 }
 
-export default function MainLayout({ children, title = 'CRM Dashboard' }: MainLayoutProps) {
+export const MainLayout: FC<MainLayoutProps> = ({
+  children,
+  title = 'B2B CRM'
+}) => {
   return (
     <>
       <Head>
         <title>{title}</title>
-        <meta name="description" content="B2B CRM Dashboard" />
-        <link rel="icon" href="/favicon.ico" />
       </Head>
-
-      <div className="layout">
-        {/* 這裡添加導航欄、側邊欄等 */}
-        <main>{children}</main>
+      <div className="min-h-screen bg-gray-50">
+        <main className="container mx-auto px-4 py-8">
+          {children}
+        </main>
       </div>
     </>
   )

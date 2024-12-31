@@ -2,6 +2,7 @@ import type { NextPage } from 'next'
 import { useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { useAuth } from '@/hooks/useAuth'
+import { MainLayout } from '@/layouts/MainLayout'
 
 const Home: NextPage = () => {
   const router = useRouter()
@@ -22,7 +23,7 @@ const Home: NextPage = () => {
 
   // 主要內容
   return (
-    <main className="container mx-auto px-4 py-8">
+    <MainLayout title="首頁 - B2B CRM">
       <h1 className="text-2xl font-bold mb-4">
         歡迎使用 B2B CRM 平台
       </h1>
@@ -33,7 +34,7 @@ const Home: NextPage = () => {
           {/* 這裡可以添加儀表板內容 */}
         </div>
       </section>
-    </main>
+    </MainLayout>
   )
 }
 
