@@ -35,6 +35,8 @@ export function useAuth() {
       const localToken = localStorage.getItem('token')
       const token = cookieToken || localToken
 
+      console.log('Checking auth with token:', token ? 'exists' : 'not found')
+
       if (!token) {
         setIsAuthenticated(false)
         setUser(null)
@@ -49,32 +51,36 @@ export function useAuth() {
         Cookies.set('token', localToken, { path: '/' })
       }
 
-      const response = await fetch('/api/auth/verify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        credentials: 'include'
-      })
+      try {
+        const response = await fetch('/api/auth/verify', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          credentials: 'include'
+        })
 
-      if (response.ok) {
-        const data = await response.json()
-        console.log('Auth check response:', data)
-        
-        if (data.user) {
-          setIsAuthenticated(true)
-          setUser(data.user)
+        if (response.ok) {
+          const data = await response.json()
+          console.log('Auth check response:', data)
+          
+          if (data.user) {
+            setIsAuthenticated(true)
+            setUser(data.user)
+          } else {
+            throw new Error('無效的用戶資料')
+          }
         } else {
-          throw new Error('無效的用戶資料')
+          throw new Error('驗證失敗')
         }
-      } else {
+      } catch (error) {
+        console.error('Token verification failed:', error)
         // 如果驗證失敗，清除 token
         Cookies.remove('token', { path: '/' })
         localStorage.removeItem('token')
         setIsAuthenticated(false)
         setUser(null)
-        throw new Error('驗證失敗')
       }
     } catch (error) {
       console.error('Auth check failed:', error)
@@ -135,7 +141,7 @@ export function useAuth() {
       if (data.token) {
         // 先設定 token
         localStorage.setItem('token', data.token)
-        document.cookie = `token=${data.token}; path=/`
+        Cookies.set('token', data.token, { path: '/' })
         
         // 更新用戶狀態
         setUser(data.user)
