@@ -11,6 +11,8 @@ interface User {
   id: string
   email: string
   role: 'admin' | 'user'
+  name: string
+  status: string
 }
 
 export function useAuth() {
@@ -135,7 +137,9 @@ export function useAuth() {
     }
   }
 
-  const isAdmin = () => user?.role === 'admin'
+  const isAdmin = () => {
+    return user?.role === 'admin' && user?.status === 'active'
+  }
 
   return { isAuthenticated, loading, user, login, logout, isAdmin }
 } 
