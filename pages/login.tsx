@@ -40,7 +40,8 @@ const Login: NextPage = () => {
 
       if (result.success) {
         console.log('Login successful, redirecting to dashboard')
-        window.location.href = '/dashboard'
+        router.push('/dashboard')
+        return
       } else {
         if (result.notRegistered) {
           setShowRegisterPrompt(true)

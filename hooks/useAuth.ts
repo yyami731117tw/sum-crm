@@ -2,68 +2,127 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/router'
 import { getSession, clearSession } from '../utils/auth'
 import type { UserSession } from '../utils/auth'
+import Cookies from 'js-cookie'
+
+interface LoginCredentials {
+  email: string
+  password?: string
+  step: number
+}
 
 export function useAuth() {
-  const router = useRouter()
   const [user, setUser] = useState<UserSession | null>(null)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
-  // 檢查會話狀態
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const session = await getSession()
-        setUser(session)
-      } catch (error) {
-        console.error('Session check failed:', error)
-        setUser(null)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    checkSession()
+    checkAuth()
   }, [])
 
-  // 登出功能
-  const logout = useCallback(async () => {
+  const checkAuth = async () => {
     try {
-      const response = await fetch('/api/auth/logout', {
+      const token = Cookies.get('token')
+      
+      if (!token) {
+        setIsAuthenticated(false)
+        setUser(null)
+        setLoading(false)
+        return
+      }
+
+      try {
+        const response = await fetch('/api/auth/verify', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setUser(data.user)
+          setIsAuthenticated(true)
+        } else {
+          Cookies.remove('token')
+          setIsAuthenticated(false)
+          setUser(null)
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error)
+        Cookies.remove('token')
+        setIsAuthenticated(false)
+        setUser(null)
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const login = async ({ email, password, step }: LoginCredentials) => {
+    try {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({ email, password, step })
       })
 
-      if (!response.ok) {
-        throw new Error('登出請求失敗')
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        if (data.token) {
+          Cookies.set('token', data.token, { 
+            expires: 1,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax'
+          })
+          setUser(data.user)
+          setIsAuthenticated(true)
+          return { success: true }
+        }
       }
 
-      // 清除本地會話
-      clearSession()
-      setUser(null)
-
-      // 重定向到登入頁面
-      router.push('/login')
-    } catch (error) {
-      console.error('Logout failed:', error)
-      throw error
+      return {
+        success: false,
+        error: data.error,
+        message: data.message,
+        exists: data.exists,
+        notRegistered: data.error === 'NOT_REGISTERED'
+      }
+    } catch (error: any) {
+      console.error('Login error:', error)
+      return {
+        success: false,
+        error: 'UNKNOWN_ERROR',
+        message: '登入時發生錯誤，請稍後再試'
+      }
     }
-  }, [router])
+  }
 
-  // 檢查是否是管理員
-  const isAdmin = useCallback(() => {
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+    } catch (error) {
+      console.error('Logout error:', error)
+    } finally {
+      Cookies.remove('token')
+      setUser(null)
+      setIsAuthenticated(false)
+      router.push('/login')
+    }
+  }
+
+  const isAdmin = () => {
     return user?.role === 'admin'
-  }, [user])
-
-  // 檢查是否已認證
-  const isAuthenticated = Boolean(user)
+  }
 
   return {
     user,
-    loading,
     isAuthenticated,
-    isAdmin,
-    logout
+    loading,
+    login,
+    logout,
+    isAdmin
   }
 } 
