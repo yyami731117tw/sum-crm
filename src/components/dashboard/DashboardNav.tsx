@@ -2,25 +2,28 @@ import type { FC } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useAuth } from '@/hooks/useAuth'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export const DashboardNav: FC = () => {
-  const { isAdmin, logout } = useAuth()
+  const { isAdmin, logout, user } = useAuth()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+
+  useEffect(() => {
+    console.log('DashboardNav - Current user:', user)
+    console.log('DashboardNav - Is admin?', isAdmin())
+  }, [user, isAdmin])
 
   const handleLogout = () => {
     if (isLoggingOut) return
     
     setIsLoggingOut(true)
-    
-    // 立即跳轉到登入頁面
-    window.location.replace('/login')
-    
-    // 在背景執行登出
     logout().catch(error => {
       console.error('登出失敗:', error)
+      setIsLoggingOut(false)
     })
   }
+
+  const showAdminMenu = isAdmin()
 
   return (
     <nav className="bg-white shadow">
@@ -45,7 +48,7 @@ export const DashboardNav: FC = () => {
               <NavLink href="/members">會員管理</NavLink>
               <NavLink href="/contracts">合約管理</NavLink>
               <NavLink href="/projects">項目管理</NavLink>
-              {isAdmin() && (
+              {showAdminMenu && (
                 <NavLink href="/admin/people">人員管理</NavLink>
               )}
             </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Cookies from 'js-cookie'
+import axios from 'axios'
 
 interface LoginCredentials {
   email: string
@@ -45,20 +46,27 @@ export function useAuth() {
       if (cookieToken && !localToken) {
         localStorage.setItem('token', cookieToken)
       } else if (!cookieToken && localToken) {
-        Cookies.set('token', localToken)
+        Cookies.set('token', localToken, { path: '/' })
       }
 
       const response = await fetch('/api/auth/verify', {
+        method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        credentials: 'include'
       })
 
       if (response.ok) {
         const data = await response.json()
+        console.log('Auth check response:', data)
         setIsAuthenticated(true)
         setUser(data.user)
       } else {
+        // 如果驗證失敗，清除 token
+        Cookies.remove('token', { path: '/' })
+        localStorage.removeItem('token')
         setIsAuthenticated(false)
         setUser(null)
       }
@@ -135,30 +143,30 @@ export function useAuth() {
 
   const logout = async () => {
     try {
-      // 清除 cookie
-      Cookies.remove('token')
-      
-      // 清除本地存儲
-      localStorage.removeItem('token')
-      
-      // 更新狀態
-      setIsAuthenticated(false)
+      // 先清除本地狀態
       setUser(null)
+      localStorage.removeItem('token')
+      document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
       
-      // 呼叫登出 API
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include'
-      })
+      // 立即重定向到登入頁面
+      window.location.replace('/login')
       
+      // 在背景執行登出 API 請求
+      await axios.post('/api/auth/logout')
     } catch (error) {
       console.error('登出時發生錯誤:', error)
-      throw error
+      // 即使 API 請求失敗，也確保用戶被重定向到登入頁面
+      window.location.replace('/login')
     }
   }
 
   const isAdmin = () => {
-    return Boolean(user && user.role === 'admin')
+    // 加入除錯日誌
+    console.log('Current user:', user)
+    console.log('Is admin?', Boolean(user?.role === 'admin'))
+    
+    // 確保 user 存在且角色是 admin
+    return Boolean(user?.role === 'admin')
   }
 
   return { isAuthenticated, loading, user, login, logout, isAdmin }
