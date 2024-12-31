@@ -18,6 +18,7 @@ const Login: NextPage = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
+      console.log('User is authenticated, redirecting to dashboard')
       router.replace('/dashboard')
     }
   }, [isAuthenticated, router])
@@ -29,14 +30,17 @@ const Login: NextPage = () => {
     setLoading(true)
 
     try {
+      console.log('Attempting login:', { email, step: showPassword ? 2 : 1 })
       const result = await login({ 
         email, 
         password,
         step: showPassword ? 2 : 1 
       })
+      console.log('Login result:', result)
 
       if (result.success) {
-        router.replace('/dashboard')
+        console.log('Login successful, redirecting to dashboard')
+        window.location.href = '/dashboard'
       } else {
         if (result.notRegistered) {
           setShowRegisterPrompt(true)
@@ -53,6 +57,7 @@ const Login: NextPage = () => {
         }
       }
     } catch (err: any) {
+      console.error('Login error:', err)
       setError(err.message || '登入時發生錯誤，請稍後再試')
     } finally {
       setLoading(false)

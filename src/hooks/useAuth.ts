@@ -90,7 +90,7 @@ export function useAuth() {
 
   const login = async ({ email, password, step }: LoginCredentials) => {
     try {
-      const response = await fetch(`${baseUrl}/api/auth/login`, {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -99,6 +99,7 @@ export function useAuth() {
       })
 
       const data = await response.json()
+      console.log('Login response:', data)
 
       if (response.status === 404 && data.error === 'NOT_REGISTERED') {
         return { 
@@ -140,9 +141,7 @@ export function useAuth() {
         setUser(data.user)
         setIsAuthenticated(true)
         
-        // 觸發重新驗證
-        await checkAuth()
-        
+        console.log('Login successful:', data.user)
         return { success: true }
       }
 
