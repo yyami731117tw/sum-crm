@@ -54,14 +54,16 @@ const Signup: NextPage = () => {
         {/* 左側歡迎區塊 */}
         <div className="hidden lg:flex lg:w-1/2 bg-[#003B6D] text-white">
           <div className="w-full flex flex-col items-center justify-center p-12">
-            <Image
-              src="/logo.png"
-              alt="MBC Logo"
-              width={120}
-              height={120}
-              className="mb-8"
-              unoptimized
-            />
+            <div className="w-32 h-32 flex items-center justify-center mb-8">
+              <Image
+                src="/logo.png"
+                alt="MBC Logo"
+                width={120}
+                height={120}
+                className="w-32 h-32"
+                priority
+              />
+            </div>
             <h1 className="text-4xl font-bold mb-4">歡迎您成為</h1>
             <h2 className="text-3xl font-bold mb-8">MBC天使俱樂部的夥伴</h2>
             <p className="text-lg text-center max-w-md opacity-80">
