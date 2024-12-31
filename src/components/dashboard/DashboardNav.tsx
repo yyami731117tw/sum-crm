@@ -13,14 +13,10 @@ export const DashboardNav: FC = () => {
     
     setIsLoggingOut(true)
     
-    // 清除本地存儲和 cookie
-    localStorage.removeItem('token')
-    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
-    
     // 立即跳轉到登入頁面
-    window.location.href = '/login'
+    window.location.replace('/login')
     
-    // 在背景執行登出 API
+    // 在背景執行登出
     logout().catch(error => {
       console.error('登出失敗:', error)
     })

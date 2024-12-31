@@ -29,7 +29,11 @@ export function useAuth() {
 
   const checkAuth = async () => {
     try {
-      const token = localStorage.getItem('token')
+      // 優先從 cookie 中獲取 token
+      const cookieToken = Cookies.get('token')
+      const localToken = localStorage.getItem('token')
+      const token = cookieToken || localToken
+
       if (!token) {
         setIsAuthenticated(false)
         setUser(null)
@@ -37,7 +41,14 @@ export function useAuth() {
         return
       }
 
-      const response = await fetch(`${baseUrl}/api/auth/verify`, {
+      // 如果只有其中一個 token，同步另一個
+      if (cookieToken && !localToken) {
+        localStorage.setItem('token', cookieToken)
+      } else if (!cookieToken && localToken) {
+        Cookies.set('token', localToken)
+      }
+
+      const response = await fetch('/api/auth/verify', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -50,8 +61,6 @@ export function useAuth() {
       } else {
         setIsAuthenticated(false)
         setUser(null)
-        localStorage.removeItem('token')
-        document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
       }
     } catch (error) {
       console.error('Auth check failed:', error)
