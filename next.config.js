@@ -4,6 +4,7 @@ const nextConfig = {
   swcMinify: true,
   poweredByHeader: false,
   images: {
+    domains: [],
     unoptimized: true
   },
   // 生產環境配置

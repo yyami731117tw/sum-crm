@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { useAuth } from '@/hooks/useAuth'
 
 export const DashboardNav: FC = () => {
-  const { isAdmin } = useAuth()
+  const { isAdmin, logout } = useAuth()
 
   return (
     <nav className="bg-white shadow">
@@ -12,14 +12,16 @@ export const DashboardNav: FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-8">
             <Link href="/" className="flex items-center space-x-3">
-              <Image
-                src="/logo.png"
-                alt="MBC Logo"
-                width={40}
-                height={40}
-                className="w-full h-full object-contain"
-                unoptimized
-              />
+              <div className="relative w-10 h-10">
+                <Image
+                  src="/logo.png"
+                  alt="MBC Logo"
+                  fill
+                  sizes="40px"
+                  priority
+                  className="object-contain"
+                />
+              </div>
               <span className="text-xl font-semibold text-gray-900 whitespace-nowrap">MBC天使俱樂部</span>
             </Link>
             <div className="flex items-center space-x-6">
@@ -43,6 +45,13 @@ export const DashboardNav: FC = () => {
             <button className="text-gray-600 hover:text-gray-900">
               <span className="sr-only">設定</span>
               ⚙️
+            </button>
+            <button
+              onClick={logout}
+              className="text-gray-600 hover:text-gray-900 flex items-center space-x-1"
+            >
+              <span>登出</span>
+              <span>🚪</span>
             </button>
           </div>
         </div>

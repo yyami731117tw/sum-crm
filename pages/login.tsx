@@ -38,17 +38,24 @@ const Login: NextPage = () => {
       if (!result.success) {
         if (result.notRegistered) {
           setShowRegisterPrompt(true)
+          setError('此電子郵件尚未註冊')
         } else if (result.exists) {
           setShowPassword(true)
           setError('')
+        } else {
+          setError(result.error || '登入失敗')
         }
-        setError(result.error || '登入失敗')
       }
     } catch (err) {
       setError('登入時發生錯誤，請稍後再試')
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSignup = (e: React.MouseEvent) => {
+    e.preventDefault()
+    router.push('/signup')
   }
 
   return (
@@ -64,11 +71,10 @@ const Login: NextPage = () => {
               <Image
                 src="/logo.png"
                 alt="MBC Logo"
-                width={96}
-                height={96}
+                fill
+                sizes="96px"
                 priority
-                className="w-full h-full object-contain"
-                unoptimized
+                className="object-contain"
               />
             </div>
             <h1 className="mt-4 text-2xl font-bold text-gray-900">
@@ -91,12 +97,12 @@ const Login: NextPage = () => {
                 {error}
                 {showRegisterPrompt && (
                   <div className="mt-2">
-                    <Link
-                      href="/signup"
+                    <button
+                      onClick={handleSignup}
                       className="font-medium text-blue-600 hover:text-blue-500"
                     >
                       立即註冊 →
-                    </Link>
+                    </button>
                   </div>
                 )}
               </div>
@@ -183,9 +189,12 @@ const Login: NextPage = () => {
           <div className="text-center">
             <p className="text-sm text-gray-600">
               還沒有帳號？{' '}
-              <Link href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
+              <button
+                onClick={handleSignup}
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
                 立即註冊
-              </Link>
+              </button>
             </p>
           </div>
         </div>
