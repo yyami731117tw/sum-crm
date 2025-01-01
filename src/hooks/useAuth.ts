@@ -18,7 +18,6 @@ interface LoginResponse {
   success: boolean
   error?: string
   message?: string
-  exists?: boolean
   token?: string
   user?: User
 }
@@ -38,14 +37,20 @@ export function useAuth() {
         setUser(data.user)
       } else {
         setUser(null)
+        if (router.pathname !== '/login' && router.pathname !== '/signup' && router.pathname !== '/verify') {
+          router.push('/login')
+        }
       }
     } catch (error) {
       console.error('Auth check error:', error)
       setUser(null)
+      if (router.pathname !== '/login' && router.pathname !== '/signup' && router.pathname !== '/verify') {
+        router.push('/login')
+      }
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [router])
 
   useEffect(() => {
     checkAuth()
@@ -63,12 +68,9 @@ export function useAuth() {
 
       const data = await response.json()
 
-      if (response.ok) {
-        if (data.token && data.user) {
-          setUser(data.user)
-          // 登入成功後重定向到首頁
-          router.push('/')
-        }
+      if (response.ok && data.success) {
+        setUser(data.user)
+        router.push('/')
         return data
       }
 

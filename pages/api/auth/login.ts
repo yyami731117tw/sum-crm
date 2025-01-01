@@ -57,6 +57,12 @@ export default async function handler(
       { expiresIn: '1d' }
     )
 
+    // 設置 cookie
+    res.setHeader(
+      'Set-Cookie',
+      `auth=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=86400`
+    )
+
     // 返回用戶資訊（不包含密碼）
     const { password: _, ...userWithoutPassword } = user
 
