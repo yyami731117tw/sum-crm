@@ -21,131 +21,37 @@ interface ApiResponse<T = any> {
   data?: T
 }
 
+// 模擬的管理員用戶
+const mockAdminUser: User = {
+  id: '1',
+  email: 'admin@mbc.com',
+  name: '管理員',
+  role: 'admin' as Role
+}
+
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<User | null>(mockAdminUser) // 預設為管理員
+  const [loading, setLoading] = useState(false) // 預設為 false
   const router = useRouter()
 
-  useEffect(() => {
-    checkAuth()
-  }, [])
-
+  // 移除 useEffect，不再自動檢查認證狀態
+  
   const checkAuth = async () => {
-    try {
-      const response = await fetch('/api/auth/check', {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json'
-        },
-        credentials: 'same-origin'
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'Auth check failed')
-      }
-
-      const data = await response.json()
-
-      if (data.success) {
-        setUser(data.user)
-      } else {
-        setUser(null)
-        if (!isPublicRoute(router.pathname)) {
-          router.push('/login')
-        }
-      }
-    } catch (error) {
-      console.error('Auth check error:', error)
-      setUser(null)
-      if (!isPublicRoute(router.pathname)) {
-        router.push('/login')
-      }
-    } finally {
-      setLoading(false)
-    }
+    // 直接返回成功
+    return { success: true }
   }
 
   const login = async ({ email, password }: LoginCredentials) => {
-    try {
-      if (!email || !password) {
-        return {
-          success: false,
-          error: 'MISSING_CREDENTIALS',
-          message: '請輸入電子郵件和密碼'
-        }
-      }
-
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        credentials: 'same-origin',
-        body: JSON.stringify({ email, password })
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        return {
-          success: false,
-          error: data.error || 'API_ERROR',
-          message: data.message || '登入失敗'
-        }
-      }
-
-      if (data.success) {
-        setUser(data.user)
-        return { success: true }
-      }
-
-      return {
-        success: false,
-        error: data.error,
-        message: data.message
-      }
-    } catch (error) {
-      console.error('Login error:', error)
-      return {
-        success: false,
-        error: 'UNKNOWN_ERROR',
-        message: '登入時發生錯誤'
-      }
-    }
+    // 直接返回成功
+    setUser(mockAdminUser)
+    return { success: true }
   }
 
   const logout = async () => {
-    try {
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json'
-        },
-        credentials: 'same-origin'
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Logout failed')
-      }
-
-      if (data.success) {
-        setUser(null)
-        router.push('/login')
-      }
-
-      return data
-    } catch (error) {
-      console.error('Logout error:', error)
-      return {
-        success: false,
-        error: 'LOGOUT_FAILED',
-        message: '登出時發生錯誤'
-      }
-    }
+    // 清除用戶狀態並導向登入頁
+    setUser(null)
+    router.push('/login')
+    return { success: true }
   }
 
   const isPublicRoute = (pathname: string) => {
