@@ -58,6 +58,14 @@ export function useAuth() {
     return ['/login', '/signup', '/verify', '/terms', '/privacy'].includes(pathname)
   }
 
+  const isAuthenticated = () => {
+    return !!user
+  }
+
+  const isAdmin = () => {
+    return user?.role === 'admin'
+  }
+
   // 權限檢查函數
   const checkPermission = (permission: Permission) => {
     if (!user) return false
@@ -82,6 +90,8 @@ export function useAuth() {
     checkPermission,
     checkAnyPermission,
     checkAllPermissions,
-    checkAuth
+    checkAuth,
+    isAuthenticated,
+    isAdmin
   }
 } 
