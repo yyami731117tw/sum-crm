@@ -1,5 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import jwt from 'jsonwebtoken'
+import cookie from 'cookie'
+import { Role } from '@/utils/permissions'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 
@@ -8,9 +10,9 @@ const mockUsers = [
   {
     id: '1',
     email: 'admin@mbc.com',
-    password: 'admin123',
+    password: 'Admin123',
     name: '管理員',
-    role: 'admin',
+    role: 'admin' as Role,
     status: 'active'
   }
 ]
@@ -46,6 +48,15 @@ export default async function handler(
       })
     }
 
+    // 檢查用戶狀態
+    if (user.status !== 'active') {
+      return res.status(401).json({
+        success: false,
+        error: 'ACCOUNT_INACTIVE',
+        message: '帳號未啟用'
+      })
+    }
+
     // 生成 JWT token
     const token = jwt.sign(
       { 
@@ -60,7 +71,13 @@ export default async function handler(
     // 設置 cookie
     res.setHeader(
       'Set-Cookie',
-      `auth=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=86400`
+      cookie.serialize('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 86400,
+        path: '/'
+      })
     )
 
     // 返回用戶資訊（不包含密碼）
@@ -68,7 +85,6 @@ export default async function handler(
 
     return res.status(200).json({
       success: true,
-      token,
       user: userWithoutPassword
     })
   } catch (error) {

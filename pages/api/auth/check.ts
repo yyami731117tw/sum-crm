@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import jwt from 'jsonwebtoken'
+import { Role } from '@/utils/permissions'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 
@@ -8,9 +9,9 @@ const mockUsers = [
   {
     id: '1',
     email: 'admin@mbc.com',
-    password: 'admin123',
+    password: 'Admin123',
     name: '管理員',
-    role: 'admin',
+    role: 'admin' as Role,
     status: 'active'
   }
 ]
@@ -25,20 +26,25 @@ export default async function handler(
 
   try {
     // 從 cookie 中獲取 token
-    const token = req.cookies.auth
+    const token = req.cookies.token
 
     if (!token) {
       return res.status(401).json({ success: false, message: '未登入' })
     }
 
     // 驗證 token
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string; role: string }
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string; role: Role }
 
     // 查找用戶
     const user = mockUsers.find(u => u.id === decoded.userId)
 
     if (!user) {
       return res.status(401).json({ success: false, message: '用戶不存在' })
+    }
+
+    // 檢查用戶狀態
+    if (user.status !== 'active') {
+      return res.status(401).json({ success: false, message: '帳號未啟用' })
     }
 
     // 返回用戶資訊（不包含密碼）
