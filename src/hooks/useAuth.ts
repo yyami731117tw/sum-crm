@@ -32,22 +32,14 @@ export function useAuth() {
         setUser(data.user)
       } else {
         setUser(null)
-        if (router.pathname !== '/login' && 
-            router.pathname !== '/signup' && 
-            router.pathname !== '/verify' && 
-            router.pathname !== '/terms' && 
-            router.pathname !== '/privacy') {
+        if (!isPublicRoute(router.pathname)) {
           router.push('/login')
         }
       }
     } catch (error) {
       console.error('Auth check error:', error)
       setUser(null)
-      if (router.pathname !== '/login' && 
-          router.pathname !== '/signup' && 
-          router.pathname !== '/verify' && 
-          router.pathname !== '/terms' && 
-          router.pathname !== '/privacy') {
+      if (!isPublicRoute(router.pathname)) {
         router.push('/login')
       }
     } finally {
@@ -62,6 +54,7 @@ export function useAuth() {
         headers: {
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({ email, password })
       })
 
@@ -81,6 +74,7 @@ export function useAuth() {
       console.error('Login error:', error)
       return {
         success: false,
+        error: 'UNKNOWN_ERROR',
         message: '登入時發生錯誤'
       }
     }
@@ -89,19 +83,29 @@ export function useAuth() {
   const logout = async () => {
     try {
       const response = await fetch('/api/auth/logout', {
-        method: 'POST'
+        method: 'POST',
+        credentials: 'include'
       })
 
-      if (!response.ok) {
-        throw new Error('登出失敗')
+      const data = await response.json()
+
+      if (data.success) {
+        setUser(null)
+        router.push('/login')
       }
 
-      setUser(null)
-      router.push('/login')
+      return data
     } catch (error) {
       console.error('Logout error:', error)
-      throw error
+      return {
+        success: false,
+        message: '登出時發生錯誤'
+      }
     }
+  }
+
+  const isPublicRoute = (pathname: string) => {
+    return ['/login', '/signup', '/verify', '/terms', '/privacy'].includes(pathname)
   }
 
   // 權限檢查函數
@@ -127,6 +131,7 @@ export function useAuth() {
     logout,
     checkPermission,
     checkAnyPermission,
-    checkAllPermissions
+    checkAllPermissions,
+    checkAuth
   }
 } 
