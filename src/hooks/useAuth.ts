@@ -14,6 +14,13 @@ interface LoginCredentials {
   password: string
 }
 
+interface ApiResponse<T = any> {
+  success: boolean
+  error?: string
+  message?: string
+  data?: T
+}
+
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
@@ -25,7 +32,14 @@ export function useAuth() {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('/api/auth/check')
+      const response = await fetch('/api/auth/check', {
+        credentials: 'include'
+      })
+
+      if (!response.ok) {
+        throw new Error('Auth check failed')
+      }
+
       const data = await response.json()
 
       if (data.success) {
@@ -49,6 +63,14 @@ export function useAuth() {
 
   const login = async ({ email, password }: LoginCredentials) => {
     try {
+      if (!email || !password) {
+        return {
+          success: false,
+          error: 'MISSING_CREDENTIALS',
+          message: '請輸入電子郵件和密碼'
+        }
+      }
+
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -58,9 +80,18 @@ export function useAuth() {
         body: JSON.stringify({ email, password })
       })
 
+      if (!response.ok) {
+        const errorData = await response.json()
+        return {
+          success: false,
+          error: errorData.error || 'API_ERROR',
+          message: errorData.message || '登入失敗'
+        }
+      }
+
       const data = await response.json()
 
-      if (response.ok && data.success) {
+      if (data.success) {
         setUser(data.user)
         return { success: true }
       }
@@ -87,6 +118,10 @@ export function useAuth() {
         credentials: 'include'
       })
 
+      if (!response.ok) {
+        throw new Error('Logout failed')
+      }
+
       const data = await response.json()
 
       if (data.success) {
@@ -99,6 +134,7 @@ export function useAuth() {
       console.error('Logout error:', error)
       return {
         success: false,
+        error: 'LOGOUT_FAILED',
         message: '登出時發生錯誤'
       }
     }

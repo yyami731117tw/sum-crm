@@ -23,11 +23,15 @@ export default async function handler(
 ) {
   // 設置 CORS 頭
   res.setHeader('Access-Control-Allow-Credentials', 'true')
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
+  // 在開發環境中使用具體的域名
+  const origin = process.env.NODE_ENV === 'development' 
+    ? 'http://localhost:3000' 
+    : process.env.NEXT_PUBLIC_BASE_URL
+  res.setHeader('Access-Control-Allow-Origin', origin || '*')
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    'Content-Type, Authorization'
   )
 
   // 處理 OPTIONS 請求
@@ -37,12 +41,24 @@ export default async function handler(
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ success: false, message: '方法不允許' })
+    return res.status(405).json({ 
+      success: false, 
+      error: 'METHOD_NOT_ALLOWED',
+      message: '方法不允許' 
+    })
   }
 
-  const { email, password } = req.body
-
   try {
+    const { email, password } = req.body
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'MISSING_CREDENTIALS',
+        message: '請輸入電子郵件和密碼'
+      })
+    }
+
     // 檢查是否有此用戶
     const user = mockUsers.find(u => u.email === email)
     
@@ -98,14 +114,15 @@ export default async function handler(
     // 返回用戶資訊（不包含密碼）
     const { password: _, ...userWithoutPassword } = user
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       user: userWithoutPassword
     })
   } catch (error) {
     console.error('Login error:', error)
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
+      error: 'SERVER_ERROR',
       message: '登入時發生錯誤'
     })
   }
