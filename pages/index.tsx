@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
 const Home: NextPage = () => {
-  const { user, loading } = useAuth()
+  const { user, loading, logout } = useAuth()
   const router = useRouter()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
@@ -18,18 +18,8 @@ const Home: NextPage = () => {
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true)
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-
-      if (response.ok) {
-        router.push('/login')
-      } else {
-        console.error('登出失敗')
-      }
+      await logout()
+      router.push('/login')
     } catch (error) {
       console.error('登出時發生錯誤:', error)
     } finally {

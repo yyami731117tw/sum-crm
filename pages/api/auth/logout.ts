@@ -10,16 +10,25 @@ export default async function handler(
   }
 
   try {
-    // 清除 token cookie
+    // 清除 auth cookie
     res.setHeader(
       'Set-Cookie',
-      cookie.serialize('token', '', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV !== 'development',
-        expires: new Date(0),
-        sameSite: 'strict',
-        path: '/'
-      })
+      [
+        cookie.serialize('auth', '', {
+          httpOnly: true,
+          secure: process.env.NODE_ENV !== 'development',
+          expires: new Date(0),
+          sameSite: 'strict',
+          path: '/'
+        }),
+        cookie.serialize('token', '', {
+          httpOnly: true,
+          secure: process.env.NODE_ENV !== 'development',
+          expires: new Date(0),
+          sameSite: 'strict',
+          path: '/'
+        })
+      ]
     )
 
     return res.status(200).json({ message: '登出成功' })
