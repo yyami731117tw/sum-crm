@@ -74,9 +74,10 @@ export function useAuth() {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
-        credentials: 'include',
+        credentials: 'same-origin',
         body: JSON.stringify({ email, password })
       })
 
@@ -115,7 +116,7 @@ export function useAuth() {
     try {
       const response = await fetch('/api/auth/logout', {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'same-origin'
       })
 
       if (!response.ok) {

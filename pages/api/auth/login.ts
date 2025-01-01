@@ -23,15 +23,11 @@ export default async function handler(
 ) {
   // 設置 CORS 頭
   res.setHeader('Access-Control-Allow-Credentials', 'true')
-  // 在開發環境中使用具體的域名
-  const origin = process.env.NODE_ENV === 'development' 
-    ? 'http://localhost:3000' 
-    : process.env.NEXT_PUBLIC_BASE_URL
-  res.setHeader('Access-Control-Allow-Origin', origin || '*')
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '')
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'Content-Type, Authorization'
+    'Content-Type, Accept'
   )
 
   // 處理 OPTIONS 請求
@@ -105,7 +101,7 @@ export default async function handler(
       cookie.serialize('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'strict',
         maxAge: 86400,
         path: '/'
       })
