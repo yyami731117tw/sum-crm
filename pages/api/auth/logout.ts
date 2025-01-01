@@ -1,32 +1,30 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
-import { logger } from '../../../utils/logger'
+import { NextApiRequest, NextApiResponse } from 'next'
+import cookie from 'cookie'
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: '方法不允許' })
+    return res.status(405).json({ message: '只允許 POST 請求' })
   }
 
   try {
-    // 清除 session cookie
+    // 清除 token cookie
     res.setHeader(
       'Set-Cookie',
-      'auth_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax'
+      cookie.serialize('token', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV !== 'development',
+        expires: new Date(0),
+        sameSite: 'strict',
+        path: '/'
+      })
     )
 
-    logger.info('User logged out successfully')
-    
-    return res.status(200).json({
-      success: true,
-      message: '登出成功'
-    })
+    return res.status(200).json({ message: '登出成功' })
   } catch (error) {
-    logger.error('Logout error', { error: error as Error })
-    return res.status(500).json({
-      success: false,
-      message: '登出時發生錯誤'
-    })
+    console.error('登出時發生錯誤:', error)
+    return res.status(500).json({ message: '登出時發生錯誤' })
   }
 } 

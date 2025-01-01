@@ -1,19 +1,41 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import Link from 'next/link'
 import { useAuth } from '../src/hooks/useAuth'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
 const Home: NextPage = () => {
   const { user, loading } = useAuth()
   const router = useRouter()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login')
     }
   }, [loading, user, router])
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true)
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (response.ok) {
+        router.push('/login')
+      } else {
+        console.error('登出失敗')
+      }
+    } catch (error) {
+      console.error('登出時發生錯誤:', error)
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -27,89 +49,85 @@ const Home: NextPage = () => {
     return null
   }
 
-  const menuItems = [
-    {
-      title: '會員資料',
-      description: '查看和管理會員個人資料',
-      href: '/members',
-      icon: (
-        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
-      )
-    },
-    {
-      title: '項目管理',
-      description: '管理投資項目和相關資訊',
-      href: '/projects',
-      icon: (
-        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-        </svg>
-      )
-    },
-    {
-      title: '合約管理',
-      description: '管理投資合約和文件',
-      href: '/contracts',
-      icon: (
-        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      )
-    }
-  ]
-
   return (
     <>
       <Head>
-        <title>首頁 - MBC天使俱樂部</title>
+        <title>首頁 - MBC天使俱樂部管理系統</title>
       </Head>
       <div className="min-h-screen bg-gray-100">
-        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-              MBC天使俱樂部
-            </h1>
-            <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
-              歡迎回來，{user.name}
-            </p>
-          </div>
-
-          <div className="mt-12">
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {menuItems.map((item) => (
-                <Link
-                  key={item.title}
-                  href={item.href}
-                  className="relative group bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-500 rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200"
-                >
-                  <div>
-                    <span className="rounded-lg inline-flex p-3 bg-blue-50 text-blue-700 ring-4 ring-white">
-                      {item.icon}
-                    </span>
-                  </div>
-                  <div className="mt-8">
-                    <h3 className="text-lg font-medium">
-                      <span className="absolute inset-0" aria-hidden="true" />
-                      {item.title}
-                    </h3>
-                    <p className="mt-2 text-sm text-gray-500">
-                      {item.description}
-                    </p>
-                  </div>
-                  <span
-                    className="pointer-events-none absolute top-6 right-6 text-gray-300 group-hover:text-gray-400"
-                    aria-hidden="true"
+        {/* 頂部導航欄 */}
+        <nav className="bg-white shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between h-16">
+              <div className="flex">
+                <div className="flex-shrink-0 flex items-center">
+                  <img
+                    className="h-8 w-auto"
+                    src="/logo.png"
+                    alt="MBC Logo"
+                  />
+                </div>
+                <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+                  <a
+                    href="#"
+                    className="border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                   >
-                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M20 4h1a1 1 0 00-1-1v1zm-1 12a1 1 0 102 0h-2zM8 3a1 1 0 000 2V3zM3.293 19.293a1 1 0 101.414 1.414l-1.414-1.414zM19 4v12h2V4h-2zm1-1H8v2h12V3zm-.707.293l-16 16 1.414 1.414 16-16-1.414-1.414z" />
-                    </svg>
-                  </span>
-                </Link>
-              ))}
+                    首頁
+                  </a>
+                  <a
+                    href="/members"
+                    className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                  >
+                    會員管理
+                  </a>
+                  <a
+                    href="/investments"
+                    className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                  >
+                    投資項目
+                  </a>
+                  <a
+                    href="/contracts"
+                    className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                  >
+                    合約管理
+                  </a>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <button
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    className="relative inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    {isLoggingOut ? '登出中...' : '登出'}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
+        </nav>
+
+        {/* 主要內容區 */}
+        <div className="py-10">
+          <header>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h1 className="text-3xl font-bold leading-tight text-gray-900">
+                歡迎回來，{user.name}
+              </h1>
+            </div>
+          </header>
+          <main>
+            <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+              {/* 這裡可以添加儀表板內容 */}
+              <div className="px-4 py-8 sm:px-0">
+                <div className="border-4 border-dashed border-gray-200 rounded-lg h-96">
+                  {/* 儀表板內容將在這裡添加 */}
+                </div>
+              </div>
+            </div>
+          </main>
         </div>
       </div>
     </>
