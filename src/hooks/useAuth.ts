@@ -33,11 +33,16 @@ export function useAuth() {
   const checkAuth = async () => {
     try {
       const response = await fetch('/api/auth/check', {
-        credentials: 'include'
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        },
+        credentials: 'same-origin'
       })
 
       if (!response.ok) {
-        throw new Error('Auth check failed')
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Auth check failed')
       }
 
       const data = await response.json()
@@ -81,16 +86,15 @@ export function useAuth() {
         body: JSON.stringify({ email, password })
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        const errorData = await response.json()
         return {
           success: false,
-          error: errorData.error || 'API_ERROR',
-          message: errorData.message || '登入失敗'
+          error: data.error || 'API_ERROR',
+          message: data.message || '登入失敗'
         }
       }
-
-      const data = await response.json()
 
       if (data.success) {
         setUser(data.user)
@@ -116,14 +120,17 @@ export function useAuth() {
     try {
       const response = await fetch('/api/auth/logout', {
         method: 'POST',
+        headers: {
+          'Accept': 'application/json'
+        },
         credentials: 'same-origin'
       })
 
-      if (!response.ok) {
-        throw new Error('Logout failed')
-      }
-
       const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Logout failed')
+      }
 
       if (data.success) {
         setUser(null)

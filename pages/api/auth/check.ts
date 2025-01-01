@@ -22,11 +22,11 @@ export default async function handler(
 ) {
   // 設置 CORS 頭
   res.setHeader('Access-Control-Allow-Credentials', 'true')
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    'Content-Type, Accept'
   )
 
   // 處理 OPTIONS 請求
@@ -36,7 +36,11 @@ export default async function handler(
   }
 
   if (req.method !== 'GET') {
-    return res.status(405).json({ success: false, message: '方法不允許' })
+    return res.status(405).json({ 
+      success: false, 
+      error: 'METHOD_NOT_ALLOWED',
+      message: '方法不允許' 
+    })
   }
 
   try {
@@ -44,7 +48,11 @@ export default async function handler(
     const token = req.cookies.token
 
     if (!token) {
-      return res.status(401).json({ success: false, message: '未登入' })
+      return res.status(401).json({ 
+        success: false, 
+        error: 'NOT_AUTHENTICATED',
+        message: '未登入' 
+      })
     }
 
     // 驗證 token
@@ -54,25 +62,34 @@ export default async function handler(
     const user = mockUsers.find(u => u.id === decoded.userId)
 
     if (!user) {
-      return res.status(401).json({ success: false, message: '用戶不存在' })
+      return res.status(401).json({ 
+        success: false, 
+        error: 'USER_NOT_FOUND',
+        message: '用戶不存在' 
+      })
     }
 
     // 檢查用戶狀態
     if (user.status !== 'active') {
-      return res.status(401).json({ success: false, message: '帳號未啟用' })
+      return res.status(401).json({ 
+        success: false, 
+        error: 'ACCOUNT_INACTIVE',
+        message: '帳號未啟用' 
+      })
     }
 
     // 返回用戶資訊（不包含密碼）
     const { password: _, ...userWithoutPassword } = user
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       user: userWithoutPassword
     })
   } catch (error) {
     console.error('Auth check error:', error)
-    res.status(401).json({
+    return res.status(401).json({
       success: false,
+      error: 'AUTHENTICATION_FAILED',
       message: '驗證失敗'
     })
   }
