@@ -1,4 +1,5 @@
 import type { NextPage } from 'next'
+import type { ReactElement } from 'react'
 import Head from 'next/head'
 import { useAuth } from '@/hooks/useAuth'
 import { DashboardNav } from '@/components/dashboard/DashboardNav'
@@ -67,7 +68,7 @@ interface Member {
   taboos?: string[]
   remainingDays?: number
   serviceStaff?: string
-  relationships?: {
+  relationships: {
     name: string
     type: string
     memberNo: string
@@ -89,7 +90,7 @@ interface MemberLog {
   }[]
 }
 
-const MembersPage: NextPage = () => {
+const MembersPage = (): ReactElement => {
   const { user, loading } = useAuth()
   const router = useRouter()
   const [members, setMembers] = useState<Member[]>([])
@@ -145,8 +146,7 @@ const MembersPage: NextPage = () => {
         nationality: '台灣 Taiwan',
         occupation: '科技業',
         notes: '對投資很有興趣',
-        relatedMembers: [],
-        investments: []
+        relationships: []
       }
     ]
     setMembers(mockMembers)
@@ -187,7 +187,8 @@ const MembersPage: NextPage = () => {
       birthday: '',
       joinDate: new Date().toISOString().split('T')[0].replace(/-/g, '/'),
       status: 'active',
-      memberCategory: '一般會員'
+      memberCategory: '一般會員',
+      relationships: []  // Initialize empty relationships array
     }
     setSidebarMember(newMember)
     setIsSidebarOpen(true)
@@ -219,6 +220,8 @@ const MembersPage: NextPage = () => {
   }
 
   const handleSaveMember = () => {
+    if (!sidebarMember) return
+
     // 檢查必填欄位
     if (!sidebarMember.name || !sidebarMember.phone || !sidebarMember.idNumber) {
       alert('請填寫必填欄位：姓名、電話、身分證字號')
@@ -238,9 +241,9 @@ const MembersPage: NextPage = () => {
 
     // 如果是新會員
     if (!sidebarMember.id) {
-      const newMember = {
+      const newMember: Member = {
         ...sidebarMember,
-        id: generateId()
+        id: String(Date.now())  // 使用時間戳作為臨時 ID
       }
       setMembers([...members, newMember])
     } else {
@@ -288,7 +291,7 @@ const MembersPage: NextPage = () => {
   }
 
   // 計算剩餘天數
-  const calculateRemainingDays = (endDate: string) => {
+  const calculateRemainingDays = (endDate: string): number => {
     const end = new Date(endDate.replace(/\//g, '-'))
     const today = new Date()
     const diffTime = end.getTime() - today.getTime()
@@ -297,18 +300,19 @@ const MembersPage: NextPage = () => {
 
   // 當會員期限變更時更新剩餘天數
   const handleMembershipEndDateChange = (endDate: string) => {
+    if (!sidebarMember) return
     const formattedEndDate = endDate.replace(/-/g, '/')
     const remainingDays = calculateRemainingDays(formattedEndDate)
     setSidebarMember({
-      ...sidebarMember!,
+      ...sidebarMember,
       membershipEndDate: formattedEndDate,
       remainingDays
     })
   }
 
   // 修改會員期限警示邏輯
-  const getMembershipStatusDisplay = (remainingDays: number) => {
-    if (remainingDays <= 15) {
+  const getMembershipStatusDisplay = (remainingDays: number | undefined) => {
+    if (remainingDays === undefined || remainingDays <= 15) {
       return {
         color: 'text-orange-600',
         message: '確認會員是否續約'
@@ -325,14 +329,14 @@ const MembersPage: NextPage = () => {
     }
   }
 
-  const getRemainingDaysColor = (days: number) => {
-    if (days <= 0) return 'text-red-600 font-medium'
+  const getRemainingDaysColor = (days: number | undefined) => {
+    if (days === undefined || days <= 0) return 'text-red-600 font-medium'
     if (days <= 30) return 'text-yellow-600'
     return 'text-gray-600'
   }
 
-  const getRemainingDaysMessage = (days: number) => {
-    if (days <= 0) return '已到期'
+  const getRemainingDaysMessage = (days: number | undefined) => {
+    if (days === undefined || days <= 0) return '已到期'
     if (days <= 30) return '即將到期'
     return ''
   }
@@ -1112,7 +1116,7 @@ const MembersPage: NextPage = () => {
                         <dt className="text-sm font-medium text-gray-500">關係人列表</dt>
                         <dd className="mt-1">
                           <div className="border border-gray-200 rounded-md">
-                            {sidebarMember.relationships && sidebarMember.relationships.length > 0 ? (
+                            {(sidebarMember?.relationships || []).length > 0 ? (
                               <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
                                   <tr>
@@ -1124,12 +1128,13 @@ const MembersPage: NextPage = () => {
                                   </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                  {sidebarMember.relationships.map((relationship, index) => (
-                                    <tr key={index}>
+                                  {(sidebarMember?.relationships || []).map((relationship, index) => (
+                                    <tr key={`relationship-${index}`}>
                                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         <select
                                           value={relationship.memberNo}
                                           onChange={(e) => {
+                                            if (!sidebarMember) return
                                             const selectedMember = members.find(m => m.memberNo === e.target.value)
                                             const newRelationships = [...sidebarMember.relationships]
                                             newRelationships[index] = {
@@ -1145,7 +1150,7 @@ const MembersPage: NextPage = () => {
                                           className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                                         >
                                           <option value="">請選擇會員</option>
-                                          {members.filter(m => m.memberNo !== sidebarMember.memberNo).map(member => (
+                                          {members.filter(m => m.memberNo !== sidebarMember?.memberNo).map(member => (
                                             <option key={member.memberNo} value={member.memberNo}>
                                               {member.name} ({member.memberNo})
                                             </option>
@@ -1157,6 +1162,7 @@ const MembersPage: NextPage = () => {
                                           type="text"
                                           value={relationship.type}
                                           onChange={(e) => {
+                                            if (!sidebarMember) return
                                             const newRelationships = [...sidebarMember.relationships]
                                             newRelationships[index] = {
                                               ...relationship,
@@ -1178,6 +1184,7 @@ const MembersPage: NextPage = () => {
                                         <select
                                           value={relationship.referrer || ''}
                                           onChange={(e) => {
+                                            if (!sidebarMember) return
                                             const newRelationships = [...sidebarMember.relationships]
                                             newRelationships[index] = {
                                               ...relationship,
@@ -1191,7 +1198,7 @@ const MembersPage: NextPage = () => {
                                           className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                                         >
                                           <option value="">請選擇介紹人</option>
-                                          {members.filter(m => m.memberNo !== sidebarMember.memberNo && m.memberNo !== relationship.memberNo).map(member => (
+                                          {members.filter(m => m.memberNo !== sidebarMember?.memberNo && m.memberNo !== relationship.memberNo).map(member => (
                                             <option key={member.memberNo} value={member.memberNo}>
                                               {member.name} ({member.memberNo})
                                             </option>
@@ -1202,6 +1209,7 @@ const MembersPage: NextPage = () => {
                                         <button
                                           type="button"
                                           onClick={() => {
+                                            if (!sidebarMember) return
                                             const newRelationships = [...sidebarMember.relationships]
                                             newRelationships.splice(index, 1)
                                             setSidebarMember({
@@ -1228,6 +1236,7 @@ const MembersPage: NextPage = () => {
                             <button
                               type="button"
                               onClick={() => {
+                                if (!sidebarMember) return
                                 const newRelationship = {
                                   name: '',
                                   type: '',
@@ -1576,4 +1585,4 @@ const MembersPage: NextPage = () => {
   )
 }
 
-export default MembersPage 
+export default MembersPage as NextPage 
