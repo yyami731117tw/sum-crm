@@ -239,11 +239,19 @@ const MembersPage = (): ReactElement => {
       remainingDays: undefined,  // 初始化剩餘天數
     }
     setSidebarMember(newMember)
+    setSidebarMemberLogs([])  // 清空變更紀錄
     setIsSidebarOpen(true)
   }
 
   const handleViewMember = (member: Member) => {
     setSidebarMember(member)
+    
+    // 如果是新會員（id 為空），則不顯示變更紀錄
+    if (!member.id) {
+      setSidebarMemberLogs([])
+      setIsSidebarOpen(true)
+      return
+    }
     
     // 從 localStorage 讀取變更紀錄
     const savedLogs = localStorage.getItem('memberLogs')
