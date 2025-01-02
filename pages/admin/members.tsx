@@ -793,6 +793,21 @@ const MembersPage: NextPage = () => {
                         </dd>
                       </div>
                       <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">服務專員</dt>
+                        <dd className="mt-1">
+                          <select
+                            value={sidebarMember.serviceStaff || ''}
+                            onChange={(e) => setSidebarMember({...sidebarMember, serviceStaff: e.target.value})}
+                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                          >
+                            <option value="">請選擇</option>
+                            {users.map(user => (
+                              <option key={user.id} value={user.name}>{user.name}</option>
+                            ))}
+                          </select>
+                        </dd>
+                      </div>
+                      <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500">性別</dt>
                         <dd className="mt-1">
                           <select
