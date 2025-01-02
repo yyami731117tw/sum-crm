@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/router'
 import { useAuth } from '@/hooks/useAuth'
 import { Member, MemberLog, MemberWithRelations } from '@/types'
 
@@ -11,7 +10,6 @@ interface MemberDetailProps {
 
 export default function MemberDetail({ member: initialMember, onUpdate, onClose }: MemberDetailProps) {
   const { user } = useAuth()
-  const router = useRouter()
   const [member, setMember] = useState(initialMember)
   const [isEditing, setIsEditing] = useState(false)
 
