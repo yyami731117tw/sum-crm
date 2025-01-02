@@ -178,7 +178,7 @@ const MembersPage = (): ReactElement => {
 
   const handleCreateMember = () => {
     const newMember: Member = {
-      id: '',
+      id: '',  // 留空，等儲存時生成
       memberNo: generateMemberNo(),
       name: '',
       phone: '',
@@ -188,7 +188,9 @@ const MembersPage = (): ReactElement => {
       joinDate: new Date().toISOString().split('T')[0].replace(/-/g, '/'),
       status: 'active',
       memberCategory: '一般會員',
-      relationships: []  // Initialize empty relationships array
+      relationships: [],  // 初始化空陣列
+      hasMembershipPeriod: false,  // 初始化會員期限設定
+      remainingDays: undefined,  // 初始化剩餘天數
     }
     setSidebarMember(newMember)
     setIsSidebarOpen(true)
@@ -240,21 +242,30 @@ const MembersPage = (): ReactElement => {
     }
 
     // 如果是新會員
-    if (!sidebarMember.id) {
-      const newMember: Member = {
+    if (!sidebarMember.id || sidebarMember.id === '') {
+      const newMember = {
         ...sidebarMember,
-        id: String(Date.now())  // 使用時間戳作為臨時 ID
+        id: generateId(),
+        relationships: sidebarMember.relationships || []  // 確保關係人列表不是 undefined
       }
-      setMembers([...members, newMember])
+      setMembers(prevMembers => [...prevMembers, newMember])
     } else {
       // 如果是編輯現有會員
-      setMembers(members.map(member =>
-        member.id === sidebarMember.id ? sidebarMember : member
+      setMembers(prevMembers => prevMembers.map(member =>
+        member.id === sidebarMember.id ? {
+          ...sidebarMember,
+          relationships: sidebarMember.relationships || []  // 確保關係人列表不是 undefined
+        } : member
       ))
     }
 
     setIsSidebarOpen(false)
     setSidebarMember(null)
+  }
+
+  // 生成唯一 ID
+  const generateId = () => {
+    return 'id_' + Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9)
   }
 
   // 計算年齡
@@ -329,23 +340,26 @@ const MembersPage = (): ReactElement => {
     }
   }
 
-  const getRemainingDaysColor = (days: number | undefined) => {
-    if (days === undefined || days <= 0) return 'text-red-600 font-medium'
-    if (days <= 30) return 'text-yellow-600'
-    return 'text-gray-600'
+  const getRemainingDaysColor = (days: number | undefined, hasMembershipPeriod: boolean | undefined) => {
+    if (!hasMembershipPeriod) return 'text-gray-600'  // 無期限：灰色
+    if (days === undefined || days <= 0) return 'text-red-800 font-medium'  // 已到期：深紅色
+    if (days <= 15) return 'text-red-600'  // 15天內：紅色
+    if (days <= 30) return 'text-orange-500'  // 30天內：橘色
+    return 'text-gray-600'  // 正常：灰色
   }
 
-  const getRemainingDaysMessage = (days: number | undefined) => {
-    if (days === undefined || days <= 0) return '已到期'
-    if (days <= 30) return '即將到期'
-    return ''
+  const getRemainingDaysMessage = (days: number | undefined, hasMembershipPeriod: boolean | undefined) => {
+    if (!hasMembershipPeriod) return ''  // 無期限不顯示訊息
+    if (days === undefined || days <= 0) return ''  // 已到期不顯示額外訊息
+    if (days <= 15) return '確認是否續約'  // 15天內
+    if (days <= 30) return '即將到期'  // 30天內
+    return ''  // 正常不顯示額外訊息
   }
 
-  const getRemainingDaysDisplay = (remainingDays: number | undefined, hasMembershipPeriod: boolean | undefined) => {
+  const getRemainingDaysDisplay = (days: number | undefined, hasMembershipPeriod: boolean | undefined) => {
     if (!hasMembershipPeriod) return '無期限'
-    if (remainingDays === undefined) return ''
-    if (remainingDays <= 0) return '已到期'
-    return `${remainingDays} 天`
+    if (days === undefined || days <= 0) return '已到期'
+    return `剩餘 ${days} 天`
   }
 
   const getStatusBadgeColor = (status: Member['status']) => {
@@ -531,12 +545,12 @@ const MembersPage = (): ReactElement => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex flex-col">
-                              <div className={getRemainingDaysColor(member.remainingDays)}>
+                              <div className={getRemainingDaysColor(member.remainingDays, member.hasMembershipPeriod)}>
                                 {getRemainingDaysDisplay(member.remainingDays, member.hasMembershipPeriod)}
                               </div>
-                              {getRemainingDaysMessage(member.remainingDays) && (
-                                <div className={`text-sm ${getRemainingDaysColor(member.remainingDays)}`}>
-                                  {getRemainingDaysMessage(member.remainingDays)}
+                              {getRemainingDaysMessage(member.remainingDays, member.hasMembershipPeriod) && (
+                                <div className={`text-sm ${getRemainingDaysColor(member.remainingDays, member.hasMembershipPeriod)}`}>
+                                  {getRemainingDaysMessage(member.remainingDays, member.hasMembershipPeriod)}
                                 </div>
                               )}
                             </div>
@@ -1092,16 +1106,14 @@ const MembersPage = (): ReactElement => {
                                   className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                   placeholder="結束日期"
                                 />
-                                {sidebarMember.remainingDays !== undefined && (
-                                  <div className={`text-sm ${getRemainingDaysColor(sidebarMember.remainingDays)}`}>
-                                    {sidebarMember.remainingDays <= 0 ? '已到期' : `剩餘 ${sidebarMember.remainingDays} 天`}
-                                    {getRemainingDaysMessage(sidebarMember.remainingDays) && sidebarMember.remainingDays > 0 && (
-                                      <span className="ml-2">
-                                        ({getRemainingDaysMessage(sidebarMember.remainingDays)})
-                                      </span>
-                                    )}
-                                  </div>
-                                )}
+                                <div className={`text-sm ${getRemainingDaysColor(sidebarMember.remainingDays, sidebarMember.hasMembershipPeriod)}`}>
+                                  {getRemainingDaysDisplay(sidebarMember.remainingDays, sidebarMember.hasMembershipPeriod)}
+                                  {getRemainingDaysMessage(sidebarMember.remainingDays, sidebarMember.hasMembershipPeriod) && (
+                                    <span className="ml-2">
+                                      ({getRemainingDaysMessage(sidebarMember.remainingDays, sidebarMember.hasMembershipPeriod)})
+                                    </span>
+                                  )}
+                                </div>
                               </>
                             )}
                           </div>
