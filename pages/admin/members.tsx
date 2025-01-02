@@ -22,8 +22,9 @@ interface Member {
   email?: string
   lineId?: string
   address?: string
-  memberCategory: '一般會員' | 'VIP會員'
-  joinCondition?: string
+  memberCategory: '一般會員' | '天使' | 'VIP' | '合作' | '股東' | '黑名單'
+  joinCondition?: '舊會員' | '會員體驗' | '200萬財力審查'
+  nationality?: '台灣 Taiwan' | '馬來西亞 Malaysia' | '中國 China' | '香港 Hong Kong' | '澳洲 Australia' | '日本 Japan'
   occupation?: '家管' | '軍公教' | '製造業' | '服務業' | '農業' | '科技業' | '金融保險' | '商業貿易' | '公共事業'
   notes?: string
   emergencyContact?: string
@@ -46,6 +47,21 @@ interface Member {
   isUSCitizen?: boolean
   idCardFront?: string
   idCardBack?: string
+  relatedMembers?: {
+    memberId: string
+    relationship: string
+  }[]
+  investments?: {
+    id: string
+    contractId: string
+    projectName: string
+    amount: number
+    date: string
+    status: '進行中' | '已結束' | '已取消'
+  }[]
+  hasMembershipPeriod?: boolean
+  membershipStartDate?: string
+  membershipEndDate?: string
 }
 
 interface MemberLog {
@@ -108,9 +124,12 @@ const MembersPage: NextPage = () => {
         lineId: 'ming_123',
         address: '台北市信義區信義路五段7號',
         memberCategory: '一般會員',
-        joinCondition: '官網註冊',
+        joinCondition: '會員體驗',
+        nationality: '台灣 Taiwan',
         occupation: '科技業',
-        notes: '對投資很有興趣'
+        notes: '對投資很有興趣',
+        relatedMembers: [],
+        investments: []
       }
     ]
     setMembers(mockMembers)
@@ -620,11 +639,15 @@ const MembersPage: NextPage = () => {
                         <dd className="mt-1">
                           <select
                             value={sidebarMember.memberCategory}
-                            onChange={(e) => setSidebarMember({...sidebarMember, memberCategory: e.target.value as '一般會員' | 'VIP會員'})}
+                            onChange={(e) => setSidebarMember({...sidebarMember, memberCategory: e.target.value as Member['memberCategory']})}
                             className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                           >
                             <option value="一般會員">一般會員</option>
-                            <option value="VIP會員">VIP會員</option>
+                            <option value="天使">天使</option>
+                            <option value="VIP">VIP</option>
+                            <option value="合作">合作</option>
+                            <option value="股東">股東</option>
+                            <option value="黑名單">黑名單</option>
                           </select>
                         </dd>
                       </div>
@@ -937,12 +960,77 @@ const MembersPage: NextPage = () => {
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500">入會條件</dt>
                         <dd className="mt-1">
-                          <input
-                            type="text"
+                          <select
                             value={sidebarMember.joinCondition || ''}
-                            onChange={(e) => setSidebarMember({...sidebarMember, joinCondition: e.target.value})}
-                            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          />
+                            onChange={(e) => setSidebarMember({...sidebarMember, joinCondition: e.target.value as Member['joinCondition']})}
+                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                          >
+                            <option value="">請選擇</option>
+                            <option value="舊會員">舊會員</option>
+                            <option value="會員體驗">會員體驗</option>
+                            <option value="200萬財力審查">200萬財力審查</option>
+                          </select>
+                        </dd>
+                      </div>
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">是否設定會員期限</dt>
+                        <dd className="mt-1">
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              id="hasMembershipPeriod"
+                              checked={sidebarMember.hasMembershipPeriod || false}
+                              onChange={(e) => setSidebarMember({...sidebarMember, hasMembershipPeriod: e.target.checked})}
+                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            />
+                            <label htmlFor="hasMembershipPeriod" className="ml-2 block text-sm text-gray-900">
+                              是
+                            </label>
+                          </div>
+                        </dd>
+                      </div>
+                      {sidebarMember.hasMembershipPeriod && (
+                        <>
+                          <div className="sm:col-span-1">
+                            <dt className="text-sm font-medium text-gray-500">會員期限開始日期</dt>
+                            <dd className="mt-1">
+                              <input
+                                type="date"
+                                value={sidebarMember.membershipStartDate?.replace(/\//g, '-') || ''}
+                                onChange={(e) => setSidebarMember({...sidebarMember, membershipStartDate: e.target.value.replace(/-/g, '/')})}
+                                className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                              />
+                            </dd>
+                          </div>
+                          <div className="sm:col-span-1">
+                            <dt className="text-sm font-medium text-gray-500">會員期限結束日期</dt>
+                            <dd className="mt-1">
+                              <input
+                                type="date"
+                                value={sidebarMember.membershipEndDate?.replace(/\//g, '-') || ''}
+                                onChange={(e) => setSidebarMember({...sidebarMember, membershipEndDate: e.target.value.replace(/-/g, '/')})}
+                                className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                              />
+                            </dd>
+                          </div>
+                        </>
+                      )}
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">國籍</dt>
+                        <dd className="mt-1">
+                          <select
+                            value={sidebarMember.nationality || ''}
+                            onChange={(e) => setSidebarMember({...sidebarMember, nationality: e.target.value as Member['nationality']})}
+                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                          >
+                            <option value="">請選擇</option>
+                            <option value="台灣 Taiwan">台灣 Taiwan</option>
+                            <option value="馬來西亞 Malaysia">馬來西亞 Malaysia</option>
+                            <option value="中國 China">中國 China</option>
+                            <option value="香港 Hong Kong">香港 Hong Kong</option>
+                            <option value="澳洲 Australia">澳洲 Australia</option>
+                            <option value="日本 Japan">日本 Japan</option>
+                          </select>
                         </dd>
                       </div>
                       <div className="sm:col-span-1">
@@ -962,7 +1050,7 @@ const MembersPage: NextPage = () => {
                       </div>
 
                       {/* VIP 會員資訊 */}
-                      {sidebarMember.memberCategory === 'VIP會員' && (
+                      {(sidebarMember.memberCategory === 'VIP' || sidebarMember.memberCategory === '天使') && (
                         <>
                           <div className="sm:col-span-2">
                             <h3 className="text-lg font-medium text-gray-900 mb-4 mt-8">VIP 會員資訊</h3>
@@ -1122,6 +1210,140 @@ const MembersPage: NextPage = () => {
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           />
                         </dd>
+                      </div>
+
+                      {/* 關係人資訊 */}
+                      <div className="sm:col-span-2">
+                        <h3 className="text-lg font-medium text-gray-900 mb-4 mt-8">關係人資訊</h3>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <dt className="text-sm font-medium text-gray-500">關係人</dt>
+                        <dd className="mt-1">
+                          <div className="space-y-2">
+                            {sidebarMember.relatedMembers?.map((related, index) => (
+                              <div key={index} className="flex items-center space-x-2">
+                                <select
+                                  value={related.memberId}
+                                  onChange={(e) => {
+                                    const newRelatedMembers = [...(sidebarMember.relatedMembers || [])]
+                                    newRelatedMembers[index].memberId = e.target.value
+                                    setSidebarMember({...sidebarMember, relatedMembers: newRelatedMembers})
+                                  }}
+                                  className="block w-64 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                                >
+                                  <option value="">請選擇會員</option>
+                                  {members.filter(m => m.id !== sidebarMember.id).map(member => (
+                                    <option key={member.id} value={member.id}>{member.name} ({member.memberNo})</option>
+                                  ))}
+                                </select>
+                                <input
+                                  type="text"
+                                  value={related.relationship}
+                                  onChange={(e) => {
+                                    const newRelatedMembers = [...(sidebarMember.relatedMembers || [])]
+                                    newRelatedMembers[index].relationship = e.target.value
+                                    setSidebarMember({...sidebarMember, relatedMembers: newRelatedMembers})
+                                  }}
+                                  placeholder="關係"
+                                  className="block w-32 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const newRelatedMembers = [...(sidebarMember.relatedMembers || [])]
+                                    newRelatedMembers.splice(index, 1)
+                                    setSidebarMember({...sidebarMember, relatedMembers: newRelatedMembers})
+                                  }}
+                                  className="p-2 text-red-600 hover:text-red-900"
+                                >
+                                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+                            ))}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newRelatedMembers = [...(sidebarMember.relatedMembers || []), { memberId: '', relationship: '' }]
+                                setSidebarMember({...sidebarMember, relatedMembers: newRelatedMembers})
+                              }}
+                              className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            >
+                              <svg className="-ml-1 mr-2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                              </svg>
+                              新增關係人
+                            </button>
+                          </div>
+                        </dd>
+                      </div>
+
+                      {/* 投資履歷 */}
+                      <div className="sm:col-span-2">
+                        <h3 className="text-lg font-medium text-gray-900 mb-4 mt-8">投資履歷</h3>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                          <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                              <tr>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  投資項目
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  金額
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  日期
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  狀態
+                                </th>
+                                <th scope="col" className="relative px-6 py-3">
+                                  <span className="sr-only">操作</span>
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {sidebarMember.investments?.map((investment) => (
+                                <tr key={investment.id}>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {investment.projectName}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    ${investment.amount.toLocaleString()}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {investment.date}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                      investment.status === '進行中' ? 'bg-green-100 text-green-800' :
+                                      investment.status === '已結束' ? 'bg-gray-100 text-gray-800' :
+                                      'bg-red-100 text-red-800'
+                                    }`}>
+                                      {investment.status}
+                                    </span>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <Link
+                                      href={`/admin/contracts/${investment.contractId}`}
+                                      className="text-blue-600 hover:text-blue-900"
+                                    >
+                                      查看合約
+                                    </Link>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                          {(!sidebarMember.investments || sidebarMember.investments.length === 0) && (
+                            <div className="text-center py-4 text-sm text-gray-500">
+                              尚無投資紀錄
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </dl>
 
