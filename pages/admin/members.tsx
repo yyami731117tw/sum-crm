@@ -41,6 +41,11 @@ interface Member {
   paymentMethod?: '信用卡' | '現金' | '銀行轉帳'
   bankAccount?: string
   invoiceInfo?: string
+  passportName?: string
+  passportNo?: string
+  isUSCitizen?: boolean
+  idCardFront?: string
+  idCardBack?: string
 }
 
 interface MemberLog {
@@ -334,6 +339,16 @@ const MembersPage: NextPage = () => {
       ...sidebarMember!,
       birthday: formattedBirthday,
       age
+    })
+  }
+
+  const handleFileUpload = async (file: File, type: 'front' | 'back') => {
+    // TODO: 實作檔案上傳 API
+    // 這裡先模擬上傳成功，返回檔案 URL
+    const mockUrl = `https://example.com/uploads/${file.name}`
+    setSidebarMember({
+      ...sidebarMember!,
+      [type === 'front' ? 'idCardFront' : 'idCardBack']: mockUrl
     })
   }
 
@@ -714,6 +729,108 @@ const MembersPage: NextPage = () => {
                           />
                         </dd>
                       </div>
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">是否為美國公民</dt>
+                        <dd className="mt-1">
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              id="isUSCitizen"
+                              checked={sidebarMember.isUSCitizen || false}
+                              onChange={(e) => setSidebarMember({...sidebarMember, isUSCitizen: e.target.checked})}
+                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            />
+                            <label htmlFor="isUSCitizen" className="ml-2 block text-sm text-gray-900">
+                              是
+                            </label>
+                          </div>
+                        </dd>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <dt className="text-sm font-medium text-gray-500">身分證影本</dt>
+                        <dd className="mt-1 space-y-2">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700">正面</label>
+                            <div className="mt-1 flex items-center space-x-4">
+                              {sidebarMember.idCardFront ? (
+                                <div className="relative">
+                                  <img
+                                    src={sidebarMember.idCardFront}
+                                    alt="身分證正面"
+                                    className="h-32 w-48 object-cover rounded-lg"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => setSidebarMember({...sidebarMember, idCardFront: undefined})}
+                                    className="absolute -top-2 -right-2 rounded-full bg-red-100 p-1 text-red-600 hover:bg-red-200"
+                                  >
+                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="flex justify-center items-center w-48 h-32 border-2 border-gray-300 border-dashed rounded-lg">
+                                  <label className="relative cursor-pointer">
+                                    <div className="text-center">
+                                      <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                      </svg>
+                                      <p className="mt-1 text-sm text-gray-600">點擊上傳</p>
+                                    </div>
+                                    <input
+                                      type="file"
+                                      className="hidden"
+                                      accept="image/*"
+                                      onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'front')}
+                                    />
+                                  </label>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700">反面</label>
+                            <div className="mt-1 flex items-center space-x-4">
+                              {sidebarMember.idCardBack ? (
+                                <div className="relative">
+                                  <img
+                                    src={sidebarMember.idCardBack}
+                                    alt="身分證反面"
+                                    className="h-32 w-48 object-cover rounded-lg"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => setSidebarMember({...sidebarMember, idCardBack: undefined})}
+                                    className="absolute -top-2 -right-2 rounded-full bg-red-100 p-1 text-red-600 hover:bg-red-200"
+                                  >
+                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="flex justify-center items-center w-48 h-32 border-2 border-gray-300 border-dashed rounded-lg">
+                                  <label className="relative cursor-pointer">
+                                    <div className="text-center">
+                                      <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                      </svg>
+                                      <p className="mt-1 text-sm text-gray-600">點擊上傳</p>
+                                    </div>
+                                    <input
+                                      type="file"
+                                      className="hidden"
+                                      accept="image/*"
+                                      onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'back')}
+                                    />
+                                  </label>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </dd>
+                      </div>
 
                       {/* 聯絡資訊 */}
                       <div className="sm:col-span-2">
@@ -938,6 +1055,28 @@ const MembersPage: NextPage = () => {
                                 type="text"
                                 value={sidebarMember.invoiceInfo || ''}
                                 onChange={(e) => setSidebarMember({...sidebarMember, invoiceInfo: e.target.value})}
+                                className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                              />
+                            </dd>
+                          </div>
+                          <div className="sm:col-span-1">
+                            <dt className="text-sm font-medium text-gray-500">護照姓名</dt>
+                            <dd className="mt-1">
+                              <input
+                                type="text"
+                                value={sidebarMember.passportName || ''}
+                                onChange={(e) => setSidebarMember({...sidebarMember, passportName: e.target.value})}
+                                className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                              />
+                            </dd>
+                          </div>
+                          <div className="sm:col-span-1">
+                            <dt className="text-sm font-medium text-gray-500">護照號碼</dt>
+                            <dd className="mt-1">
+                              <input
+                                type="text"
+                                value={sidebarMember.passportNo || ''}
+                                onChange={(e) => setSidebarMember({...sidebarMember, passportNo: e.target.value})}
                                 className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                               />
                             </dd>
