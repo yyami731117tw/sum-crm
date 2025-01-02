@@ -1,20 +1,4 @@
-export type MemberWithRelations = Member & {
-  relatedMembers: RelatedMember[]
-  investments: Investment[]
-  logs: MemberLog[]
-}
-
-export type MemberLog = {
-  id: string
-  memberId: string
-  action: string
-  details: string
-  operator: string
-  changes?: any
-  createdAt: Date
-}
-
-export type Member = {
+export interface Member {
   id: string
   memberNo: string
   name: string
@@ -23,7 +7,7 @@ export type Member = {
   phone: string
   email?: string
   birthday: Date
-  age?: number
+  age: number
   address?: string
   idNumber: string
   idCardFront?: string
@@ -33,6 +17,7 @@ export type Member = {
   membershipStartDate?: Date
   membershipEndDate?: Date
   remainingDays?: number
+  hasMembershipPeriod?: boolean
   occupation?: string
   lineId?: string
   notes?: string
@@ -40,23 +25,44 @@ export type Member = {
   updatedAt: Date
 }
 
-export type RelatedMember = {
+export interface RelatedMember {
   id: string
   memberId: string
-  relatedMemberId: string
+  name: string
   relationship: string
-  createdAt: Date
-  updatedAt: Date
+  phone: string
+  notes?: string
+  isReferrer?: boolean
 }
 
-export type Investment = {
+export interface EmergencyContact {
+  name: string
+  relationship: string
+  phone: string
+}
+
+export interface MemberLog {
   id: string
   memberId: string
-  amount: number
-  type: string
-  status: string
-  date: Date
-  notes?: string
+  action: string
+  details?: string
+  changes?: Record<string, { oldValue: any; newValue: any }>
+  operator: string
   createdAt: Date
-  updatedAt: Date
+}
+
+export interface Investment {
+  id: string
+  memberId: string
+  name: string
+  amount: number
+  date: Date
+  status: string
+}
+
+export interface MemberWithRelations extends Member {
+  relatedMembers: RelatedMember[]
+  emergencyContact?: EmergencyContact
+  logs: MemberLog[]
+  investments?: Investment[]
 } 
