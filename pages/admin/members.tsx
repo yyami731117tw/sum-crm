@@ -1107,48 +1107,49 @@ const MembersPage: NextPage = () => {
                         </dd>
                       </div>
                       <div className="sm:col-span-1">
-                        <dt className="text-sm font-medium text-gray-500">是否設定會員期限</dt>
+                        <dt className="text-sm font-medium text-gray-500">會員期限</dt>
                         <dd className="mt-1">
-                          <div className="flex items-center">
-                            <input
-                              type="checkbox"
-                              id="hasMembershipPeriod"
-                              checked={sidebarMember.hasMembershipPeriod || false}
-                              onChange={(e) => setSidebarMember({...sidebarMember, hasMembershipPeriod: e.target.checked})}
-                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                            />
-                            <label htmlFor="hasMembershipPeriod" className="ml-2 block text-sm text-gray-900">
-                              是
-                            </label>
+                          <div className="flex flex-col space-y-2">
+                            <div className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={sidebarMember.hasMembershipPeriod || false}
+                                onChange={(e) => setSidebarMember({...sidebarMember, hasMembershipPeriod: e.target.checked})}
+                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                              />
+                              <label className="ml-2 text-sm text-gray-700">設定會員期限</label>
+                            </div>
+                            {sidebarMember.hasMembershipPeriod && (
+                              <>
+                                <input
+                                  type="date"
+                                  value={sidebarMember.membershipStartDate?.replace(/\//g, '-') || ''}
+                                  onChange={(e) => setSidebarMember({...sidebarMember, membershipStartDate: e.target.value.replace(/-/g, '/')})}
+                                  className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                  placeholder="開始日期"
+                                />
+                                <input
+                                  type="date"
+                                  value={sidebarMember.membershipEndDate?.replace(/\//g, '-') || ''}
+                                  onChange={(e) => handleMembershipEndDateChange(e.target.value)}
+                                  className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                  placeholder="結束日期"
+                                />
+                                {sidebarMember.remainingDays !== undefined && (
+                                  <div className={`text-sm ${getRemainingDaysColor(sidebarMember.remainingDays)}`}>
+                                    剩餘 {sidebarMember.remainingDays} 天
+                                    {getRemainingDaysMessage(sidebarMember.remainingDays) && (
+                                      <span className="ml-2">
+                                        ({getRemainingDaysMessage(sidebarMember.remainingDays)})
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                              </>
+                            )}
                           </div>
                         </dd>
                       </div>
-                      {sidebarMember.hasMembershipPeriod && (
-                        <>
-                          <div className="sm:col-span-1">
-                            <dt className="text-sm font-medium text-gray-500">會員期限開始日期</dt>
-                            <dd className="mt-1">
-                              <input
-                                type="date"
-                                value={sidebarMember.membershipStartDate?.replace(/\//g, '-') || ''}
-                                onChange={(e) => setSidebarMember({...sidebarMember, membershipStartDate: e.target.value.replace(/-/g, '/')})}
-                                className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                              />
-                            </dd>
-                          </div>
-                          <div className="sm:col-span-1">
-                            <dt className="text-sm font-medium text-gray-500">會員期限結束日期</dt>
-                            <dd className="mt-1">
-                              <input
-                                type="date"
-                                value={sidebarMember.membershipEndDate?.replace(/\//g, '-') || ''}
-                                onChange={(e) => handleMembershipEndDateChange(e.target.value)}
-                                className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                              />
-                            </dd>
-                          </div>
-                        </>
-                      )}
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500">國籍</dt>
                         <dd className="mt-1">
