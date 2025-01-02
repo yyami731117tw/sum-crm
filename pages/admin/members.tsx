@@ -601,7 +601,7 @@ const MembersPage: NextPage = () => {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex flex-col">
                               <div className={getRemainingDaysColor(member.remainingDays)}>
-                                {member.remainingDays} 天
+                                {member.hasMembershipPeriod ? `${member.remainingDays} 天` : '無期限'}
                               </div>
                               {getRemainingDaysMessage(member.remainingDays) && (
                                 <div className={`text-sm ${getRemainingDaysColor(member.remainingDays)}`}>
@@ -802,7 +802,7 @@ const MembersPage: NextPage = () => {
                           >
                             <option value="">請選擇</option>
                             {users.map(user => (
-                              <option key={user.id} value={user.name}>{user.name}</option>
+                              <option key={user.id} value={user.id}>{user.name}</option>
                             ))}
                           </select>
                         </dd>
