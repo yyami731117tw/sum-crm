@@ -244,26 +244,20 @@ const MembersPage = (): ReactElement => {
 
   const handleViewMember = (member: Member) => {
     setSidebarMember(member)
-    // 模擬從API獲取會員記錄
-    const mockLogs: MemberLog[] = [
-      {
-        id: '1',
-        memberId: member.id,
-        action: '更新個人資料',
-        timestamp: '2024/01/15 14:30:00',
-        details: '修改電話號碼',
-        operator: '系統管理員'
-      },
-      {
-        id: '2',
-        memberId: member.id,
-        action: '參加活動',
-        timestamp: '2024/01/14 11:20:00',
-        details: '參加投資說明會',
-        operator: '系統管理員'
-      }
-    ]
-    setSidebarMemberLogs(mockLogs)
+    
+    // 從 localStorage 讀取變更紀錄
+    const savedLogs = localStorage.getItem('memberLogs')
+    if (savedLogs) {
+      const allLogs: MemberLog[] = JSON.parse(savedLogs)
+      // 篩選出當前會員的變更紀錄，並按時間排序
+      const memberLogs = allLogs
+        .filter(log => log.memberId === member.id)
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      setSidebarMemberLogs(memberLogs)
+    } else {
+      setSidebarMemberLogs([])
+    }
+    
     setIsSidebarOpen(true)
   }
 
@@ -290,6 +284,10 @@ const MembersPage = (): ReactElement => {
     const now = new Date()
     const timestamp = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
 
+    // 從 localStorage 讀取現有的變更紀錄
+    const savedLogs = localStorage.getItem('memberLogs')
+    const allLogs: MemberLog[] = savedLogs ? JSON.parse(savedLogs) : []
+
     // 如果是新會員
     if (!sidebarMember.id || sidebarMember.id === '') {
       const newMember = {
@@ -307,6 +305,10 @@ const MembersPage = (): ReactElement => {
         details: `新增會員：${newMember.name}（${newMember.memberNo}）`,
         operator: user?.name || '系統管理員'
       }
+      
+      // 更新 localStorage 中的變更紀錄
+      const updatedLogs = [newLog, ...allLogs]
+      localStorage.setItem('memberLogs', JSON.stringify(updatedLogs))
       setSidebarMemberLogs(prevLogs => [newLog, ...prevLogs])
     } else {
       // 如果是編輯現有會員
@@ -343,6 +345,10 @@ const MembersPage = (): ReactElement => {
             operator: user?.name || '系統管理員',
             changes
           }
+          
+          // 更新 localStorage 中的變更紀錄
+          const updatedLogs = [newLog, ...allLogs]
+          localStorage.setItem('memberLogs', JSON.stringify(updatedLogs))
           setSidebarMemberLogs(prevLogs => [newLog, ...prevLogs])
         }
       }
