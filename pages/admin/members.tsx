@@ -6,6 +6,8 @@ import { DashboardNav } from '@/components/dashboard/DashboardNav'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
+import type { Staff } from '../../src/data/staffs'
+import { mockStaffs } from '../../src/data/staffs'
 
 interface Member {
   id: string
@@ -90,10 +92,25 @@ interface MemberLog {
   }[]
 }
 
+interface User {
+  id: string
+  name: string
+  email: string
+  phone: string
+  role: 'admin' | 'staff' | 'guest'
+  status: 'active' | 'inactive' | 'pending'
+  joinDate: string
+  lastLogin: string
+  lineId?: string
+  address?: string
+  birthday?: string
+}
+
 const MembersPage = (): ReactElement => {
   const { user, loading } = useAuth()
   const router = useRouter()
   const [members, setMembers] = useState<Member[]>([])
+  const [users, setUsers] = useState<User[]>([])
   const [selectedMember, setSelectedMember] = useState<Member | null>(null)
   const [isLogModalOpen, setIsLogModalOpen] = useState(false)
   const [selectedMemberLogs, setSelectedMemberLogs] = useState<MemberLog[]>([])
@@ -105,7 +122,7 @@ const MembersPage = (): ReactElement => {
   const [isResizing, setIsResizing] = useState(false)
   const [startX, setStartX] = useState(0)
   const [sidebarMemberLogs, setSidebarMemberLogs] = useState<MemberLog[]>([])
-  const [staffList, setStaffList] = useState<Member[]>([])
+  const [staffs, setStaffs] = useState<Staff[]>([])
 
   useEffect(() => {
     setSidebarWidth(window.innerWidth / 2)
@@ -160,9 +177,44 @@ const MembersPage = (): ReactElement => {
     }
   }, [members])
 
+  // 初始化人員資料
   useEffect(() => {
-    setStaffList(members.filter(member => member.memberCategory === '天使' || member.memberCategory === 'VIP'))
-  }, [members])
+    setStaffs(mockStaffs.filter(staff => staff.status === 'active'))
+  }, [])
+
+  // 模擬加載使用者數據
+  useEffect(() => {
+    // TODO: 替換為實際的 API 調用
+    const mockUsers: User[] = [
+      {
+        id: '1',
+        name: '王大明',
+        email: 'wang@example.com',
+        phone: '0912-345-678',
+        role: 'admin',
+        status: 'active',
+        joinDate: '2023/01/01',
+        lastLogin: '2024/01/10',
+        lineId: 'wang_123',
+        address: '台北市信義區信義路五段7號',
+        birthday: '1990/01/01'
+      },
+      {
+        id: '2',
+        name: '李小華',
+        email: 'lee@example.com',
+        phone: '0923-456-789',
+        role: 'staff',
+        status: 'active',
+        joinDate: '2023/03/15',
+        lastLogin: '2024/01/09',
+        lineId: 'lee_456',
+        address: '台北市大安區敦化南路二段100號',
+        birthday: '1992/05/15'
+      }
+    ]
+    setUsers(mockUsers)
+  }, [])
 
   const generateMemberNo = () => {
     const year = new Date().getFullYear().toString().slice(-2);
@@ -776,7 +828,7 @@ const MembersPage = (): ReactElement => {
                         <dd className="mt-1">
                           <input
                             type="date"
-                            value={sidebarMember.birthday.replace(/\//g, '-')}
+                            value={sidebarMember.birthday?.replace(/\//g, '-') || ''}
                             onChange={(e) => handleBirthdayChange(e.target.value)}
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           />
@@ -1071,9 +1123,14 @@ const MembersPage = (): ReactElement => {
                             className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                           >
                             <option value="">請選擇</option>
-                            {staffList.map(staff => (
-                              <option key={staff.id} value={staff.id}>{staff.name}</option>
-                            ))}
+                            {users
+                              .filter(user => user.status === 'active' && (user.role === 'admin' || user.role === 'staff'))
+                              .map(user => (
+                                <option key={user.id} value={user.id}>
+                                  {user.name} ({user.role === 'admin' ? '管理員' : '客服人員'})
+                                </option>
+                              ))
+                            }
                           </select>
                         </dd>
                       </div>
