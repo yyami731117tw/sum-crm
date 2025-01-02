@@ -24,6 +24,8 @@ interface Member {
   joinCondition?: string
   occupation?: string
   notes?: string
+  idCardFront?: string
+  idCardBack?: string
 }
 
 interface MemberLog {
@@ -256,6 +258,45 @@ const MemberDetailPage: NextPage = () => {
                       <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                         <dt className="text-sm font-medium text-gray-500">備註</dt>
                         <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{member.notes || '-'}</dd>
+                      </div>
+                      <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt className="text-sm font-medium text-gray-500">身分證影本</dt>
+                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="mb-2 text-sm text-gray-500">正面</p>
+                              {member.idCardFront ? (
+                                <div className="relative aspect-[1.6/1] bg-gray-100 rounded-lg overflow-hidden">
+                                  <img
+                                    src={member.idCardFront}
+                                    alt="身分證正面"
+                                    className="object-cover w-full h-full"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="flex items-center justify-center aspect-[1.6/1] bg-gray-100 rounded-lg">
+                                  <span className="text-gray-400">尚未上傳</span>
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <p className="mb-2 text-sm text-gray-500">反面</p>
+                              {member.idCardBack ? (
+                                <div className="relative aspect-[1.6/1] bg-gray-100 rounded-lg overflow-hidden">
+                                  <img
+                                    src={member.idCardBack}
+                                    alt="身分證反面"
+                                    className="object-cover w-full h-full"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="flex items-center justify-center aspect-[1.6/1] bg-gray-100 rounded-lg">
+                                  <span className="text-gray-400">尚未上傳</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </dd>
                       </div>
                     </dl>
                   </div>

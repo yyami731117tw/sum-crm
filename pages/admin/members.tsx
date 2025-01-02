@@ -182,10 +182,22 @@ const MembersPage: NextPage = () => {
     setUsers(mockUsers)
   }, [])
 
+  const generateMemberNo = () => {
+    const year = new Date().getFullYear().toString().slice(-2);
+    // 從 localStorage 獲取當前年份的最大序號
+    const currentYear = new Date().getFullYear().toString();
+    const existingMembers = members.filter(m => m.memberNo.startsWith(year));
+    const maxSeq = existingMembers.length > 0
+      ? Math.max(...existingMembers.map(m => parseInt(m.memberNo.slice(-4))))
+      : 0;
+    const nextSeq = (maxSeq + 1).toString().padStart(4, '0');
+    return `${year}${nextSeq}`;
+  };
+
   const handleCreateMember = () => {
     const newMember: Member = {
       id: '',
-      memberNo: `M${String(members.length + 1).padStart(3, '0')}`,
+      memberNo: generateMemberNo(),
       name: '',
       phone: '',
       gender: '男',
