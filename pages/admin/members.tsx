@@ -695,9 +695,9 @@ const MembersPage: NextPage = () => {
               <div className="relative flex" style={{ width: `${sidebarWidth}px` }}>
                 <div className="flex-1 h-full flex flex-col bg-white shadow-xl overflow-y-auto">
                   {/* 標題列 */}
-                  <div className="px-4 py-6 sm:px-6 border-b border-gray-200">
+                  <div className="px-4 py-4 sm:px-6 border-b border-gray-200 bg-white sticky top-0 z-10">
                     <div className="flex items-start justify-between">
-                      <div className="flex items-center">
+                      <div className="flex items-center space-x-4">
                         <div className="flex-shrink-0 h-12 w-12">
                           <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
                             <span className="text-xl font-medium text-blue-600">
@@ -705,20 +705,31 @@ const MembersPage: NextPage = () => {
                             </span>
                           </div>
                         </div>
-                        <div className="ml-3">
-                          <h2 className="text-lg font-medium text-gray-900">
+                        <div>
+                          <h2 className="text-xl font-semibold text-gray-900">
                             {sidebarMember.name}
-                            {sidebarMember.nickname && ` (${sidebarMember.nickname})`}
+                            {sidebarMember.nickname && (
+                              <span className="ml-2 text-base text-gray-500">
+                                ({sidebarMember.nickname})
+                              </span>
+                            )}
                           </h2>
-                          <p className="text-sm text-gray-500">
-                            會員編號：{sidebarMember.memberNo}
-                          </p>
+                          <div className="mt-1 flex items-center space-x-4">
+                            <p className="text-sm text-gray-500">
+                              會員編號：{sidebarMember.memberNo}
+                            </p>
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              getStatusBadgeColor(sidebarMember.status)
+                            }`}>
+                              {getStatusText(sidebarMember.status)}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center">
+                      <div className="flex items-center space-x-4">
                         <Link
                           href={`/admin/members/${sidebarMember.id}`}
-                          className="mr-4 text-sm text-blue-600 hover:text-blue-900"
+                          className="text-sm text-blue-600 hover:text-blue-900 font-medium"
                         >
                           開啟完整頁面
                         </Link>
@@ -736,11 +747,11 @@ const MembersPage: NextPage = () => {
                   </div>
 
                   {/* 會員資料 */}
-                  <div className="flex-1 px-4 py-6 sm:px-6 overflow-y-auto">
-                    <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                  <div className="flex-1 px-4 py-6 sm:px-6 overflow-y-auto bg-gray-50">
+                    <dl className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
                       {/* 基本資料 */}
                       <div className="sm:col-span-2">
-                        <h3 className="text-lg font-medium text-gray-900 mb-4">基本資料</h3>
+                        <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200">基本資料</h3>
                       </div>
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500">會員編號</dt>
@@ -997,7 +1008,7 @@ const MembersPage: NextPage = () => {
 
                       {/* 聯絡資訊 */}
                       <div className="sm:col-span-2">
-                        <h3 className="text-lg font-medium text-gray-900 mb-4 mt-8">聯絡資訊</h3>
+                        <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">聯絡資訊</h3>
                       </div>
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500">電話</dt>
@@ -1046,7 +1057,7 @@ const MembersPage: NextPage = () => {
 
                       {/* 緊急聯絡人 */}
                       <div className="sm:col-span-2">
-                        <h3 className="text-lg font-medium text-gray-900 mb-4 mt-8">緊急聯絡人</h3>
+                        <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">緊急聯絡人</h3>
                       </div>
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500">姓名</dt>
@@ -1084,7 +1095,7 @@ const MembersPage: NextPage = () => {
 
                       {/* 會員資訊 */}
                       <div className="sm:col-span-2">
-                        <h3 className="text-lg font-medium text-gray-900 mb-4 mt-8">會員資訊</h3>
+                        <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">會員資訊</h3>
                       </div>
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500">加入時間</dt>
@@ -1194,7 +1205,7 @@ const MembersPage: NextPage = () => {
                       {(sidebarMember.memberCategory === 'VIP' || sidebarMember.memberCategory === '天使') && (
                         <>
                           <div className="sm:col-span-2">
-                            <h3 className="text-lg font-medium text-gray-900 mb-4 mt-8">VIP 會員資訊</h3>
+                            <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">VIP 會員資訊</h3>
                           </div>
                           <div className="sm:col-span-1">
                             <dt className="text-sm font-medium text-gray-500">VIP 開始日期</dt>
@@ -1315,7 +1326,7 @@ const MembersPage: NextPage = () => {
 
                       {/* 其他資訊 */}
                       <div className="sm:col-span-2">
-                        <h3 className="text-lg font-medium text-gray-900 mb-4 mt-8">其他資訊</h3>
+                        <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">其他資訊</h3>
                       </div>
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500">家庭狀況</dt>
@@ -1374,7 +1385,7 @@ const MembersPage: NextPage = () => {
 
                       {/* 關係人資訊 */}
                       <div className="sm:col-span-2">
-                        <h3 className="text-lg font-medium text-gray-900 mb-4 mt-8">關係人資訊</h3>
+                        <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">關係人資訊</h3>
                       </div>
                       <div className="sm:col-span-2">
                         <dt className="text-sm font-medium text-gray-500">關係人</dt>
@@ -1441,7 +1452,7 @@ const MembersPage: NextPage = () => {
 
                       {/* 投資履歷 */}
                       <div className="sm:col-span-2">
-                        <h3 className="text-lg font-medium text-gray-900 mb-4 mt-8">投資履歷</h3>
+                        <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">投資履歷</h3>
                       </div>
                       <div className="sm:col-span-2">
                         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
@@ -1537,19 +1548,25 @@ const MembersPage: NextPage = () => {
                   </div>
 
                   {/* 底部按鈕 */}
-                  <div className="flex-shrink-0 px-4 py-4 flex justify-end space-x-3 border-t border-gray-200">
+                  <div className="flex-shrink-0 px-4 py-4 flex justify-end space-x-3 border-t border-gray-200 bg-white sticky bottom-0 z-10">
                     <button
                       type="button"
                       onClick={handleSaveMember}
-                      className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      className="inline-flex items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
+                      <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
                       儲存
                     </button>
                     <button
                       type="button"
                       onClick={() => setIsSidebarOpen(false)}
-                      className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      className="inline-flex items-center justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
+                      <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
                       取消
                     </button>
                   </div>
