@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { DashboardNav } from '@/components/dashboard/DashboardNav'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import Link from 'next/link'
 
 interface Member {
   id: string
@@ -265,8 +266,12 @@ const MembersPage: NextPage = () => {
                               </div>
                               <div className="ml-4">
                                 <div className="text-sm font-medium text-gray-900">
-                                  {member.name}
-                                  {member.nickname && ` (${member.nickname})`}
+                                  <Link
+                                    href={`/admin/members/${member.id}`}
+                                    className="text-sm font-medium text-blue-600 hover:text-blue-900 hover:underline"
+                                  >
+                                    {member.name}
+                                  </Link>
                                 </div>
                                 <div className="text-sm text-gray-500">會員編號：{member.memberNo}</div>
                                 <div className="text-sm text-gray-500">{member.phone}</div>
