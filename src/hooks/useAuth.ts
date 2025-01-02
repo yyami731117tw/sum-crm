@@ -9,70 +9,35 @@ interface User {
   status: 'pending' | 'active' | 'inactive'
 }
 
+// 模擬的管理員用戶
+const mockAdminUser: User = {
+  id: '1',
+  name: '管理員',
+  email: 'admin@example.com',
+  role: 'admin',
+  status: 'active'
+}
+
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  // 暫時直接使用模擬的管理員用戶
+  const [user, setUser] = useState<User | null>(mockAdminUser)
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
 
+  // 暫時移除 useEffect 中的認證檢查
   useEffect(() => {
-    checkAuth()
+    setLoading(false)
   }, [])
 
-  const checkAuth = async () => {
-    try {
-      const response = await fetch('/api/auth/check')
-      const data = await response.json()
-
-      if (data.user) {
-        setUser(data.user)
-      } else {
-        setUser(null)
-      }
-    } catch (error) {
-      console.error('Auth check failed:', error)
-      setUser(null)
-    } finally {
-      setLoading(false)
-    }
-  }
-
+  // 模擬的認證函數
   const login = async (email: string, password: string) => {
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message)
-      }
-
-      if (data.user.status === 'inactive') {
-        throw new Error('您的帳號已被停用，請聯繫管理員')
-      }
-
-      if (data.user.status === 'pending') {
-        throw new Error('您的帳號正在審核中，請耐心等待')
-      }
-
-      setUser(data.user)
-      return data
-    } catch (error) {
-      throw error
-    }
+    setUser(mockAdminUser)
+    return { user: mockAdminUser }
   }
 
   const logout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' })
-      setUser(null)
-      router.push('/login')
-    } catch (error) {
-      console.error('Logout failed:', error)
-    }
+    setUser(null)
+    router.push('/login')
   }
 
   const signup = async (userData: {
@@ -80,23 +45,11 @@ export function useAuth() {
     email: string
     password: string
   }) => {
-    try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
-      })
+    return { message: '註冊成功' }
+  }
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message)
-      }
-
-      return data
-    } catch (error) {
-      throw error
-    }
+  const checkAuth = async () => {
+    return { user: mockAdminUser }
   }
 
   return {
