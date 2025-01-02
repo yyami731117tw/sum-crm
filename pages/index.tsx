@@ -71,10 +71,10 @@ const Home: NextPage = () => {
                     會員管理
                   </a>
                   <a
-                    href="/investments"
+                    href="/projects"
                     className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                   >
-                    投資項目
+                    項目管理
                   </a>
                   <a
                     href="/contracts"
@@ -82,6 +82,14 @@ const Home: NextPage = () => {
                   >
                     合約管理
                   </a>
+                  {user?.role === 'admin' && (
+                    <a
+                      href="/admin/users"
+                      className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                    >
+                      人員管理
+                    </a>
+                  )}
                 </div>
               </div>
               <div className="flex items-center">
