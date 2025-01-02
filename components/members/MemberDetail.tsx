@@ -12,6 +12,7 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose 
   const { user, isAuthenticated } = useAuth()
   const [member, setMember] = useState(initialMember)
   const [isEditing, setIsEditing] = useState(false)
+  const [showFullImage, setShowFullImage] = useState<{ type: 'front' | 'back' | null, url: string | null }>({ type: null, url: null })
 
   useEffect(() => {
     setMember(initialMember)
@@ -155,6 +156,12 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose 
     return `${remainingDays} 天`
   }
 
+  const handleShowImage = (type: 'front' | 'back', url: string | undefined) => {
+    if (url) {
+      setShowFullImage({ type, url })
+    }
+  }
+
   return (
     <div className="h-full flex flex-col bg-white">
       {/* 標題列 */}
@@ -225,11 +232,16 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose 
                 <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
                   {member.idCardFront ? (
                     <div className="relative w-full">
-                      <img
-                        src={member.idCardFront}
-                        alt="身分證正面"
-                        className="max-h-48 mx-auto"
-                      />
+                      <div 
+                        className="cursor-pointer"
+                        onClick={() => handleShowImage('front', member.idCardFront)}
+                      >
+                        <img
+                          src={member.idCardFront}
+                          alt="身分證正面"
+                          className="h-32 w-48 object-cover mx-auto rounded-lg"
+                        />
+                      </div>
                       {isEditing && (
                         <button
                           type="button"
@@ -291,11 +303,16 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose 
                 <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
                   {member.idCardBack ? (
                     <div className="relative w-full">
-                      <img
-                        src={member.idCardBack}
-                        alt="身分證背面"
-                        className="max-h-48 mx-auto"
-                      />
+                      <div 
+                        className="cursor-pointer"
+                        onClick={() => handleShowImage('back', member.idCardBack)}
+                      >
+                        <img
+                          src={member.idCardBack}
+                          alt="身分證背面"
+                          className="h-32 w-48 object-cover mx-auto rounded-lg"
+                        />
+                      </div>
                       {isEditing && (
                         <button
                           type="button"
@@ -426,6 +443,30 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose 
           </button>
         )}
       </div>
+
+      {/* 全螢幕圖片預覽 */}
+      {showFullImage.url && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={() => setShowFullImage({ type: null, url: null })}
+        >
+          <div className="relative max-w-4xl max-h-screen p-4">
+            <img
+              src={showFullImage.url}
+              alt={`身分證${showFullImage.type === 'front' ? '正面' : '背面'}`}
+              className="max-w-full max-h-[90vh] object-contain"
+            />
+            <button
+              onClick={() => setShowFullImage({ type: null, url: null })}
+              className="absolute top-2 right-2 p-2 bg-white rounded-full text-gray-800 hover:bg-gray-100"
+            >
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 } 
