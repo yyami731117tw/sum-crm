@@ -13,7 +13,6 @@ interface Member {
   phone: string
   gender: '男' | '女'
   nickname?: string
-  serviceStaff?: string
   idNumber: string
   birthday: string
   age?: number
@@ -83,13 +82,6 @@ interface MemberLog {
   }[]
 }
 
-interface User {
-  id: string
-  name: string
-  email: string
-  role: string
-}
-
 const MembersPage: NextPage = () => {
   const { user, loading } = useAuth()
   const router = useRouter()
@@ -105,7 +97,6 @@ const MembersPage: NextPage = () => {
   const [sidebarMemberLogs, setSidebarMemberLogs] = useState<MemberLog[]>([])
   const [sidebarWidth, setSidebarWidth] = useState(600)
   const [isResizing, setIsResizing] = useState(false)
-  const [users, setUsers] = useState<User[]>([])
 
   useEffect(() => {
     setSidebarWidth(window.innerWidth / 2)
@@ -134,7 +125,6 @@ const MembersPage: NextPage = () => {
         phone: '0912-345-678',
         gender: '男',
         nickname: '小明',
-        serviceStaff: '張專員',
         idNumber: 'A123456789',
         birthday: '1990/01/01',
         joinDate: '2024/01/01',
@@ -161,26 +151,6 @@ const MembersPage: NextPage = () => {
       localStorage.setItem('members', JSON.stringify(members))
     }
   }, [members])
-
-  // 模擬加載使用者數據
-  useEffect(() => {
-    // TODO: 替換為實際的 API 調用
-    const mockUsers: User[] = [
-      {
-        id: '1',
-        name: '張專員',
-        email: 'zhang@example.com',
-        role: 'staff'
-      },
-      {
-        id: '2',
-        name: '李專員',
-        email: 'li@example.com',
-        role: 'staff'
-      }
-    ]
-    setUsers(mockUsers)
-  }, [])
 
   const generateMemberNo = () => {
     const year = new Date().getFullYear().toString().slice(-2);
@@ -822,27 +792,6 @@ const MembersPage: NextPage = () => {
                             onChange={(e) => setSidebarMember({...sidebarMember, nickname: e.target.value})}
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           />
-                        </dd>
-                      </div>
-                      <div className="sm:col-span-1">
-                        <dt className="text-sm font-medium text-gray-500">服務專員</dt>
-                        <dd className="mt-1">
-                          <select
-                            value={sidebarMember.serviceStaff || ''}
-                            onChange={(e) => {
-                              const selectedUser = users.find(user => user.id === e.target.value);
-                              setSidebarMember({
-                                ...sidebarMember,
-                                serviceStaff: selectedUser ? selectedUser.name : ''
-                              });
-                            }}
-                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                          >
-                            <option value="">請選擇</option>
-                            {users.map(user => (
-                              <option key={user.id} value={user.id}>{user.name}</option>
-                            ))}
-                          </select>
                         </dd>
                       </div>
                       <div className="sm:col-span-1">

@@ -12,7 +12,6 @@ interface Member {
   phone: string
   gender: '男' | '女'
   nickname?: string
-  serviceStaff?: string
   idNumber: string
   birthday: string
   joinDate: string
@@ -60,7 +59,6 @@ const MemberDetailPage: NextPage = () => {
         phone: '0912-345-678',
         gender: '男',
         nickname: '小明',
-        serviceStaff: '張專員',
         idNumber: 'A123456789',
         birthday: '1990/01/01',
         joinDate: '2024/01/01',
@@ -218,10 +216,6 @@ const MemberDetailPage: NextPage = () => {
                       <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                         <dt className="text-sm font-medium text-gray-500">入會條件</dt>
                         <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{member.joinCondition || '-'}</dd>
-                      </div>
-                      <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt className="text-sm font-medium text-gray-500">服務專員</dt>
-                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{member.serviceStaff || '-'}</dd>
                       </div>
                       <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                         <dt className="text-sm font-medium text-gray-500">身分證字號</dt>
