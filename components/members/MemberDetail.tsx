@@ -9,7 +9,7 @@ interface MemberDetailProps {
 }
 
 export default function MemberDetail({ member: initialMember, onUpdate, onClose }: MemberDetailProps) {
-  const { user } = useAuth()
+  const { user, isAuthenticated } = useAuth()
   const [member, setMember] = useState(initialMember)
   const [isEditing, setIsEditing] = useState(false)
 
@@ -18,6 +18,11 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose 
   }, [initialMember])
 
   const handleUpdate = async () => {
+    if (!isAuthenticated) {
+      // TODO: 顯示登入提示
+      return
+    }
+
     try {
       const response = await fetch(`/api/members/${member.id}`, {
         method: 'PUT',
