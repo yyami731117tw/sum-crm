@@ -54,8 +54,12 @@ const MembersPage: NextPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [sidebarMember, setSidebarMember] = useState<Member | null>(null)
   const [sidebarMemberLogs, setSidebarMemberLogs] = useState<MemberLog[]>([])
-  const [sidebarWidth, setSidebarWidth] = useState(window.innerWidth / 2)
+  const [sidebarWidth, setSidebarWidth] = useState(600)
   const [isResizing, setIsResizing] = useState(false)
+
+  useEffect(() => {
+    setSidebarWidth(window.innerWidth / 2)
+  }, [])
 
   useEffect(() => {
     if (!loading && !user) {
