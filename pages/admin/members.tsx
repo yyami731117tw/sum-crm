@@ -96,8 +96,7 @@ const MembersPage: NextPage = () => {
   }, [])
 
   const handleCreateMember = () => {
-    setIsCreateMode(true)
-    setSelectedMember({
+    const newMember: Member = {
       id: '',
       memberNo: `M${String(members.length + 1).padStart(3, '0')}`,
       name: '',
@@ -108,8 +107,9 @@ const MembersPage: NextPage = () => {
       joinDate: new Date().toISOString().split('T')[0].replace(/-/g, '/'),
       status: 'active',
       memberType: '一般會員'
-    } as Member)
-    setIsEditModalOpen(true)
+    }
+    setSidebarMember(newMember)
+    setIsSidebarOpen(true)
   }
 
   const handleEditMember = (member: Member) => {
@@ -219,6 +219,28 @@ const MembersPage: NextPage = () => {
 
   const handleSaveMember = () => {
     if (!sidebarMember || !user) return
+
+    // 如果是新增會員
+    if (!sidebarMember.id) {
+      const newMember = {
+        ...sidebarMember,
+        id: String(Date.now())  // 暫時使用時間戳作為ID
+      }
+      setMembers([...members, newMember])
+      
+      // 新增操作記錄
+      const newLog: MemberLog = {
+        id: Date.now().toString(),
+        memberId: newMember.id,
+        action: '新增會員',
+        timestamp: new Date().toLocaleString('zh-TW', { hour12: false }),
+        operator: user.email || user.name || '系統管理員',
+        details: '新增會員資料',
+      }
+      setSidebarMemberLogs([newLog])
+      setIsSidebarOpen(false)
+      return
+    }
 
     // 比對變更項目
     const originalMember = members.find(m => m.id === sidebarMember.id)
