@@ -461,6 +461,20 @@ const MembersPage: NextPage = () => {
     }
   }
 
+  const getRemainingDaysColor = (remainingDays: number | undefined) => {
+    if (!remainingDays) return 'text-gray-900'
+    if (remainingDays <= 15) return 'text-red-600'
+    if (remainingDays <= 30) return 'text-orange-500'
+    return 'text-gray-900'
+  }
+
+  const getRemainingDaysMessage = (remainingDays: number | undefined) => {
+    if (!remainingDays) return ''
+    if (remainingDays <= 15) return '確認會員是否續約'
+    if (remainingDays <= 30) return '通知會員即將到期'
+    return ''
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -584,27 +598,17 @@ const MembersPage: NextPage = () => {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {member.joinDate}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {member.hasMembershipPeriod && member.membershipEndDate && (
-                              <>
-                                {member.membershipEndDate}
-                                <br />
-                                {member.remainingDays !== undefined && (
-                                  <>
-                                    <span className={getMembershipStatusDisplay(member.remainingDays).color}>
-                                      剩餘 {member.remainingDays} 天
-                                    </span>
-                                    {member.remainingDays <= 30 && (
-                                      <div className="text-xs mt-1">
-                                        <span className={`${getMembershipStatusDisplay(member.remainingDays).color} font-medium`}>
-                                          {getMembershipStatusDisplay(member.remainingDays).message}
-                                        </span>
-                                      </div>
-                                    )}
-                                  </>
-                                )}
-                              </>
-                            )}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex flex-col">
+                              <div className={getRemainingDaysColor(member.remainingDays)}>
+                                {member.remainingDays} 天
+                              </div>
+                              {getRemainingDaysMessage(member.remainingDays) && (
+                                <div className={`text-sm ${getRemainingDaysColor(member.remainingDays)}`}>
+                                  {getRemainingDaysMessage(member.remainingDays)}
+                                </div>
+                              )}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button
