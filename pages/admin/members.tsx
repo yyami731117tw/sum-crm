@@ -66,6 +66,13 @@ interface Member {
   expertise?: string[]
   taboos?: string[]
   remainingDays?: number
+  serviceStaff?: string
+  relationships?: {
+    name: string
+    type: string
+    memberNo: string
+    referrer?: string
+  }[]
 }
 
 interface MemberLog {
@@ -97,6 +104,7 @@ const MembersPage: NextPage = () => {
   const [isResizing, setIsResizing] = useState(false)
   const [startX, setStartX] = useState(0)
   const [sidebarMemberLogs, setSidebarMemberLogs] = useState<MemberLog[]>([])
+  const [staffList, setStaffList] = useState<Member[]>([])
 
   useEffect(() => {
     setSidebarWidth(window.innerWidth / 2)
@@ -150,6 +158,10 @@ const MembersPage: NextPage = () => {
     if (members.length > 0) {
       localStorage.setItem('members', JSON.stringify(members))
     }
+  }, [members])
+
+  useEffect(() => {
+    setStaffList(members.filter(member => member.memberCategory === '天使' || member.memberCategory === 'VIP'))
   }, [members])
 
   const generateMemberNo = () => {
@@ -207,89 +219,39 @@ const MembersPage: NextPage = () => {
   }
 
   const handleSaveMember = () => {
-    if (!sidebarMember || !user) return
+    // 檢查必填欄位
+    if (!sidebarMember.name || !sidebarMember.phone || !sidebarMember.idNumber) {
+      alert('請填寫必填欄位：姓名、電話、身分證字號')
+      return
+    }
 
-    let updatedMembers: Member[]
+    // 檢查身分證字號是否重複
+    const isDuplicateIdNumber = members.some(member => 
+      member.id !== sidebarMember.id && 
+      member.idNumber === sidebarMember.idNumber
+    )
 
-    // 如果是新增會員
+    if (isDuplicateIdNumber) {
+      alert('此身分證字號已存在，請確認後重新輸入')
+      return
+    }
+
+    // 如果是新會員
     if (!sidebarMember.id) {
       const newMember = {
         ...sidebarMember,
-        id: String(Date.now())  // 使用時間戳作為ID
+        id: generateId()
       }
-      updatedMembers = [...members, newMember]
-      setMembers(updatedMembers)
-      
-      // 新增操作記錄
-      const newLog: MemberLog = {
-        id: Date.now().toString(),
-        memberId: newMember.id,
-        action: '新增會員',
-        timestamp: new Date().toLocaleString('zh-TW', { hour12: false }),
-        operator: user.email || user.name || '系統管理員',
-        details: '新增會員資料',
-      }
-      setSidebarMemberLogs([newLog])
+      setMembers([...members, newMember])
     } else {
-      // 更新會員資料
-      updatedMembers = members.map(m => m.id === sidebarMember.id ? sidebarMember : m)
-      setMembers(updatedMembers)
-
-      // 比對變更項目
-      const originalMember = members.find(m => m.id === sidebarMember.id)
-      if (originalMember) {
-        const changes: { field: string; oldValue: string; newValue: string }[] = []
-        const fieldNames = {
-          memberCategory: '會員分類',
-          status: '狀態',
-          name: '姓名',
-          phone: '電話',
-          gender: '性別',
-          nickname: '暱稱',
-          serviceStaff: '服務專員',
-          idNumber: '身分證字號',
-          birthday: '生日',
-          joinDate: '加入時間',
-          email: '電子郵件',
-          lineId: 'LINE ID',
-          address: '通訊地址',
-          joinCondition: '入會條件',
-          occupation: '職業',
-          notes: '備註'
-        }
-        
-        Object.keys(fieldNames).forEach(field => {
-          const oldValue = originalMember[field as keyof Member]
-          const newValue = sidebarMember[field as keyof Member]
-          if (oldValue !== newValue) {
-            changes.push({
-              field: fieldNames[field as keyof typeof fieldNames],
-              oldValue: oldValue?.toString() || '-',
-              newValue: newValue?.toString() || '-'
-            })
-          }
-        })
-        
-        if (changes.length > 0) {
-          // 新增變更記錄
-          const newLog: MemberLog = {
-            id: Date.now().toString(),
-            memberId: sidebarMember.id,
-            action: '更新會員資料',
-            timestamp: new Date().toLocaleString('zh-TW', { hour12: false }),
-            operator: user.email || user.name || '系統管理員',
-            details: `修改了 ${changes.length} 個欄位`,
-            changes
-          }
-          
-          setSidebarMemberLogs([newLog, ...sidebarMemberLogs])
-        }
-      }
+      // 如果是編輯現有會員
+      setMembers(members.map(member =>
+        member.id === sidebarMember.id ? sidebarMember : member
+      ))
     }
 
-    // 儲存到 localStorage
-    localStorage.setItem('members', JSON.stringify(updatedMembers))
     setIsSidebarOpen(false)
+    setSidebarMember(null)
   }
 
   // 計算年齡
@@ -363,19 +325,15 @@ const MembersPage: NextPage = () => {
     }
   }
 
-  const getRemainingDaysColor = (remainingDays: number | undefined) => {
-    if (!remainingDays) return 'text-gray-900'
-    if (remainingDays <= 0) return 'text-red-600 font-bold'
-    if (remainingDays <= 15) return 'text-red-600'
-    if (remainingDays <= 30) return 'text-orange-500'
-    return 'text-gray-900'
+  const getRemainingDaysColor = (days: number) => {
+    if (days <= 0) return 'text-red-600 font-medium'
+    if (days <= 30) return 'text-yellow-600'
+    return 'text-gray-600'
   }
 
-  const getRemainingDaysMessage = (remainingDays: number | undefined) => {
-    if (!remainingDays) return ''
-    if (remainingDays <= 0) return '會員已到期!!'
-    if (remainingDays <= 15) return '確認會員是否續約'
-    if (remainingDays <= 30) return '通知會員即將到期'
+  const getRemainingDaysMessage = (days: number) => {
+    if (days <= 0) return '已到期'
+    if (days <= 30) return '即將到期'
     return ''
   }
 
@@ -1087,6 +1045,21 @@ const MembersPage: NextPage = () => {
                         </dd>
                       </div>
                       <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">服務專員</dt>
+                        <dd className="mt-1">
+                          <select
+                            value={sidebarMember.serviceStaff || ''}
+                            onChange={(e) => setSidebarMember({...sidebarMember, serviceStaff: e.target.value})}
+                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                          >
+                            <option value="">請選擇</option>
+                            {staffList.map(staff => (
+                              <option key={staff.id} value={staff.id}>{staff.name}</option>
+                            ))}
+                          </select>
+                        </dd>
+                      </div>
+                      <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500">會員期限</dt>
                         <dd className="mt-1">
                           <div className="flex flex-col space-y-2">
@@ -1117,8 +1090,8 @@ const MembersPage: NextPage = () => {
                                 />
                                 {sidebarMember.remainingDays !== undefined && (
                                   <div className={`text-sm ${getRemainingDaysColor(sidebarMember.remainingDays)}`}>
-                                    剩餘 {sidebarMember.remainingDays} 天
-                                    {getRemainingDaysMessage(sidebarMember.remainingDays) && (
+                                    {sidebarMember.remainingDays <= 0 ? '已到期' : `剩餘 ${sidebarMember.remainingDays} 天`}
+                                    {getRemainingDaysMessage(sidebarMember.remainingDays) && sidebarMember.remainingDays > 0 && (
                                       <span className="ml-2">
                                         ({getRemainingDaysMessage(sidebarMember.remainingDays)})
                                       </span>
@@ -1130,7 +1103,152 @@ const MembersPage: NextPage = () => {
                           </div>
                         </dd>
                       </div>
-                      <div className="sm:col-span-1">
+
+                      {/* 關係人資訊 */}
+                      <div className="sm:col-span-2">
+                        <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">關係人資訊</h3>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <dt className="text-sm font-medium text-gray-500">關係人列表</dt>
+                        <dd className="mt-1">
+                          <div className="border border-gray-200 rounded-md">
+                            {sidebarMember.relationships && sidebarMember.relationships.length > 0 ? (
+                              <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                  <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">姓名</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">關係</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">會員編號</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">介紹人</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                  {sidebarMember.relationships.map((relationship, index) => (
+                                    <tr key={index}>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <select
+                                          value={relationship.memberNo}
+                                          onChange={(e) => {
+                                            const selectedMember = members.find(m => m.memberNo === e.target.value)
+                                            const newRelationships = [...sidebarMember.relationships]
+                                            newRelationships[index] = {
+                                              ...relationship,
+                                              name: selectedMember?.name || '',
+                                              memberNo: e.target.value
+                                            }
+                                            setSidebarMember({
+                                              ...sidebarMember,
+                                              relationships: newRelationships
+                                            })
+                                          }}
+                                          className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                                        >
+                                          <option value="">請選擇會員</option>
+                                          {members.filter(m => m.memberNo !== sidebarMember.memberNo).map(member => (
+                                            <option key={member.memberNo} value={member.memberNo}>
+                                              {member.name} ({member.memberNo})
+                                            </option>
+                                          ))}
+                                        </select>
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <input
+                                          type="text"
+                                          value={relationship.type}
+                                          onChange={(e) => {
+                                            const newRelationships = [...sidebarMember.relationships]
+                                            newRelationships[index] = {
+                                              ...relationship,
+                                              type: e.target.value
+                                            }
+                                            setSidebarMember({
+                                              ...sidebarMember,
+                                              relationships: newRelationships
+                                            })
+                                          }}
+                                          className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                          placeholder="請輸入關係"
+                                        />
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {relationship.memberNo}
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <select
+                                          value={relationship.referrer || ''}
+                                          onChange={(e) => {
+                                            const newRelationships = [...sidebarMember.relationships]
+                                            newRelationships[index] = {
+                                              ...relationship,
+                                              referrer: e.target.value
+                                            }
+                                            setSidebarMember({
+                                              ...sidebarMember,
+                                              relationships: newRelationships
+                                            })
+                                          }}
+                                          className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                                        >
+                                          <option value="">請選擇介紹人</option>
+                                          {members.filter(m => m.memberNo !== sidebarMember.memberNo && m.memberNo !== relationship.memberNo).map(member => (
+                                            <option key={member.memberNo} value={member.memberNo}>
+                                              {member.name} ({member.memberNo})
+                                            </option>
+                                          ))}
+                                        </select>
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const newRelationships = [...sidebarMember.relationships]
+                                            newRelationships.splice(index, 1)
+                                            setSidebarMember({
+                                              ...sidebarMember,
+                                              relationships: newRelationships
+                                            })
+                                          }}
+                                          className="text-red-600 hover:text-red-900"
+                                        >
+                                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                          </svg>
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            ) : (
+                              <div className="text-center py-4 text-sm text-gray-500">尚無關係人資料</div>
+                            )}
+                          </div>
+                          <div className="mt-4">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newRelationship = {
+                                  name: '',
+                                  type: '',
+                                  memberNo: ''
+                                }
+                                setSidebarMember({
+                                  ...sidebarMember,
+                                  relationships: [...(sidebarMember.relationships || []), newRelationship]
+                                })
+                              }}
+                              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            >
+                              <svg className="-ml-0.5 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                              </svg>
+                              新增關係人
+                            </button>
+                          </div>
+                        </dd>
+                      </div>
+                      <div className="sm:col-span-2">
                         <dt className="text-sm font-medium text-gray-500">介紹人</dt>
                         <dd className="mt-1">
                           <select
@@ -1325,73 +1443,6 @@ const MembersPage: NextPage = () => {
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                             placeholder="請用逗號分隔多個禁忌"
                           />
-                        </dd>
-                      </div>
-
-                      {/* 關係人資訊 */}
-                      <div className="sm:col-span-2">
-                        <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">關係人資訊</h3>
-                      </div>
-                      <div className="sm:col-span-2">
-                        <dt className="text-sm font-medium text-gray-500">關係人</dt>
-                        <dd className="mt-1">
-                          <div className="space-y-2">
-                            {sidebarMember.relatedMembers?.map((related, index) => (
-                              <div key={index} className="flex items-center space-x-2">
-                                <select
-                                  value={related.memberId}
-                                  onChange={(e) => {
-                                    const newRelatedMembers = [...(sidebarMember.relatedMembers || [])]
-                                    newRelatedMembers[index].memberId = e.target.value
-                                    setSidebarMember({...sidebarMember, relatedMembers: newRelatedMembers})
-                                  }}
-                                  className="block w-64 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                                >
-                                  <option value="">請選擇會員</option>
-                                  {members.filter(m => m.id !== sidebarMember.id).map(member => (
-                                    <option key={member.id} value={member.id}>{member.name} ({member.memberNo})</option>
-                                  ))}
-                                </select>
-                                <input
-                                  type="text"
-                                  value={related.relationship}
-                                  onChange={(e) => {
-                                    const newRelatedMembers = [...(sidebarMember.relatedMembers || [])]
-                                    newRelatedMembers[index].relationship = e.target.value
-                                    setSidebarMember({...sidebarMember, relatedMembers: newRelatedMembers})
-                                  }}
-                                  placeholder="關係"
-                                  className="block w-32 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const newRelatedMembers = [...(sidebarMember.relatedMembers || [])]
-                                    newRelatedMembers.splice(index, 1)
-                                    setSidebarMember({...sidebarMember, relatedMembers: newRelatedMembers})
-                                  }}
-                                  className="p-2 text-red-600 hover:text-red-900"
-                                >
-                                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                </button>
-                              </div>
-                            ))}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newRelatedMembers = [...(sidebarMember.relatedMembers || []), { memberId: '', relationship: '' }]
-                                setSidebarMember({...sidebarMember, relatedMembers: newRelatedMembers})
-                              }}
-                              className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                            >
-                              <svg className="-ml-1 mr-2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                              </svg>
-                              新增關係人
-                            </button>
-                          </div>
                         </dd>
                       </div>
 
