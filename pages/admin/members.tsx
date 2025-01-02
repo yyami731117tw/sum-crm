@@ -48,6 +48,8 @@ const MembersPage: NextPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [sidebarMember, setSidebarMember] = useState<Member | null>(null)
   const [sidebarMemberLogs, setSidebarMemberLogs] = useState<MemberLog[]>([])
+  const [sidebarWidth, setSidebarWidth] = useState(window.innerWidth / 2)
+  const [isResizing, setIsResizing] = useState(false)
 
   useEffect(() => {
     if (!loading && !user) {
@@ -174,6 +176,34 @@ const MembersPage: NextPage = () => {
     member.memberNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
     member.phone.includes(searchTerm)
   )
+
+  const startResizing = (e: React.MouseEvent) => {
+    setIsResizing(true)
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', stopResizing)
+  }
+
+  const stopResizing = () => {
+    setIsResizing(false)
+    document.removeEventListener('mousemove', handleMouseMove)
+    document.removeEventListener('mouseup', stopResizing)
+  }
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (isResizing) {
+      const newWidth = window.innerWidth - e.clientX
+      if (newWidth > 400 && newWidth < window.innerWidth - 100) {
+        setSidebarWidth(newWidth)
+      }
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', stopResizing)
+    }
+  }, [isResizing])
 
   if (loading) {
     return (
@@ -360,9 +390,15 @@ const MembersPage: NextPage = () => {
           <div className="absolute inset-0 overflow-hidden">
             <div className="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
                  onClick={() => setIsSidebarOpen(false)}></div>
-            <section className="absolute inset-y-0 right-0 pl-10 max-w-full flex">
-              <div className="relative w-screen max-w-2xl">
-                <div className="h-full flex flex-col bg-white shadow-xl overflow-y-auto">
+            <section className="absolute inset-y-0 right-0 max-w-full flex">
+              <div 
+                className="absolute inset-y-0 left-0 w-4 cursor-ew-resize bg-transparent hover:bg-blue-200 hover:bg-opacity-50 transition-colors"
+                onMouseDown={startResizing}
+              >
+                <div className="absolute inset-y-0 left-1/2 w-1 bg-gray-300"></div>
+              </div>
+              <div className="relative flex" style={{ width: `${sidebarWidth}px` }}>
+                <div className="flex-1 h-full flex flex-col bg-white shadow-xl overflow-y-auto">
                   {/* 標題列 */}
                   <div className="px-4 py-6 sm:px-6 border-b border-gray-200">
                     <div className="flex items-start justify-between">
