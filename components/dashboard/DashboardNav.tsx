@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useAuth } from '@/hooks/useAuth'
 import { useState, useEffect } from 'react'
-import { HomeIcon, UsersIcon, FolderIcon, DocumentTextIcon, CogIcon, UserCircleIcon } from '@heroicons/react/24/outline'
+import { HomeIcon, UsersIcon, FolderIcon, DocumentTextIcon, CogIcon } from '@heroicons/react/24/outline'
 
 export const DashboardNav: FC = () => {
   const { user, loading } = useAuth()
@@ -21,9 +21,9 @@ export const DashboardNav: FC = () => {
   const navigation = [
     { name: '首頁', href: '/', icon: HomeIcon },
     { name: '會員管理', href: '/admin/members', icon: UsersIcon },
-    { name: '合約管理', href: '/investments', icon: FolderIcon },
+    { name: '人員管理', href: '/admin/users', icon: UsersIcon },
+    { name: '投資項目', href: '/investments', icon: FolderIcon },
     { name: '項目管理', href: '/projects', icon: DocumentTextIcon },
-    { name: '人員管理', href: '/admin/users', icon: UserCircleIcon },
   ]
 
   return (

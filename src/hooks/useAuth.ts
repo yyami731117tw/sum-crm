@@ -1,63 +1,26 @@
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/router'
+import { useSession } from 'next-auth/react'
 
-interface User {
+export interface User {
   id: string
-  name: string
-  email: string
-  role: 'admin' | 'staff' | 'guest'
-  status: 'pending' | 'active' | 'inactive'
-}
-
-// 模擬的管理員用戶
-const mockAdminUser: User = {
-  id: '1',
-  name: '管理員',
-  email: 'admin@example.com',
-  role: 'admin',
-  status: 'active'
+  name?: string | null
+  email?: string | null
+  image?: string | null
+  phone?: string | null
+  lineId?: string | null
+  address?: string | null
+  birthday?: string | null
+  role: string
+  status: string
 }
 
 export function useAuth() {
-  // 暫時直接使用模擬的管理員用戶
-  const [user, setUser] = useState<User | null>(mockAdminUser)
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
-
-  // 暫時移除 useEffect 中的認證檢查
-  useEffect(() => {
-    setLoading(false)
-  }, [])
-
-  // 模擬的認證函數
-  const login = async (email: string, password: string) => {
-    setUser(mockAdminUser)
-    return { user: mockAdminUser }
-  }
-
-  const logout = async () => {
-    setUser(null)
-    router.push('/login')
-  }
-
-  const signup = async (userData: {
-    name: string
-    email: string
-    password: string
-  }) => {
-    return { message: '註冊成功' }
-  }
-
-  const checkAuth = async () => {
-    return { user: mockAdminUser }
-  }
+  const { data: session, status } = useSession()
+  const loading = status === 'loading'
+  const user = session?.user as User | undefined
 
   return {
     user,
     loading,
-    login,
-    logout,
-    signup,
-    checkAuth
+    isAuthenticated: !!session,
   }
 } 
