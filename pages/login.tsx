@@ -8,18 +8,35 @@ import Link from 'next/link'
 
 const Login: NextPage = () => {
   const router = useRouter()
-  const { login } = useAuth()
+  const { login, isAuthenticated } = useAuth()
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/')
+    }
+  }, [isAuthenticated, router])
 
   useEffect(() => {
     // 自動登入並跳轉
     const autoLogin = async () => {
-      setLoading(true)
-      await login({ email: 'admin@mbc.com', password: 'Admin123' })
-      router.push('/')
+      try {
+        setLoading(true)
+        setError('')
+        const result = await login({ email: 'admin@mbc.com', password: 'Admin123' })
+        if (result?.error) {
+          setError('登入失敗，請稍後再試')
+        }
+      } catch (error) {
+        console.error('Login error:', error)
+        setError('登入失敗，請稍後再試')
+      } finally {
+        setLoading(false)
+      }
     }
     autoLogin()
-  }, [])
+  }, [login])
 
   return (
     <>
@@ -42,6 +59,11 @@ const Login: NextPage = () => {
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
               {loading ? '登入中...' : '登入您的帳號'}
             </h2>
+            {error && (
+              <p className="mt-2 text-center text-sm text-red-600">
+                {error}
+              </p>
+            )}
           </div>
         </div>
       </div>

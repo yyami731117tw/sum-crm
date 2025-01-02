@@ -1,4 +1,4 @@
-import { useSession } from 'next-auth/react'
+import { useSession, signIn, signOut } from 'next-auth/react'
 
 export interface User {
   id: string
@@ -18,9 +18,28 @@ export function useAuth() {
   const loading = status === 'loading'
   const user = session?.user as User | undefined
 
+  const login = async (credentials: { email: string; password: string }) => {
+    try {
+      const result = await signIn('credentials', {
+        ...credentials,
+        redirect: false,
+      })
+      return result
+    } catch (error) {
+      console.error('Login error:', error)
+      throw error
+    }
+  }
+
+  const logout = async () => {
+    await signOut({ redirect: false })
+  }
+
   return {
     user,
     loading,
     isAuthenticated: !!session,
+    login,
+    logout,
   }
 } 
