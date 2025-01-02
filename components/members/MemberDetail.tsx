@@ -9,16 +9,26 @@ interface MemberDetailProps {
   allMembers?: Member[]
 }
 
+interface ShowFullImage {
+  type: 'front' | 'back' | null
+  url: string | null
+}
+
 export default function MemberDetail({ member: initialMember, onUpdate, onClose, allMembers }: MemberDetailProps) {
   const { user, isAuthenticated } = useAuth()
   const [member, setMember] = useState<MemberWithRelations>(initialMember)
-  const [isEditing, setIsEditing] = useState(false)
-  const [showFullImage, setShowFullImage] = useState<{ type: 'front' | 'back' | null, url: string | null }>({ type: null, url: null })
+  const [showFullImage, setShowFullImage] = useState<ShowFullImage>({ type: null, url: null })
   const [idNumberError, setIdNumberError] = useState<string | null>(null)
 
   useEffect(() => {
     setMember(initialMember)
   }, [initialMember])
+
+  const handleShowImage = (type: 'front' | 'back', url: string | undefined) => {
+    if (url) {
+      setShowFullImage({ type, url })
+    }
+  }
 
   // 檢查身分證字號是否重複
   const checkIdNumberDuplicate = async (idNumber: string) => {
@@ -80,7 +90,6 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose,
 
       const updatedMember = await response.json()
       setMember(updatedMember)
-      setIsEditing(false)
       if (onUpdate) {
         onUpdate(updatedMember)
       }
@@ -92,7 +101,6 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose,
 
   const handleCancel = () => {
     setMember(initialMember)
-    setIsEditing(false)
   }
 
   const handleFileUpload = async (file: File, type: 'front' | 'back') => {
@@ -181,11 +189,11 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose,
   // 當生日變更時更新年齡
   const handleBirthdayChange = (birthday: string) => {
     const age = calculateAge(birthday)
-    setMember({
-      ...member,
+    setMember(prev => ({
+      ...prev,
       birthday: new Date(birthday),
       age
-    })
+    }))
   }
 
   // 計算剩餘天數
@@ -199,11 +207,11 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose,
   // 當會員期限變更時更新剩餘天數
   const handleMembershipEndDateChange = (endDate: string) => {
     const remainingDays = calculateRemainingDays(endDate)
-    setMember({
-      ...member,
+    setMember(prev => ({
+      ...prev,
       membershipEndDate: new Date(endDate),
       remainingDays
-    })
+    }))
   }
 
   const getRemainingDaysColor = (remainingDays: number | undefined) => {
@@ -227,12 +235,6 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose,
     if (remainingDays === undefined) return ''
     if (remainingDays <= 0) return '已到期'
     return `${remainingDays} 天`
-  }
-
-  const handleShowImage = (type: 'front' | 'back', url: string | undefined) => {
-    if (url) {
-      setShowFullImage({ type, url })
-    }
   }
 
   const handleFieldChange = (field: keyof MemberWithRelations, value: any) => {
@@ -321,23 +323,9 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose,
                 <dt className="text-sm font-medium text-gray-500">性別</dt>
                 <dd className="mt-1 text-sm text-gray-900">{member.gender}</dd>
               </div>
-              <div className="sm:col-span-1">
+              <div>
                 <dt className="text-sm font-medium text-gray-500">身分證字號</dt>
-                <dd className="mt-1">
-                  <div>
-                    <input
-                      type="text"
-                      value={member.idNumber}
-                      onChange={(e) => handleIdNumberChange(e.target.value)}
-                      className={`block w-full border ${
-                        idNumberError ? 'border-red-300' : 'border-gray-300'
-                      } rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
-                    />
-                    {idNumberError && (
-                      <p className="mt-1 text-sm text-red-600">{idNumberError}</p>
-                    )}
-                  </div>
-                </dd>
+                <dd className="mt-1 text-sm text-gray-900">{member.idNumber}</dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">生日</dt>
@@ -355,20 +343,7 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose,
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">是否為美國公民</dt>
-                <dd className="mt-1">
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id="isUSCitizen"
-                      checked={member.isUSCitizen || false}
-                      onChange={(e) => handleFieldChange('isUSCitizen', e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <label htmlFor="isUSCitizen" className="ml-2 block text-sm text-gray-900">
-                      是
-                    </label>
-                  </div>
-                </dd>
+                <dd className="mt-1 text-sm text-gray-900">{member.isUSCitizen ? '是' : '否'}</dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">職業</dt>
@@ -433,17 +408,8 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose,
               )}
               <div className="mt-4">
                 <dt className="text-sm font-medium text-gray-500">介紹人</dt>
-                <dd className="mt-1">
-                  <select
-                    value={member.referrer || ''}
-                    onChange={(e) => handleFieldChange('referrer', e.target.value)}
-                    className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                  >
-                    <option value="">請選擇</option>
-                    {allMembers?.filter(m => m.id !== member.id).map(m => (
-                      <option key={m.id} value={m.id}>{m.name} ({m.memberNo})</option>
-                    ))}
-                  </select>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {allMembers?.find(m => m.id === member.referrer)?.name || '-'}
                 </dd>
               </div>
             </div>
@@ -541,56 +507,30 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose,
                   <label className="block text-sm font-medium text-gray-700">正面</label>
                   {member.idCardFront ? (
                     <div className="mt-1 relative">
-                      <img
-                        src={member.idCardFront}
-                        alt="身分證正面"
+                      <img 
+                        src={member.idCardFront} 
+                        alt="身分證正面" 
                         className="h-32 w-48 object-cover cursor-pointer"
                         onClick={() => handleShowImage('front', member.idCardFront)}
                       />
-                      <button
-                        onClick={() => handleRemoveImage('idCardFront')}
-                        className="absolute top-0 right-0 p-1 bg-red-100 rounded-full text-red-600 hover:bg-red-200"
-                      >
-                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
                     </div>
                   ) : (
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleImageUpload(e, 'idCardFront')}
-                      className="mt-1"
-                    />
+                    <div className="mt-1 text-sm text-gray-500">未上傳</div>
                   )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">背面</label>
                   {member.idCardBack ? (
                     <div className="mt-1 relative">
-                      <img
-                        src={member.idCardBack}
-                        alt="身分證背面"
+                      <img 
+                        src={member.idCardBack} 
+                        alt="身分證背面" 
                         className="h-32 w-48 object-cover cursor-pointer"
                         onClick={() => handleShowImage('back', member.idCardBack)}
                       />
-                      <button
-                        onClick={() => handleRemoveImage('idCardBack')}
-                        className="absolute top-0 right-0 p-1 bg-red-100 rounded-full text-red-600 hover:bg-red-200"
-                      >
-                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
                     </div>
                   ) : (
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleImageUpload(e, 'idCardBack')}
-                      className="mt-1"
-                    />
+                    <div className="mt-1 text-sm text-gray-500">未上傳</div>
                   )}
                 </div>
               </dd>
@@ -636,51 +576,9 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose,
         </dl>
       </div>
 
-      {/* 底部按鈕 */}
-      <div className="flex-shrink-0 px-4 py-4 flex justify-end space-x-3 border-t border-gray-200 bg-white sticky bottom-0 z-10">
-        {isEditing ? (
-          <>
-            <button
-              type="button"
-              onClick={handleUpdate}
-              className="inline-flex items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-              儲存
-            </button>
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="inline-flex items-center justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-              取消
-            </button>
-          </>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setIsEditing(true)}
-            className="inline-flex items-center justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-            </svg>
-            編輯
-          </button>
-        )}
-      </div>
-
       {/* 全螢幕圖片預覽 */}
       {showFullImage.url && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-          onClick={() => setShowFullImage({ type: null, url: null })}
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
           <div className="relative max-w-4xl max-h-screen p-4">
             <img
               src={showFullImage.url}

@@ -87,16 +87,16 @@ const MembersPage: NextPage = () => {
   const router = useRouter()
   const [members, setMembers] = useState<Member[]>([])
   const [selectedMember, setSelectedMember] = useState<Member | null>(null)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isLogModalOpen, setIsLogModalOpen] = useState(false)
   const [selectedMemberLogs, setSelectedMemberLogs] = useState<MemberLog[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [isCreateMode, setIsCreateMode] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [sidebarMember, setSidebarMember] = useState<Member | null>(null)
-  const [sidebarMemberLogs, setSidebarMemberLogs] = useState<MemberLog[]>([])
-  const [sidebarWidth, setSidebarWidth] = useState(600)
+  const [sidebarWidth, setSidebarWidth] = useState(800)
   const [isResizing, setIsResizing] = useState(false)
+  const [startX, setStartX] = useState(0)
+  const [sidebarMemberLogs, setSidebarMemberLogs] = useState<MemberLog[]>([])
 
   useEffect(() => {
     setSidebarWidth(window.innerWidth / 2)
@@ -181,12 +181,6 @@ const MembersPage: NextPage = () => {
     setIsSidebarOpen(true)
   }
 
-  const handleEditMember = (member: Member) => {
-    setIsCreateMode(false)
-    setSelectedMember(member)
-    setIsEditModalOpen(true)
-  }
-
   const handleViewMember = (member: Member) => {
     setSidebarMember(member)
     // 模擬從API獲取會員記錄
@@ -211,80 +205,6 @@ const MembersPage: NextPage = () => {
     setSidebarMemberLogs(mockLogs)
     setIsSidebarOpen(true)
   }
-
-  const handleUpdateMember = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedMember) return
-    
-    if (isCreateMode) {
-      // TODO: 實作新增會員的 API 調用
-      const newMember = {
-        ...selectedMember,
-        id: String(Date.now())  // 暫時使用時間戳作為ID
-      }
-      setMembers([...members, newMember])
-    } else {
-      // TODO: 實作更新會員資料的 API 調用
-      setMembers(members.map(m => m.id === selectedMember.id ? selectedMember : m))
-    }
-    setIsEditModalOpen(false)
-  }
-
-  const getStatusBadgeColor = (status: Member['status']) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800'
-      case 'inactive':
-        return 'bg-red-100 text-red-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
-  }
-
-  const getStatusText = (status: Member['status']) => {
-    switch (status) {
-      case 'active':
-        return '啟用'
-      case 'inactive':
-        return '停用'
-      default:
-        return status
-    }
-  }
-
-  const filteredMembers = members.filter(member =>
-    member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.memberNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.phone.includes(searchTerm)
-  )
-
-  const startResizing = (e: React.MouseEvent) => {
-    setIsResizing(true)
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', stopResizing)
-  }
-
-  const stopResizing = () => {
-    setIsResizing(false)
-    document.removeEventListener('mousemove', handleMouseMove)
-    document.removeEventListener('mouseup', stopResizing)
-  }
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (isResizing) {
-      const newWidth = window.innerWidth - e.clientX
-      if (newWidth > 400 && newWidth < window.innerWidth - 100) {
-        setSidebarWidth(newWidth)
-      }
-    }
-  }
-
-  useEffect(() => {
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', stopResizing)
-    }
-  }, [isResizing])
 
   const handleSaveMember = () => {
     if (!sidebarMember || !user) return
@@ -466,6 +386,64 @@ const MembersPage: NextPage = () => {
     return `${remainingDays} 天`
   }
 
+  const getStatusBadgeColor = (status: Member['status']) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800'
+      case 'inactive':
+        return 'bg-red-100 text-red-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getStatusText = (status: Member['status']) => {
+    switch (status) {
+      case 'active':
+        return '啟用'
+      case 'inactive':
+        return '停用'
+      default:
+        return status
+    }
+  }
+
+  const filteredMembers = members.filter(member =>
+    member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    member.memberNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    member.phone.includes(searchTerm)
+  )
+
+  const startResizing = (e: React.MouseEvent) => {
+    setIsResizing(true)
+    setStartX(e.clientX)
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', stopResizing)
+  }
+
+  const stopResizing = () => {
+    setIsResizing(false)
+    document.removeEventListener('mousemove', handleMouseMove)
+    document.removeEventListener('mouseup', stopResizing)
+  }
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (isResizing) {
+      const diff = e.clientX - startX
+      const newWidth = sidebarWidth - diff
+      if (newWidth > 400 && newWidth < window.innerWidth - 100) {
+        setSidebarWidth(newWidth)
+      }
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', stopResizing)
+    }
+  }, [isResizing])
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -613,6 +591,11 @@ const MembersPage: NextPage = () => {
                       ))}
                     </tbody>
                   </table>
+                  {(!filteredMembers || filteredMembers.length === 0) && (
+                    <div className="text-center py-4 text-sm text-gray-500">
+                      尚無投資紀錄
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -718,12 +701,6 @@ const MembersPage: NextPage = () => {
                         </div>
                       </div>
                       <div className="flex items-center space-x-4">
-                        <Link
-                          href={`/admin/members/${sidebarMember.id}`}
-                          className="text-sm text-blue-600 hover:text-blue-900 font-medium"
-                        >
-                          開啟完整頁面
-                        </Link>
                         <button
                           onClick={() => setIsSidebarOpen(false)}
                           className="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none"
