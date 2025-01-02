@@ -1,9 +1,30 @@
 import { Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { Member } from '@prisma/client'
 import { format } from 'date-fns'
 import { zhTW } from 'date-fns/locale'
+
+interface Member {
+  id: string
+  memberNo: string
+  name: string
+  nickname?: string | null
+  gender: string
+  phone: string
+  email?: string | null
+  birthday: Date
+  age?: number | null
+  address?: string | null
+  idNumber: string
+  status: string
+  memberType: string
+  membershipStartDate?: Date | null
+  membershipEndDate?: Date | null
+  remainingDays?: number | null
+  occupation?: string | null
+  lineId?: string | null
+  notes?: string | null
+}
 
 interface MemberDetailProps {
   member: Member | null
@@ -15,24 +36,48 @@ export default function MemberDetail({ member, open, setOpen }: MemberDetailProp
   if (!member) return null
 
   const memberDetails = [
-    { label: '會員編號', value: member.memberNo },
-    { label: '會員類型', value: member.memberType },
-    { label: '會員狀態', value: member.status },
-    { label: '會籍開始日期', value: member.membershipStartDate ? format(new Date(member.membershipStartDate), 'yyyy/MM/dd', { locale: zhTW }) : '-' },
-    { label: '會籍結束日期', value: member.membershipEndDate ? format(new Date(member.membershipEndDate), 'yyyy/MM/dd', { locale: zhTW }) : '-' },
-    { label: '剩餘天數', value: member.remainingDays || '-' },
-    { label: '姓名', value: member.name },
-    { label: '暱稱', value: member.nickname || '-' },
-    { label: '性別', value: member.gender === 'male' ? '男' : '女' },
-    { label: '生日', value: member.birthday ? format(new Date(member.birthday), 'yyyy/MM/dd', { locale: zhTW }) : '-' },
-    { label: '年齡', value: member.age || '-' },
-    { label: '身分證字號', value: member.idNumber },
-    { label: '電話', value: member.phone },
-    { label: '電子郵件', value: member.email || '-' },
-    { label: 'Line ID', value: member.lineId || '-' },
-    { label: '地址', value: member.address || '-' },
-    { label: '職業', value: member.occupation || '-' },
-    { label: '備註', value: member.notes || '-' },
+    // 會員基本資訊
+    {
+      title: '會籍資訊',
+      items: [
+        { label: '會員編號', value: member.memberNo },
+        { label: '會員類型', value: member.memberType },
+        { label: '會員狀態', value: member.status },
+        { label: '會籍開始日期', value: member.membershipStartDate ? format(new Date(member.membershipStartDate), 'yyyy/MM/dd', { locale: zhTW }) : '-' },
+        { label: '會籍結束日期', value: member.membershipEndDate ? format(new Date(member.membershipEndDate), 'yyyy/MM/dd', { locale: zhTW }) : '-' },
+        { label: '剩餘天數', value: member.remainingDays || '-' },
+      ],
+    },
+    // 個人基本資料
+    {
+      title: '個人資料',
+      items: [
+        { label: '姓名', value: member.name },
+        { label: '暱稱', value: member.nickname || '-' },
+        { label: '性別', value: member.gender === 'male' ? '男' : '女' },
+        { label: '生日', value: member.birthday ? format(new Date(member.birthday), 'yyyy/MM/dd', { locale: zhTW }) : '-' },
+        { label: '年齡', value: member.age || '-' },
+        { label: '身分證字號', value: member.idNumber },
+      ],
+    },
+    // 聯絡資訊
+    {
+      title: '聯絡資訊',
+      items: [
+        { label: '電話', value: member.phone },
+        { label: '電子郵件', value: member.email || '-' },
+        { label: 'Line ID', value: member.lineId || '-' },
+        { label: '地址', value: member.address || '-' },
+      ],
+    },
+    // 其他資訊
+    {
+      title: '其他資訊',
+      items: [
+        { label: '職業', value: member.occupation || '-' },
+        { label: '備註', value: member.notes || '-' },
+      ],
+    },
   ]
 
   return (
@@ -73,18 +118,21 @@ export default function MemberDetail({ member, open, setOpen }: MemberDetailProp
                     </div>
                     {/* Main */}
                     <div className="divide-y divide-gray-200">
-                      <div className="pb-6">
-                        <div className="h-full">
-                          <dl className="space-y-6 px-4 sm:px-6">
-                            {memberDetails.map((detail) => (
-                              <div key={detail.label}>
-                                <dt className="text-sm font-medium leading-6 text-gray-900">{detail.label}</dt>
-                                <dd className="mt-1 text-sm leading-6 text-gray-700">{detail.value}</dd>
+                      {memberDetails.map((section) => (
+                        <div key={section.title} className="px-4 py-6 sm:px-6">
+                          <h3 className="text-base font-semibold leading-7 text-gray-900 mb-4">
+                            {section.title}
+                          </h3>
+                          <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                            {section.items.map((detail) => (
+                              <div key={detail.label} className="sm:col-span-1">
+                                <dt className="text-sm font-medium text-gray-500">{detail.label}</dt>
+                                <dd className="mt-1 text-sm text-gray-900">{detail.value}</dd>
                               </div>
                             ))}
                           </dl>
                         </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
                 </Dialog.Panel>
