@@ -19,12 +19,11 @@ export const DashboardNav: FC = () => {
   const showAdminMenu = isAdmin
 
   const navigation = [
-    { name: '首頁', href: '/dashboard', icon: HomeIcon },
+    { name: '首頁', href: '/', icon: HomeIcon },
     { name: '會員管理', href: '/admin/members', icon: UsersIcon },
     { name: '人員管理', href: '/admin/users', icon: UsersIcon },
-    { name: '項目管理', href: '/admin/projects', icon: FolderIcon },
-    { name: '合約管理', href: '/admin/contracts', icon: DocumentTextIcon },
-    { name: '系統設定', href: '/admin/settings', icon: CogIcon },
+    { name: '投資項目', href: '/investments', icon: FolderIcon },
+    { name: '項目管理', href: '/projects', icon: DocumentTextIcon },
   ]
 
   return (
@@ -33,8 +32,8 @@ export const DashboardNav: FC = () => {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link href="/dashboard" className="text-xl font-bold text-gray-800">
-                MBC天使俱樂部
+              <Link href="/" className="text-xl font-bold text-gray-800">
+                MBC管理系統
               </Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
@@ -44,10 +43,10 @@ export const DashboardNav: FC = () => {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
+                    className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
                       isActive
-                        ? 'border-b-2 border-blue-500 text-gray-900'
-                        : 'border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                        ? 'bg-gray-100 text-gray-900'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }`}
                   >
                     <item.icon className="h-5 w-5 mr-2" />
