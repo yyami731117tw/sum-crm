@@ -297,12 +297,6 @@ const MembersPage: NextPage = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button
-                              onClick={() => handleEditMember(member)}
-                              className="text-blue-600 hover:text-blue-900 mr-4"
-                            >
-                              編輯
-                            </button>
-                            <button
                               onClick={() => handleViewMember(member)}
                               className="text-green-600 hover:text-green-900"
                             >
@@ -319,202 +313,6 @@ const MembersPage: NextPage = () => {
           </main>
         </div>
       </div>
-
-      {/* 編輯/新增會員 Modal */}
-      {isEditModalOpen && selectedMember && (
-        <div className="fixed z-10 inset-0 overflow-y-auto">
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-            </div>
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <form onSubmit={handleUpdateMember}>
-                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">
-                      {isCreateMode ? '新增會員' : '編輯會員資料'}
-                    </h3>
-                    <button
-                      type="button"
-                      onClick={() => setIsEditModalOpen(false)}
-                      className="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none"
-                    >
-                      <span className="sr-only">關閉</span>
-                      <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        會員編號
-                      </label>
-                      <input
-                        type="text"
-                        value={selectedMember.memberNo}
-                        readOnly
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 text-gray-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        姓名
-                      </label>
-                      <input
-                        type="text"
-                        value={selectedMember.name}
-                        onChange={(e) => setSelectedMember({...selectedMember, name: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        電話
-                      </label>
-                      <input
-                        type="tel"
-                        value={selectedMember.phone}
-                        onChange={(e) => setSelectedMember({...selectedMember, phone: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        性別
-                      </label>
-                      <select
-                        value={selectedMember.gender}
-                        onChange={(e) => setSelectedMember({...selectedMember, gender: e.target.value as '男' | '女'})}
-                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                      >
-                        <option value="男">男</option>
-                        <option value="女">女</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        會員類型
-                      </label>
-                      <select
-                        value={selectedMember.memberType}
-                        onChange={(e) => setSelectedMember({...selectedMember, memberType: e.target.value as '一般會員' | 'VIP會員'})}
-                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                      >
-                        <option value="一般會員">一般會員</option>
-                        <option value="VIP會員">VIP會員</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        身分證字號
-                      </label>
-                      <input
-                        type="text"
-                        value={selectedMember.idNumber}
-                        onChange={(e) => setSelectedMember({...selectedMember, idNumber: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        生日
-                      </label>
-                      <input
-                        type="date"
-                        value={selectedMember.birthday.replace(/\//g, '-')}
-                        onChange={(e) => setSelectedMember({...selectedMember, birthday: e.target.value.replace(/-/g, '/')})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        電子郵件
-                      </label>
-                      <input
-                        type="email"
-                        value={selectedMember.email || ''}
-                        onChange={(e) => setSelectedMember({...selectedMember, email: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        LINE ID
-                      </label>
-                      <input
-                        type="text"
-                        value={selectedMember.lineId || ''}
-                        onChange={(e) => setSelectedMember({...selectedMember, lineId: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        通訊地址
-                      </label>
-                      <input
-                        type="text"
-                        value={selectedMember.address || ''}
-                        onChange={(e) => setSelectedMember({...selectedMember, address: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        職業
-                      </label>
-                      <input
-                        type="text"
-                        value={selectedMember.occupation || ''}
-                        onChange={(e) => setSelectedMember({...selectedMember, occupation: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        入會條件
-                      </label>
-                      <input
-                        type="text"
-                        value={selectedMember.joinCondition || ''}
-                        onChange={(e) => setSelectedMember({...selectedMember, joinCondition: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        備註
-                      </label>
-                      <textarea
-                        value={selectedMember.notes || ''}
-                        onChange={(e) => setSelectedMember({...selectedMember, notes: e.target.value})}
-                        rows={3}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                  <button
-                    type="submit"
-                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
-                  >
-                    {isCreateMode ? '新增' : '儲存'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsEditModalOpen(false)}
-                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                  >
-                    取消
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 使用記錄 Modal */}
       {isLogModalOpen && (
@@ -801,6 +599,13 @@ const MembersPage: NextPage = () => {
                       className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
                       儲存
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsSidebarOpen(false)}
+                      className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      取消
                     </button>
                   </div>
                 </div>
