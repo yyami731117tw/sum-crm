@@ -8,7 +8,6 @@ interface DashboardStats {
   totalMembers: number
   activeMembers: number
   totalInvestments: number
-  totalAmount: number
   recentActivities: {
     id: string
     type: 'member' | 'investment'
@@ -24,7 +23,6 @@ const DashboardPage: NextPage = () => {
     totalMembers: 150,
     activeMembers: 120,
     totalInvestments: 25,
-    totalAmount: 75000000,
     recentActivities: [
       {
         id: '1',
@@ -53,7 +51,7 @@ const DashboardPage: NextPage = () => {
   return (
     <>
       <Head>
-        <title>儀表板 - MBC天使俱樂部</title>
+        <title>首頁 - MBC天使俱樂部</title>
       </Head>
       <div className="min-h-screen bg-gray-100">
         <DashboardNav />
@@ -62,14 +60,14 @@ const DashboardPage: NextPage = () => {
           <header>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <h1 className="text-3xl font-bold leading-tight text-gray-900">
-                儀表板
+                首頁
               </h1>
             </div>
           </header>
           <main>
             <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
               {/* 統計卡片區 */}
-              <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 <div className="bg-white overflow-hidden shadow rounded-lg">
                   <div className="p-5">
                     <div className="flex items-center">
@@ -129,28 +127,6 @@ const DashboardPage: NextPage = () => {
                           </dt>
                           <dd className="text-lg font-medium text-gray-900">
                             {stats.totalInvestments}
-                          </dd>
-                        </dl>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white overflow-hidden shadow rounded-lg">
-                  <div className="p-5">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-gray-500 truncate">
-                            總投資金額
-                          </dt>
-                          <dd className="text-lg font-medium text-gray-900">
-                            NT$ {stats.totalAmount.toLocaleString()}
                           </dd>
                         </dl>
                       </div>
