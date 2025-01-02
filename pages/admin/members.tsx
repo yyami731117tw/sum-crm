@@ -33,6 +33,12 @@ interface MemberLog {
   action: string
   timestamp: string
   details: string
+  operator: string
+  changes?: {
+    field: string
+    oldValue: string
+    newValue: string
+  }[]
 }
 
 const MembersPage: NextPage = () => {
@@ -117,14 +123,16 @@ const MembersPage: NextPage = () => {
         memberId: member.id,
         action: '更新個人資料',
         timestamp: '2024/01/15 14:30:00',
-        details: '修改電話號碼'
+        details: '修改電話號碼',
+        operator: '系統管理員'
       },
       {
         id: '2',
         memberId: member.id,
         action: '參加活動',
         timestamp: '2024/01/14 11:20:00',
-        details: '參加投資說明會'
+        details: '參加投資說明會',
+        operator: '系統管理員'
       }
     ]
     setSidebarMemberLogs(mockLogs)
@@ -204,6 +212,65 @@ const MembersPage: NextPage = () => {
       document.removeEventListener('mouseup', stopResizing)
     }
   }, [isResizing])
+
+  const handleSaveMember = () => {
+    if (!sidebarMember || !user) return
+
+    // 比對變更項目
+    const originalMember = members.find(m => m.id === sidebarMember.id)
+    if (!originalMember) return
+    
+    const changes: { field: string; oldValue: string; newValue: string }[] = []
+    const fieldNames = {
+      memberType: '會員類型',
+      status: '狀態',
+      name: '姓名',
+      phone: '電話',
+      gender: '性別',
+      nickname: '暱稱',
+      serviceStaff: '服務專員',
+      idNumber: '身分證字號',
+      birthday: '生日',
+      joinDate: '加入時間',
+      email: '電子郵件',
+      lineId: 'LINE ID',
+      address: '通訊地址',
+      joinCondition: '入會條件',
+      occupation: '職業',
+      notes: '備註'
+    }
+    
+    Object.keys(fieldNames).forEach(field => {
+      const oldValue = originalMember[field as keyof Member]
+      const newValue = sidebarMember[field as keyof Member]
+      if (oldValue !== newValue) {
+        changes.push({
+          field: fieldNames[field as keyof typeof fieldNames],
+          oldValue: oldValue?.toString() || '-',
+          newValue: newValue?.toString() || '-'
+        })
+      }
+    })
+    
+    if (changes.length > 0) {
+      // 新增變更記錄
+      const newLog: MemberLog = {
+        id: Date.now().toString(),
+        memberId: sidebarMember.id,
+        action: '更新會員資料',
+        timestamp: new Date().toLocaleString('zh-TW', { hour12: false }),
+        operator: user.email || user.name || '系統管理員',
+        details: `修改了 ${changes.length} 個欄位`,
+        changes
+      }
+      
+      setSidebarMemberLogs([newLog, ...sidebarMemberLogs])
+    }
+
+    // 更新會員資料
+    setMembers(members.map(m => m.id === sidebarMember.id ? sidebarMember : m))
+    setIsSidebarOpen(false)
+  }
 
   if (loading) {
     return (
@@ -363,6 +430,16 @@ const MembersPage: NextPage = () => {
                         <div>
                           <p className="text-sm font-medium text-gray-900">{log.action}</p>
                           <p className="text-sm text-gray-500">{log.details}</p>
+                          {log.changes && (
+                            <div className="mt-2 space-y-1">
+                              {log.changes.map((change, index) => (
+                                <p key={index} className="text-sm text-gray-500">
+                                  {change.field}: {change.oldValue} → {change.newValue}
+                                </p>
+                              ))}
+                            </div>
+                          )}
+                          <p className="text-sm text-gray-500 mt-1">操作人員：{log.operator}</p>
                         </div>
                         <p className="text-sm text-gray-500">{log.timestamp}</p>
                       </div>
@@ -615,6 +692,16 @@ const MembersPage: NextPage = () => {
                               <div>
                                 <p className="text-sm font-medium text-gray-900">{log.action}</p>
                                 <p className="text-sm text-gray-500">{log.details}</p>
+                                {log.changes && (
+                                  <div className="mt-2 space-y-1">
+                                    {log.changes.map((change, index) => (
+                                      <p key={index} className="text-sm text-gray-500">
+                                        {change.field}: {change.oldValue} → {change.newValue}
+                                      </p>
+                                    ))}
+                                  </div>
+                                )}
+                                <p className="text-sm text-gray-500 mt-1">操作人員：{log.operator}</p>
                               </div>
                               <p className="text-sm text-gray-500">{log.timestamp}</p>
                             </div>
@@ -628,10 +715,7 @@ const MembersPage: NextPage = () => {
                   <div className="flex-shrink-0 px-4 py-4 flex justify-end space-x-3 border-t border-gray-200">
                     <button
                       type="button"
-                      onClick={() => {
-                        setMembers(members.map(m => m.id === sidebarMember.id ? sidebarMember : m))
-                        setIsSidebarOpen(false)
-                      }}
+                      onClick={handleSaveMember}
                       className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
                       儲存
