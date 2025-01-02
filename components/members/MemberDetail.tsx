@@ -130,6 +130,7 @@ export default function MemberDetail({ member, open, setOpen }: MemberDetailProp
       title: '投資履歷',
       items: [
         // 投資項目列表將在這裡添加
+        { label: '投資項目', value: '尚未有投資紀錄' },
       ],
     },
   ]
