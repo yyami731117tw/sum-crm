@@ -287,6 +287,9 @@ const MembersPage = (): ReactElement => {
       return
     }
 
+    const now = new Date()
+    const timestamp = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
+
     // 如果是新會員
     if (!sidebarMember.id || sidebarMember.id === '') {
       const newMember = {
@@ -294,8 +297,56 @@ const MembersPage = (): ReactElement => {
         id: generateId(),
       }
       setMembers(prevMembers => [...prevMembers, newMember])
+
+      // 記錄新增會員的變更
+      const newLog: MemberLog = {
+        id: generateId(),
+        memberId: newMember.id,
+        action: '新增會員',
+        timestamp,
+        details: `新增會員：${newMember.name}（${newMember.memberNo}）`,
+        operator: user?.name || '系統管理員'
+      }
+      setSidebarMemberLogs(prevLogs => [newLog, ...prevLogs])
     } else {
       // 如果是編輯現有會員
+      const oldMember = members.find(m => m.id === sidebarMember.id)
+      if (oldMember) {
+        // 比較變更的欄位
+        const changes: { field: string; oldValue: string; newValue: string }[] = []
+        Object.entries(sidebarMember).forEach(([key, value]) => {
+          const oldValue = oldMember[key as keyof Member]
+          if (oldValue !== value) {
+            // 處理特殊型別的顯示
+            let displayOldValue = Array.isArray(oldValue) ? oldValue.join(', ') : String(oldValue || '')
+            let displayNewValue = Array.isArray(value) ? value.join(', ') : String(value || '')
+
+            // 處理布林值的顯示
+            if (typeof oldValue === 'boolean') displayOldValue = oldValue ? '是' : '否'
+            if (typeof value === 'boolean') displayNewValue = value ? '是' : '否'
+
+            changes.push({
+              field: key,
+              oldValue: displayOldValue,
+              newValue: displayNewValue
+            })
+          }
+        })
+
+        if (changes.length > 0) {
+          const newLog: MemberLog = {
+            id: generateId(),
+            memberId: sidebarMember.id,
+            action: '更新會員資料',
+            timestamp,
+            details: `更新會員：${sidebarMember.name}（${sidebarMember.memberNo}）的資料`,
+            operator: user?.name || '系統管理員',
+            changes
+          }
+          setSidebarMemberLogs(prevLogs => [newLog, ...prevLogs])
+        }
+      }
+
       setMembers(prevMembers => prevMembers.map(member =>
         member.id === sidebarMember.id ? sidebarMember : member
       ))
@@ -1525,25 +1576,60 @@ const MembersPage = (): ReactElement => {
                         </div>
                       </div>
 
+                      {/* 變更紀錄 */}
+                      <div className="sm:col-span-2">
+                        <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">變更紀錄</h3>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <div className="space-y-4">
+                          {sidebarMemberLogs.map(log => (
+                            <div key={log.id} className="border-b border-gray-200 pb-4">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <p className="text-sm font-medium text-gray-900">{log.action}</p>
+                                  <p className="text-sm text-gray-500">{log.details}</p>
+                                  {log.changes && (
+                                    <div className="mt-2 space-y-1">
+                                      {log.changes.map((change, index) => (
+                                        <p key={index} className="text-sm text-gray-500">
+                                          {change.field}: {change.oldValue} → {change.newValue}
+                                        </p>
+                                      ))}
+                                    </div>
+                                  )}
+                                  <p className="text-sm text-gray-500 mt-1">操作人員：{log.operator}</p>
+                                </div>
+                                <p className="text-sm text-gray-500">{log.timestamp}</p>
+                              </div>
+                            </div>
+                          ))}
+                          {sidebarMemberLogs.length === 0 && (
+                            <div className="text-center py-4 text-sm text-gray-500">
+                              尚無變更紀錄
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
                       {/* 按鈕區 */}
                       <div className="sm:col-span-2 mt-6 flex justify-end space-x-3">
-                    <button
-                      type="button"
-                      onClick={handleSaveMember}
+                        <button
+                          type="button"
+                          onClick={handleSaveMember}
                           className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      儲存
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsSidebarOpen(false)}
-                      className="inline-flex items-center justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                      取消
-                    </button>
+                        >
+                          儲存
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setIsSidebarOpen(false)}
+                          className="inline-flex items-center justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                          <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                          取消
+                        </button>
                       </div>
                     </dl>
                   </div>
