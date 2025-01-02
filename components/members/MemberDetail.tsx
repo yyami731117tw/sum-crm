@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
-import { Member, MemberLog, MemberWithRelations } from '@/types'
+import { Member, MemberLog, MemberWithRelations, RelatedMember } from '@/types'
 
 interface MemberDetailProps {
   member: MemberWithRelations
   onUpdate?: (member: MemberWithRelations) => void
   onClose?: () => void
+  allMembers?: Member[]
 }
 
-export default function MemberDetail({ member: initialMember, onUpdate, onClose }: MemberDetailProps) {
+export default function MemberDetail({ member: initialMember, onUpdate, onClose, allMembers }: MemberDetailProps) {
   const { user, isAuthenticated } = useAuth()
-  const [member, setMember] = useState(initialMember)
+  const [member, setMember] = useState<MemberWithRelations>(initialMember)
   const [isEditing, setIsEditing] = useState(false)
   const [showFullImage, setShowFullImage] = useState<{ type: 'front' | 'back' | null, url: string | null }>({ type: null, url: null })
   const [idNumberError, setIdNumberError] = useState<string | null>(null)
@@ -29,8 +30,8 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose 
         throw new Error('檢查失敗')
       }
       
-      const { isDuplicate } = await response.json()
-      if (isDuplicate) {
+      const data = await response.json()
+      if (data.isDuplicate) {
         setIdNumberError('此身分證字號已被使用')
       } else {
         setIdNumberError(null)
@@ -234,6 +235,13 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose 
     }
   }
 
+  const handleFieldChange = (field: keyof MemberWithRelations, value: any) => {
+    setMember(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
+
   return (
     <div className="h-full flex flex-col bg-white">
       {/* 標題列 */}
@@ -294,6 +302,14 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose 
             <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200">基本資料</h3>
             <div className="mt-4 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">
               <div>
+                <dt className="text-sm font-medium text-gray-500">會員編號</dt>
+                <dd className="mt-1 text-sm text-gray-900">{member.memberNo}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">會員分類</dt>
+                <dd className="mt-1 text-sm text-gray-900">{member.memberType}</dd>
+              </div>
+              <div>
                 <dt className="text-sm font-medium text-gray-500">姓名</dt>
                 <dd className="mt-1 text-sm text-gray-900">{member.name}</dd>
               </div>
@@ -304,6 +320,24 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose 
               <div>
                 <dt className="text-sm font-medium text-gray-500">性別</dt>
                 <dd className="mt-1 text-sm text-gray-900">{member.gender}</dd>
+              </div>
+              <div className="sm:col-span-1">
+                <dt className="text-sm font-medium text-gray-500">身分證字號</dt>
+                <dd className="mt-1">
+                  <div>
+                    <input
+                      type="text"
+                      value={member.idNumber}
+                      onChange={(e) => handleIdNumberChange(e.target.value)}
+                      className={`block w-full border ${
+                        idNumberError ? 'border-red-300' : 'border-gray-300'
+                      } rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                    />
+                    {idNumberError && (
+                      <p className="mt-1 text-sm text-red-600">{idNumberError}</p>
+                    )}
+                  </div>
+                </dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">生日</dt>
@@ -316,28 +350,33 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose 
                 <dd className="mt-1 text-sm text-gray-900">{member.age}</dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">身分證字號</dt>
-                {isEditing ? (
-                  <div>
+                <dt className="text-sm font-medium text-gray-500">國籍</dt>
+                <dd className="mt-1 text-sm text-gray-900">{member.nationality || '-'}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">是否為美國公民</dt>
+                <dd className="mt-1">
+                  <div className="flex items-center">
                     <input
-                      type="text"
-                      value={member.idNumber}
-                      onChange={(e) => handleIdNumberChange(e.target.value)}
-                      className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
-                        idNumberError ? 'border-red-300' : ''
-                      }`}
+                      type="checkbox"
+                      id="isUSCitizen"
+                      checked={member.isUSCitizen || false}
+                      onChange={(e) => handleFieldChange('isUSCitizen', e.target.checked)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
-                    {idNumberError && (
-                      <p className="mt-1 text-sm text-red-600">{idNumberError}</p>
-                    )}
+                    <label htmlFor="isUSCitizen" className="ml-2 block text-sm text-gray-900">
+                      是
+                    </label>
                   </div>
-                ) : (
-                  <dd className="mt-1 text-sm text-gray-900">{member.idNumber}</dd>
-                )}
+                </dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">職業</dt>
                 <dd className="mt-1 text-sm text-gray-900">{member.occupation || '-'}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">飲食習慣</dt>
+                <dd className="mt-1 text-sm text-gray-900">{member.dietaryHabits || '-'}</dd>
               </div>
             </div>
           </div>
@@ -365,6 +404,51 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose 
             </div>
           </div>
 
+          {/* 關係人資訊 */}
+          <div className="sm:col-span-2">
+            <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200">關係人資訊</h3>
+            <div className="mt-4">
+              {member.relatedMembers && member.relatedMembers.length > 0 ? (
+                <div className="grid grid-cols-1 gap-4">
+                  {member.relatedMembers.map((related, index) => {
+                    const relatedMemberInfo = allMembers?.find(m => m.id === related.relatedMemberId)
+                    return (
+                      <div key={index} className="border rounded-lg p-4">
+                        <div className="grid grid-cols-1 gap-y-4 sm:grid-cols-2 sm:gap-x-4">
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">關係人姓名</dt>
+                            <dd className="mt-1 text-sm text-gray-900">{relatedMemberInfo?.name}</dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">關係</dt>
+                            <dd className="mt-1 text-sm text-gray-900">{related.relationship}</dd>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">無關係人資訊</p>
+              )}
+              <div className="mt-4">
+                <dt className="text-sm font-medium text-gray-500">介紹人</dt>
+                <dd className="mt-1">
+                  <select
+                    value={member.referrer || ''}
+                    onChange={(e) => handleFieldChange('referrer', e.target.value)}
+                    className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                  >
+                    <option value="">請選擇</option>
+                    {allMembers?.filter(m => m.id !== member.id).map(m => (
+                      <option key={m.id} value={m.id}>{m.name} ({m.memberNo})</option>
+                    ))}
+                  </select>
+                </dd>
+              </div>
+            </div>
+          </div>
+
           {/* 緊急聯絡人 */}
           <div className="sm:col-span-2">
             <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200">緊急聯絡人</h3>
@@ -384,65 +468,30 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose 
             </div>
           </div>
 
-          {/* 關係人資訊 */}
-          <div className="sm:col-span-2">
-            <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200">關係人資訊</h3>
-            <div className="mt-4">
-              {member.relatedMembers && member.relatedMembers.length > 0 ? (
-                <div className="grid grid-cols-1 gap-4">
-                  {member.relatedMembers.map((related, index) => (
-                    <div key={index} className="border rounded-lg p-4">
-                      <div className="grid grid-cols-1 gap-y-4 sm:grid-cols-2 sm:gap-x-4">
-                        <div>
-                          <dt className="text-sm font-medium text-gray-500">姓名</dt>
-                          <dd className="mt-1 text-sm text-gray-900">
-                            {related.name}
-                            {related.isReferrer && (
-                              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                介紹人
-                              </span>
-                            )}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-sm font-medium text-gray-500">關係</dt>
-                          <dd className="mt-1 text-sm text-gray-900">{related.relationship}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-sm font-medium text-gray-500">電話</dt>
-                          <dd className="mt-1 text-sm text-gray-900">{related.phone}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-sm font-medium text-gray-500">備註</dt>
-                          <dd className="mt-1 text-sm text-gray-900">{related.notes || '-'}</dd>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500">無關係人資訊</p>
-              )}
-            </div>
-          </div>
-
           {/* 會員資訊 */}
           <div className="sm:col-span-2">
             <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200">會員資訊</h3>
             <div className="mt-4 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">
               <div>
-                <dt className="text-sm font-medium text-gray-500">會員編號</dt>
-                <dd className="mt-1 text-sm text-gray-900">{member.memberNo}</dd>
+                <dt className="text-sm font-medium text-gray-500">加入時間</dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {member.joinDate && new Date(member.joinDate).toLocaleDateString('zh-TW')}
+                </dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">會員類型</dt>
-                <dd className="mt-1 text-sm text-gray-900">{member.memberType}</dd>
+                <dt className="text-sm font-medium text-gray-500">入會條件</dt>
+                <dd className="mt-1 text-sm text-gray-900">{member.joinCondition || '-'}</dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">會員期限</dt>
-                <dd className={`mt-1 text-sm ${member.remainingDays && member.remainingDays <= 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                <dd className={`mt-1 text-sm ${member.remainingDays && member.remainingDays <= 0 ? 'text-red-600 font-bold' : 'text-gray-900'}`}>
                   {member.membershipStartDate && new Date(member.membershipStartDate).toLocaleDateString('zh-TW')} ~ 
                   {member.membershipEndDate && new Date(member.membershipEndDate).toLocaleDateString('zh-TW')}
+                  {member.remainingDays && member.remainingDays <= 0 && (
+                    <span className="ml-2 text-red-600 font-bold">
+                      (已到期)
+                    </span>
+                  )}
                 </dd>
               </div>
               <div>
@@ -459,105 +508,92 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose 
             </div>
           </div>
 
-          {/* 身分證影本 */}
+          {/* 其他資訊 */}
           <div className="sm:col-span-2">
-            <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200">身分證影本</h3>
+            <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200">其他資訊</h3>
             <div className="mt-4 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">
               <div>
-                <dt className="text-sm font-medium text-gray-500">正面</dt>
-                <dd className="mt-1">
-                  {member.idCardFront ? (
-                    <div className="relative">
-                      <img 
-                        src={member.idCardFront} 
-                        alt="身分證正面" 
-                        className="h-24 w-36 object-cover rounded-md cursor-pointer"
-                        onClick={() => handleShowImage('front', member.idCardFront)}
-                      />
-                      {isEditing && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveImage('idCardFront')}
-                          className="absolute -top-2 -right-2 p-1 bg-red-100 rounded-full text-red-600 hover:bg-red-200"
-                        >
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center h-24 w-36 border-2 border-dashed border-gray-300 rounded-md">
-                      <label className="relative cursor-pointer">
-                        <div className="flex flex-col items-center space-y-1">
-                          <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                          </svg>
-                          <span className="text-xs text-gray-500">上傳照片</span>
-                        </div>
-                        <input
-                          type="file"
-                          className="hidden"
-                          accept="image/*"
-                          onChange={(e) => handleImageUpload(e, 'idCardFront')}
-                        />
-                      </label>
-                    </div>
-                  )}
-                </dd>
+                <dt className="text-sm font-medium text-gray-500">家庭狀況</dt>
+                <dd className="mt-1 text-sm text-gray-900">{member.familyStatus || '-'}</dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">背面</dt>
-                <dd className="mt-1">
-                  {member.idCardBack ? (
-                    <div className="relative">
-                      <img 
-                        src={member.idCardBack} 
-                        alt="身分證背面" 
-                        className="h-24 w-36 object-cover rounded-md cursor-pointer"
-                        onClick={() => handleShowImage('back', member.idCardBack)}
-                      />
-                      {isEditing && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveImage('idCardBack')}
-                          className="absolute -top-2 -right-2 p-1 bg-red-100 rounded-full text-red-600 hover:bg-red-200"
-                        >
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center h-24 w-36 border-2 border-dashed border-gray-300 rounded-md">
-                      <label className="relative cursor-pointer">
-                        <div className="flex flex-col items-center space-y-1">
-                          <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                          </svg>
-                          <span className="text-xs text-gray-500">上傳照片</span>
-                        </div>
-                        <input
-                          type="file"
-                          className="hidden"
-                          accept="image/*"
-                          onChange={(e) => handleImageUpload(e, 'idCardBack')}
-                        />
-                      </label>
-                    </div>
-                  )}
-                </dd>
+                <dt className="text-sm font-medium text-gray-500">學歷</dt>
+                <dd className="mt-1 text-sm text-gray-900">{member.education || '-'}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">專長</dt>
+                <dd className="mt-1 text-sm text-gray-900">{member.expertise?.join(', ') || '-'}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">禁忌</dt>
+                <dd className="mt-1 text-sm text-gray-900">{member.taboos?.join(', ') || '-'}</dd>
               </div>
             </div>
           </div>
 
-          {/* 其他資訊 */}
+          {/* 附件 */}
           <div className="sm:col-span-2">
-            <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200">其他資訊</h3>
+            <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200">附件</h3>
             <div className="mt-4">
-              <dt className="text-sm font-medium text-gray-500">備註</dt>
-              <dd className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{member.notes || '-'}</dd>
+              <dt className="text-sm font-medium text-gray-500 mb-2">身分證影本</dt>
+              <dd className="mt-1 grid grid-cols-1 gap-y-4 sm:grid-cols-2 sm:gap-x-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">正面</label>
+                  {member.idCardFront ? (
+                    <div className="mt-1 relative">
+                      <img
+                        src={member.idCardFront}
+                        alt="身分證正面"
+                        className="h-32 w-48 object-cover cursor-pointer"
+                        onClick={() => handleShowImage('front', member.idCardFront)}
+                      />
+                      <button
+                        onClick={() => handleRemoveImage('idCardFront')}
+                        className="absolute top-0 right-0 p-1 bg-red-100 rounded-full text-red-600 hover:bg-red-200"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, 'idCardFront')}
+                      className="mt-1"
+                    />
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">背面</label>
+                  {member.idCardBack ? (
+                    <div className="mt-1 relative">
+                      <img
+                        src={member.idCardBack}
+                        alt="身分證背面"
+                        className="h-32 w-48 object-cover cursor-pointer"
+                        onClick={() => handleShowImage('back', member.idCardBack)}
+                      />
+                      <button
+                        onClick={() => handleRemoveImage('idCardBack')}
+                        className="absolute top-0 right-0 p-1 bg-red-100 rounded-full text-red-600 hover:bg-red-200"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, 'idCardBack')}
+                      className="mt-1"
+                    />
+                  )}
+                </div>
+              </dd>
             </div>
           </div>
 
@@ -598,36 +634,6 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose 
             </div>
           </div>
         </dl>
-
-        {/* 使用記錄 */}
-        <div className="mt-8">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">使用記錄</h3>
-          <div className="space-y-4">
-            {member.logs.map(log => (
-              <div key={log.id} className="border-b border-gray-200 pb-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{log.action}</p>
-                    <p className="text-sm text-gray-500">{log.details}</p>
-                    {log.changes && (
-                      <div className="mt-2 space-y-1">
-                        {Object.entries(log.changes as any).map(([field, values]: [string, any], index) => (
-                          <p key={index} className="text-sm text-gray-500">
-                            {field}: {values.oldValue} → {values.newValue}
-                          </p>
-                        ))}
-                      </div>
-                    )}
-                    <p className="text-sm text-gray-500 mt-1">操作人員：{log.operator}</p>
-                  </div>
-                  <p className="text-sm text-gray-500">
-                    {new Date(log.createdAt).toLocaleString('zh-TW', { hour12: false })}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* 底部按鈕 */}

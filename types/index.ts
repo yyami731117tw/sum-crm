@@ -21,6 +21,18 @@ export interface Member {
   occupation?: string
   lineId?: string
   notes?: string
+  referrer?: string
+  vipStartDate?: Date
+  vipEndDate?: Date
+  familyStatus?: string
+  education?: '高中以下' | '高中職' | '專科' | '大學' | '碩士' | '博士'
+  expertise?: string[]
+  taboos?: string[]
+  nationality?: '台灣 Taiwan' | '馬來西亞 Malaysia' | '中國 China' | '香港 Hong Kong' | '澳洲 Australia' | '日本 Japan'
+  isUSCitizen?: boolean
+  dietaryHabits?: string
+  joinDate?: Date
+  joinCondition?: '舊會員' | '會員體驗' | '200萬財力審查'
   createdAt: Date
   updatedAt: Date
 }
@@ -28,11 +40,9 @@ export interface Member {
 export interface RelatedMember {
   id: string
   memberId: string
-  name: string
+  relatedMemberId: string
   relationship: string
-  phone: string
-  notes?: string
-  isReferrer?: boolean
+  createdAt: Date
 }
 
 export interface EmergencyContact {
@@ -65,4 +75,5 @@ export interface MemberWithRelations extends Member {
   emergencyContact?: EmergencyContact
   logs: MemberLog[]
   investments?: Investment[]
+  referrer?: string
 } 
