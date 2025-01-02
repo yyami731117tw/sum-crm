@@ -10,8 +10,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url = env("POSTGRES_PRISMA_URL")
-  directUrl = env("POSTGRES_URL_NON_POOLING")
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -21,7 +20,6 @@ model User {
   name      String
   role      String   @default("guest")    // 'admin' | 'staff' | 'guest'
   status    String   @default("pending")  // 'pending' | 'active' | 'inactive'
-  joinDate  DateTime @default(now())
   lastLogin DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -39,8 +37,6 @@ model Member {
   age                Int?
   address            String?
   idNumber           String         @unique
-  idCardFront        String?
-  idCardBack         String?
   status             String         @default("active")
   memberType         String
   membershipStartDate DateTime?
@@ -62,8 +58,9 @@ model RelatedMember {
   relatedMemberId  String
   relationship     String
   createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
   member           Member   @relation(fields: [memberId], references: [id])
+
+  @@index([memberId])
 }
 
 model Investment {
@@ -75,8 +72,9 @@ model Investment {
   date        DateTime
   notes       String?
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
   member      Member   @relation(fields: [memberId], references: [id])
+
+  @@index([memberId])
 }
 
 model MemberLog {
@@ -88,4 +86,6 @@ model MemberLog {
   changes     Json?
   createdAt   DateTime @default(now())
   member      Member   @relation(fields: [memberId], references: [id])
+
+  @@index([memberId])
 }

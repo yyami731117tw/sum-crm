@@ -52,25 +52,35 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose 
   }
 
   const handleFileUpload = async (file: File, type: 'front' | 'back') => {
-    // TODO: 實作檔案上傳 API
-    const formData = new FormData()
-    formData.append('file', file)
-    
     try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      })
+      // 將檔案轉換為 base64
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
       
-      if (!response.ok) {
-        throw new Error('上傳失敗')
+      reader.onload = async () => {
+        const base64String = reader.result as string
+        
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            file: base64String,
+            type: type === 'front' ? 'idcard_front' : 'idcard_back'
+          }),
+        })
+        
+        if (!response.ok) {
+          throw new Error('上傳失敗')
+        }
+        
+        const { url } = await response.json()
+        setMember({
+          ...member,
+          [type === 'front' ? 'idCardFront' : 'idCardBack']: url
+        })
       }
-      
-      const { url } = await response.json()
-      setMember({
-        ...member,
-        [type === 'front' ? 'idCardFront' : 'idCardBack']: url
-      })
     } catch (error) {
       console.error('上傳失敗:', error)
       // TODO: 顯示錯誤訊息
@@ -198,6 +208,144 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose 
           {/* 基本資料 */}
           <div className="sm:col-span-2">
             <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200">基本資料</h3>
+          </div>
+          
+          {/* 身分證照片 */}
+          <div className="sm:col-span-2">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">身分證照片</h3>
+            <div className="grid grid-cols-2 gap-6">
+              {/* 正面 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">正面</label>
+                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                  {member.idCardFront ? (
+                    <div className="relative w-full">
+                      <img
+                        src={member.idCardFront}
+                        alt="身分證正面"
+                        className="max-h-48 mx-auto"
+                      />
+                      {isEditing && (
+                        <button
+                          type="button"
+                          onClick={() => setMember({ ...member, idCardFront: '' })}
+                          className="absolute top-0 right-0 p-1 bg-red-100 rounded-full text-red-600 hover:bg-red-200"
+                        >
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-1 text-center">
+                      <svg
+                        className="mx-auto h-12 w-12 text-gray-400"
+                        stroke="currentColor"
+                        fill="none"
+                        viewBox="0 0 48 48"
+                      >
+                        <path
+                          d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      <div className="flex text-sm text-gray-600">
+                        <label
+                          htmlFor="idcard-front"
+                          className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                        >
+                          <span>上傳照片</span>
+                          <input
+                            id="idcard-front"
+                            name="idcard-front"
+                            type="file"
+                            className="sr-only"
+                            accept="image/*"
+                            disabled={!isEditing}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (file) {
+                                handleFileUpload(file, 'front')
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
+                      <p className="text-xs text-gray-500">PNG, JPG, GIF 最大 10MB</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 背面 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">背面</label>
+                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                  {member.idCardBack ? (
+                    <div className="relative w-full">
+                      <img
+                        src={member.idCardBack}
+                        alt="身分證背面"
+                        className="max-h-48 mx-auto"
+                      />
+                      {isEditing && (
+                        <button
+                          type="button"
+                          onClick={() => setMember({ ...member, idCardBack: '' })}
+                          className="absolute top-0 right-0 p-1 bg-red-100 rounded-full text-red-600 hover:bg-red-200"
+                        >
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-1 text-center">
+                      <svg
+                        className="mx-auto h-12 w-12 text-gray-400"
+                        stroke="currentColor"
+                        fill="none"
+                        viewBox="0 0 48 48"
+                      >
+                        <path
+                          d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      <div className="flex text-sm text-gray-600">
+                        <label
+                          htmlFor="idcard-back"
+                          className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                        >
+                          <span>上傳照片</span>
+                          <input
+                            id="idcard-back"
+                            name="idcard-back"
+                            type="file"
+                            className="sr-only"
+                            accept="image/*"
+                            disabled={!isEditing}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (file) {
+                                handleFileUpload(file, 'back')
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
+                      <p className="text-xs text-gray-500">PNG, JPG, GIF 最大 10MB</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
           
           {/* ... 其他欄位 ... */}
