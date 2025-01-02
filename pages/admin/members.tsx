@@ -45,6 +45,9 @@ const MembersPage: NextPage = () => {
   const [selectedMemberLogs, setSelectedMemberLogs] = useState<MemberLog[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [isCreateMode, setIsCreateMode] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [sidebarMember, setSidebarMember] = useState<Member | null>(null)
+  const [sidebarMemberLogs, setSidebarMemberLogs] = useState<MemberLog[]>([])
 
   useEffect(() => {
     if (!loading && !user) {
@@ -103,7 +106,8 @@ const MembersPage: NextPage = () => {
     setIsEditModalOpen(true)
   }
 
-  const handleViewLogs = (member: Member) => {
+  const handleViewMember = (member: Member) => {
+    setSidebarMember(member)
     // 模擬從API獲取會員記錄
     const mockLogs: MemberLog[] = [
       {
@@ -121,8 +125,8 @@ const MembersPage: NextPage = () => {
         details: '參加投資說明會'
       }
     ]
-    setSelectedMemberLogs(mockLogs)
-    setIsLogModalOpen(true)
+    setSidebarMemberLogs(mockLogs)
+    setIsSidebarOpen(true)
   }
 
   const handleUpdateMember = async (e: React.FormEvent) => {
@@ -266,12 +270,12 @@ const MembersPage: NextPage = () => {
                               </div>
                               <div className="ml-4">
                                 <div className="text-sm font-medium text-gray-900">
-                                  <Link
-                                    href={`/admin/members/${member.id}`}
+                                  <button
+                                    onClick={() => handleViewMember(member)}
                                     className="text-sm font-medium text-blue-600 hover:text-blue-900 hover:underline"
                                   >
                                     {member.name}
-                                  </Link>
+                                  </button>
                                 </div>
                                 <div className="text-sm text-gray-500">會員編號：{member.memberNo}</div>
                                 <div className="text-sm text-gray-500">{member.phone}</div>
@@ -299,7 +303,7 @@ const MembersPage: NextPage = () => {
                               編輯
                             </button>
                             <button
-                              onClick={() => handleViewLogs(member)}
+                              onClick={() => handleViewMember(member)}
                               className="text-green-600 hover:text-green-900"
                             >
                               使用記錄
@@ -536,6 +540,159 @@ const MembersPage: NextPage = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 側邊會員詳細資料 */}
+      {isSidebarOpen && sidebarMember && (
+        <div className="fixed inset-0 overflow-hidden z-20">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
+                 onClick={() => setIsSidebarOpen(false)}></div>
+            <section className="absolute inset-y-0 right-0 pl-10 max-w-full flex">
+              <div className="relative w-screen max-w-2xl">
+                <div className="h-full flex flex-col bg-white shadow-xl overflow-y-auto">
+                  {/* 標題列 */}
+                  <div className="px-4 py-6 sm:px-6 border-b border-gray-200">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-12 w-12">
+                          <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                            <span className="text-xl font-medium text-blue-600">
+                              {sidebarMember.name[0]}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="ml-3">
+                          <h2 className="text-lg font-medium text-gray-900">
+                            {sidebarMember.name}
+                            {sidebarMember.nickname && ` (${sidebarMember.nickname})`}
+                          </h2>
+                          <p className="text-sm text-gray-500">
+                            會員編號：{sidebarMember.memberNo}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center">
+                        <Link
+                          href={`/admin/members/${sidebarMember.id}`}
+                          className="mr-4 text-sm text-blue-600 hover:text-blue-900"
+                        >
+                          開啟完整頁面
+                        </Link>
+                        <button
+                          onClick={() => setIsSidebarOpen(false)}
+                          className="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none"
+                        >
+                          <span className="sr-only">關閉</span>
+                          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 會員資料 */}
+                  <div className="flex-1 px-4 py-6 sm:px-6 overflow-y-auto">
+                    <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">會員類型</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{sidebarMember.memberType}</dd>
+                      </div>
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">狀態</dt>
+                        <dd className="mt-1">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            getStatusBadgeColor(sidebarMember.status)
+                          }`}>
+                            {getStatusText(sidebarMember.status)}
+                          </span>
+                        </dd>
+                      </div>
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">加入時間</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{sidebarMember.joinDate}</dd>
+                      </div>
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">入會條件</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{sidebarMember.joinCondition || '-'}</dd>
+                      </div>
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">服務專員</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{sidebarMember.serviceStaff || '-'}</dd>
+                      </div>
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">身分證字號</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{sidebarMember.idNumber}</dd>
+                      </div>
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">生日</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{sidebarMember.birthday}</dd>
+                      </div>
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">性別</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{sidebarMember.gender}</dd>
+                      </div>
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">電話</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{sidebarMember.phone}</dd>
+                      </div>
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">電子郵件</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{sidebarMember.email || '-'}</dd>
+                      </div>
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">LINE ID</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{sidebarMember.lineId || '-'}</dd>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <dt className="text-sm font-medium text-gray-500">通訊地址</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{sidebarMember.address || '-'}</dd>
+                      </div>
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">職業</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{sidebarMember.occupation || '-'}</dd>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <dt className="text-sm font-medium text-gray-500">備註</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{sidebarMember.notes || '-'}</dd>
+                      </div>
+                    </dl>
+
+                    {/* 使用記錄 */}
+                    <div className="mt-8">
+                      <h3 className="text-lg font-medium text-gray-900 mb-4">使用記錄</h3>
+                      <div className="space-y-4">
+                        {sidebarMemberLogs.map(log => (
+                          <div key={log.id} className="border-b border-gray-200 pb-4">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">{log.action}</p>
+                                <p className="text-sm text-gray-500">{log.details}</p>
+                              </div>
+                              <p className="text-sm text-gray-500">{log.timestamp}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 底部按鈕 */}
+                  <div className="flex-shrink-0 px-4 py-4 flex justify-end space-x-3 border-t border-gray-200">
+                    <button
+                      type="button"
+                      onClick={() => handleEditMember(sidebarMember)}
+                      className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      編輯資料
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
           </div>
         </div>
       )}
