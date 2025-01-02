@@ -49,6 +49,12 @@ export default function Navbar() {
                 會員管理
               </a>
               <a
+                href="/users"
+                className={`${isActive('/users')} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+              >
+                人員管理
+              </a>
+              <a
                 href="/investments"
                 className={`${isActive('/investments')} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
               >
