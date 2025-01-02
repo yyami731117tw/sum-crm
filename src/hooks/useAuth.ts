@@ -13,33 +13,25 @@ export interface User {
   status: string
 }
 
+// 模擬的管理員用戶
+const mockUser: User = {
+  id: '1',
+  name: '管理員',
+  email: 'admin@mbc.com',
+  role: 'admin',
+  status: 'active',
+  phone: null,
+  lineId: null,
+  address: null,
+  birthday: null,
+  image: null,
+}
+
 export function useAuth() {
-  const { data: session, status } = useSession()
-  const loading = status === 'loading'
-  const user = session?.user as User | undefined
-
-  const login = async (credentials: { email: string; password: string }) => {
-    try {
-      const result = await signIn('credentials', {
-        ...credentials,
-        redirect: false,
-      })
-      return result
-    } catch (error) {
-      console.error('Login error:', error)
-      throw error
-    }
-  }
-
-  const logout = async () => {
-    await signOut({ redirect: false })
-  }
-
+  // 暫時返回模擬的用戶資料
   return {
-    user,
-    loading,
-    isAuthenticated: !!session,
-    login,
-    logout,
+    user: mockUser,
+    loading: false,
+    isAuthenticated: true,
   }
 } 
