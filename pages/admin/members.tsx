@@ -910,10 +910,10 @@ const MembersPage: NextPage = () => {
                       </div>
                       <div className="sm:col-span-2">
                         <dt className="text-sm font-medium text-gray-500">身分證影本</dt>
-                        <dd className="mt-1 space-y-2">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">正面</label>
-                            <div className="mt-1 flex items-center space-x-4">
+                        <dd className="mt-1">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="mb-2 text-sm text-gray-500">正面</p>
                               {sidebarMember.idCardFront ? (
                                 <div className="relative">
                                   <img
@@ -950,10 +950,8 @@ const MembersPage: NextPage = () => {
                                 </div>
                               )}
                             </div>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">反面</label>
-                            <div className="mt-1 flex items-center space-x-4">
+                            <div>
+                              <p className="mb-2 text-sm text-gray-500">反面</p>
                               {sidebarMember.idCardBack ? (
                                 <div className="relative">
                                   <img
