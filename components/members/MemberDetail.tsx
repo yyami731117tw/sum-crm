@@ -1,15 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { useAuth } from '@/hooks/useAuth'
-import { Member, RelatedMember, Investment, MemberLog } from '@prisma/client'
+import { Member, MemberLog, MemberWithRelations } from '@/types'
 
 interface MemberDetailProps {
-  member: Member & {
-    relatedMembers: RelatedMember[]
-    investments: Investment[]
-    logs: MemberLog[]
-  }
-  onUpdate?: (member: Member) => void
+  member: MemberWithRelations
+  onUpdate?: (member: MemberWithRelations) => void
   onClose?: () => void
   isFullPage?: boolean
 }
