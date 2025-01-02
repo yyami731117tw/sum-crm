@@ -1,20 +1,19 @@
-import type { NextPage } from 'next'
-import { useEffect } from 'react'
+import { NextPage } from 'next'
+import Head from 'next/head'
 import { useRouter } from 'next/router'
+import { useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { DashboardNav } from '@/components/dashboard/DashboardNav'
-import Head from 'next/head'
 
 const Dashboard: NextPage = () => {
+  const { user, loading } = useAuth()
   const router = useRouter()
-  const { isAuthenticated, loading, user } = useAuth()
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      console.log('Not authenticated, redirecting to login')
-      router.replace('/login')
+    if (!loading && !user) {
+      router.push('/login')
     }
-  }, [isAuthenticated, loading, router])
+  }, [loading, user, router])
 
   if (loading) {
     return (
@@ -24,92 +23,97 @@ const Dashboard: NextPage = () => {
     )
   }
 
-  if (!isAuthenticated) {
+  if (!user) {
     return null
   }
 
   return (
     <>
       <Head>
-        <title>首頁 - 多元商會員管理系統</title>
+        <title>儀表板 - MBC天使俱樂部管理系統</title>
       </Head>
       <div className="min-h-screen bg-gray-100">
         <DashboardNav />
-        <main className="py-10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h1 className="text-2xl font-semibold text-gray-900">歡迎回來，{user?.name}</h1>
-                <p className="mt-1 text-sm text-gray-500">
-                  這是您的個人儀表板，您可以在這裡查看和管理所有功能。
-                </p>
+        
+        {/* 主要內容區 */}
+        <div className="py-10">
+          <header>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h1 className="text-3xl font-bold leading-tight text-gray-900">
+                儀表板
+              </h1>
+            </div>
+          </header>
+          <main>
+            <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+              {/* 儀表板卡片 */}
+              <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {/* 會員統計 */}
+                <div className="bg-white overflow-hidden shadow rounded-lg">
+                  <div className="p-5">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 bg-blue-500 rounded-md p-3">
+                        👥
+                      </div>
+                      <div className="ml-5 w-0 flex-1">
+                        <dl>
+                          <dt className="text-sm font-medium text-gray-500 truncate">
+                            總會員數
+                          </dt>
+                          <dd className="text-3xl font-semibold text-gray-900">
+                            128
+                          </dd>
+                        </dl>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 投資項目 */}
+                <div className="bg-white overflow-hidden shadow rounded-lg">
+                  <div className="p-5">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 bg-green-500 rounded-md p-3">
+                        📈
+                      </div>
+                      <div className="ml-5 w-0 flex-1">
+                        <dl>
+                          <dt className="text-sm font-medium text-gray-500 truncate">
+                            進行中的項目
+                          </dt>
+                          <dd className="text-3xl font-semibold text-gray-900">
+                            12
+                          </dd>
+                        </dl>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 合約統計 */}
+                <div className="bg-white overflow-hidden shadow rounded-lg">
+                  <div className="p-5">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 bg-yellow-500 rounded-md p-3">
+                        📄
+                      </div>
+                      <div className="ml-5 w-0 flex-1">
+                        <dl>
+                          <dt className="text-sm font-medium text-gray-500 truncate">
+                            本月新增合約
+                          </dt>
+                          <dd className="text-3xl font-semibold text-gray-900">
+                            8
+                          </dd>
+                        </dl>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-
-            {/* 快速操作區 */}
-            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      👥
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
-                          會員總數
-                        </dt>
-                        <dd className="text-lg font-semibold text-gray-900">
-                          0
-                        </dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      📄
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
-                          合約總數
-                        </dt>
-                        <dd className="text-lg font-semibold text-gray-900">
-                          0
-                        </dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      📊
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
-                          專案總數
-                        </dt>
-                        <dd className="text-lg font-semibold text-gray-900">
-                          0
-                        </dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
     </>
   )

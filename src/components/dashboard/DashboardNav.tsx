@@ -1,16 +1,20 @@
 import type { FC } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/router'
 import { useAuth } from '@/hooks/useAuth'
 import { useState, useEffect } from 'react'
 
 export const DashboardNav: FC = () => {
-  const { isAdmin, logout, user } = useAuth()
+  const router = useRouter()
+  const { user, logout } = useAuth()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+
+  const isAdmin = user?.role === 'admin'
 
   useEffect(() => {
     console.log('DashboardNav - Current user:', user)
-    console.log('DashboardNav - Is admin?', isAdmin())
+    console.log('DashboardNav - Is admin?', isAdmin)
   }, [user, isAdmin])
 
   const handleLogout = () => {
@@ -23,14 +27,16 @@ export const DashboardNav: FC = () => {
     })
   }
 
-  const showAdminMenu = isAdmin()
+  const handleNavigation = (path: string) => {
+    router.push(path)
+  }
 
   return (
     <nav className="bg-white shadow">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-8">
-            <Link href="/" className="flex items-center space-x-3">
+            <button onClick={() => handleNavigation('/')} className="flex items-center space-x-3">
               <div className="relative w-10 h-10">
                 <Image
                   src="/logo.png"
@@ -42,14 +48,44 @@ export const DashboardNav: FC = () => {
                 />
               </div>
               <span className="text-xl font-semibold text-gray-900 whitespace-nowrap">多元商會員管理系統</span>
-            </Link>
+            </button>
             <div className="flex items-center space-x-6">
-              <NavLink href="/dashboard">首頁</NavLink>
-              <NavLink href="/members">會員管理</NavLink>
-              <NavLink href="/contracts">合約管理</NavLink>
-              <NavLink href="/projects">項目管理</NavLink>
-              {showAdminMenu && (
-                <NavLink href="/admin/people">人員管理</NavLink>
+              <NavButton
+                href="/dashboard"
+                active={router.pathname === '/dashboard'}
+                onClick={() => handleNavigation('/dashboard')}
+              >
+                首頁
+              </NavButton>
+              <NavButton
+                href="/members"
+                active={router.pathname === '/members'}
+                onClick={() => handleNavigation('/members')}
+              >
+                會員管理
+              </NavButton>
+              <NavButton
+                href="/contracts"
+                active={router.pathname === '/contracts'}
+                onClick={() => handleNavigation('/contracts')}
+              >
+                合約管理
+              </NavButton>
+              <NavButton
+                href="/projects"
+                active={router.pathname === '/projects'}
+                onClick={() => handleNavigation('/projects')}
+              >
+                項目管理
+              </NavButton>
+              {isAdmin && (
+                <NavButton
+                  href="/admin/users"
+                  active={router.pathname === '/admin/users'}
+                  onClick={() => handleNavigation('/admin/users')}
+                >
+                  人員管理
+                </NavButton>
               )}
             </div>
           </div>
@@ -77,14 +113,25 @@ export const DashboardNav: FC = () => {
   )
 }
 
-const NavLink: FC<{ href: string; children: React.ReactNode }> = ({
+interface NavButtonProps {
+  href: string
+  active: boolean
+  onClick: () => void
+  children: React.ReactNode
+}
+
+const NavButton: FC<NavButtonProps> = ({
   href,
+  active,
+  onClick,
   children
 }) => (
-  <Link
-    href={href}
-    className="text-gray-600 hover:text-gray-900 font-medium"
+  <button
+    onClick={onClick}
+    className={`text-gray-600 hover:text-gray-900 font-medium ${
+      active ? 'text-blue-600 font-semibold' : ''
+    }`}
   >
     {children}
-  </Link>
+  </button>
 ) 

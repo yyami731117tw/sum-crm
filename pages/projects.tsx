@@ -1,43 +1,63 @@
-import type { NextPage, GetServerSideProps } from 'next'
+import { NextPage } from 'next'
 import Head from 'next/head'
+import { useRouter } from 'next/router'
+import { useEffect } from 'react'
+import { useAuth } from '@/hooks/useAuth'
 import { DashboardNav } from '@/components/dashboard/DashboardNav'
 
 const ProjectsPage: NextPage = () => {
+  const { user, loading } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login')
+    }
+  }, [loading, user, router])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null
+  }
+
   return (
     <>
       <Head>
-        <title>項目管理 - MBC天使俱樂部</title>
+        <title>項目管理 - MBC天使俱樂部管理系統</title>
       </Head>
-      <div>
+      <div className="min-h-screen bg-gray-100">
         <DashboardNav />
-        <main className="container mx-auto px-6 py-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">項目管理</h1>
-          
-          {/* 項目列表 */}
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-medium text-gray-900">項目列表</h2>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                  新增項目
-                </button>
+        
+        {/* 主要內容區 */}
+        <div className="py-10">
+          <header>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h1 className="text-3xl font-bold leading-tight text-gray-900">
+                項目管理
+              </h1>
+            </div>
+          </header>
+          <main>
+            <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+              {/* 項目列表將在這裡添加 */}
+              <div className="px-4 py-8 sm:px-0">
+                <div className="border-4 border-dashed border-gray-200 rounded-lg h-96">
+                  {/* 項目列表內容將在這裡添加 */}
+                </div>
               </div>
             </div>
-            <div className="px-4 py-5 sm:p-6">
-              {/* 項目列表內容 */}
-              <p className="text-gray-500 text-center py-8">尚無項目資料</p>
-            </div>
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
     </>
   )
-}
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  return {
-    props: {}
-  }
 }
 
 export default ProjectsPage 
