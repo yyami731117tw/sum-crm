@@ -37,23 +37,16 @@ export const DashboardNav: FC = () => {
               </Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              {navigation.map((item) => {
-                const isActive = router.pathname === item.href
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                      isActive
-                        ? 'bg-gray-100 text-gray-900'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
-                  >
-                    <item.icon className="h-5 w-5 mr-2" />
-                    {item.name}
-                  </Link>
-                )
-              })}
+              {navigation.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:text-gray-900"
+                >
+                  <item.icon className="h-5 w-5 mr-2" />
+                  {item.name}
+                </Link>
+              ))}
             </div>
           </div>
           <div className="flex items-center">
