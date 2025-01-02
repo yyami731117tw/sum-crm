@@ -62,6 +62,11 @@ interface Member {
   hasMembershipPeriod?: boolean
   membershipStartDate?: string
   membershipEndDate?: string
+  familyStatus?: string
+  education?: '高中以下' | '高中職' | '專科' | '大學' | '碩士' | '博士'
+  expertise?: string[]
+  taboos?: string[]
+  remainingDays?: number
 }
 
 interface MemberLog {
@@ -371,6 +376,25 @@ const MembersPage: NextPage = () => {
     })
   }
 
+  // 計算剩餘天數
+  const calculateRemainingDays = (endDate: string) => {
+    const end = new Date(endDate.replace(/\//g, '-'))
+    const today = new Date()
+    const diffTime = end.getTime() - today.getTime()
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  }
+
+  // 當會員期限變更時更新剩餘天數
+  const handleMembershipEndDateChange = (endDate: string) => {
+    const formattedEndDate = endDate.replace(/-/g, '/')
+    const remainingDays = calculateRemainingDays(formattedEndDate)
+    setSidebarMember({
+      ...sidebarMember!,
+      membershipEndDate: formattedEndDate,
+      remainingDays
+    })
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -447,6 +471,9 @@ const MembersPage: NextPage = () => {
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           加入時間
                         </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          會員期限
+                        </th>
                         <th scope="col" className="relative px-6 py-3">
                           <span className="sr-only">操作</span>
                         </th>
@@ -490,6 +517,19 @@ const MembersPage: NextPage = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {member.joinDate}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {member.hasMembershipPeriod && member.membershipEndDate && (
+                              <>
+                                {member.membershipEndDate}
+                                <br />
+                                <span className={`text-xs ${
+                                  (member.remainingDays || 0) <= 30 ? 'text-red-600' : 'text-gray-500'
+                                }`}>
+                                  剩餘 {member.remainingDays || 0} 天
+                                </span>
+                              </>
+                            )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button
@@ -1008,7 +1048,7 @@ const MembersPage: NextPage = () => {
                               <input
                                 type="date"
                                 value={sidebarMember.membershipEndDate?.replace(/\//g, '-') || ''}
-                                onChange={(e) => setSidebarMember({...sidebarMember, membershipEndDate: e.target.value.replace(/-/g, '/')})}
+                                onChange={(e) => handleMembershipEndDateChange(e.target.value)}
                                 className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                               />
                             </dd>
@@ -1043,7 +1083,7 @@ const MembersPage: NextPage = () => {
                           >
                             <option value="">請選擇</option>
                             {members.map(member => (
-                              <option key={member.id} value={member.id}>{member.name}</option>
+                              <option key={member.id} value={member.id}>{member.name} ({member.memberNo})</option>
                             ))}
                           </select>
                         </dd>
@@ -1176,38 +1216,57 @@ const MembersPage: NextPage = () => {
                       <div className="sm:col-span-2">
                         <h3 className="text-lg font-medium text-gray-900 mb-4 mt-8">其他資訊</h3>
                       </div>
-                      <div className="sm:col-span-2">
-                        <dt className="text-sm font-medium text-gray-500">興趣</dt>
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">家庭狀況</dt>
                         <dd className="mt-1">
                           <input
                             type="text"
-                            value={sidebarMember.interests?.join(', ') || ''}
-                            onChange={(e) => setSidebarMember({...sidebarMember, interests: e.target.value.split(',').map(s => s.trim())})}
+                            value={sidebarMember.familyStatus || ''}
+                            onChange={(e) => setSidebarMember({...sidebarMember, familyStatus: e.target.value})}
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                            placeholder="請用逗號分隔多個興趣"
+                            placeholder="例：已婚、育有2子"
                           />
                         </dd>
                       </div>
-                      <div className="sm:col-span-2">
-                        <dt className="text-sm font-medium text-gray-500">標籤</dt>
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">學歷</dt>
+                        <dd className="mt-1">
+                          <select
+                            value={sidebarMember.education || ''}
+                            onChange={(e) => setSidebarMember({...sidebarMember, education: e.target.value as Member['education']})}
+                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                          >
+                            <option value="">請選擇</option>
+                            <option value="高中以下">高中以下</option>
+                            <option value="高中職">高中職</option>
+                            <option value="專科">專科</option>
+                            <option value="大學">大學</option>
+                            <option value="碩士">碩士</option>
+                            <option value="博士">博士</option>
+                          </select>
+                        </dd>
+                      </div>
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">專長</dt>
                         <dd className="mt-1">
                           <input
                             type="text"
-                            value={sidebarMember.tags?.join(', ') || ''}
-                            onChange={(e) => setSidebarMember({...sidebarMember, tags: e.target.value.split(',').map(s => s.trim())})}
+                            value={sidebarMember.expertise?.join(', ') || ''}
+                            onChange={(e) => setSidebarMember({...sidebarMember, expertise: e.target.value.split(',').map(s => s.trim())})}
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                            placeholder="請用逗號分隔多個標籤"
+                            placeholder="請用逗號分隔多個專長"
                           />
                         </dd>
                       </div>
-                      <div className="sm:col-span-2">
-                        <dt className="text-sm font-medium text-gray-500">備註</dt>
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">禁忌</dt>
                         <dd className="mt-1">
-                          <textarea
-                            value={sidebarMember.notes || ''}
-                            onChange={(e) => setSidebarMember({...sidebarMember, notes: e.target.value})}
-                            rows={3}
+                          <input
+                            type="text"
+                            value={sidebarMember.taboos?.join(', ') || ''}
+                            onChange={(e) => setSidebarMember({...sidebarMember, taboos: e.target.value.split(',').map(s => s.trim())})}
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            placeholder="請用逗號分隔多個禁忌"
                           />
                         </dd>
                       </div>
