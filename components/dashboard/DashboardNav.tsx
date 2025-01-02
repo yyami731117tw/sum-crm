@@ -1,113 +1,81 @@
-import type { FC } from 'react'
+import { FC } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { useAuth } from '@/hooks/useAuth'
 import { useState, useEffect } from 'react'
+import { HomeIcon, UsersIcon, FolderIcon, DocumentTextIcon, CalendarIcon, CogIcon } from '@heroicons/react/24/outline'
 
 export const DashboardNav: FC = () => {
+  const { user, loading } = useAuth()
   const router = useRouter()
-  const { user, logout } = useAuth()
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
-
-  const isAdmin = user?.role === 'admin'
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
-    console.log('DashboardNav - Current user:', user)
-    console.log('DashboardNav - Is admin?', isAdmin)
-  }, [user, isAdmin])
-
-  const handleLogout = () => {
-    if (isLoggingOut) return
-    
-    setIsLoggingOut(true)
-    logout().catch(error => {
-      console.error('登出失敗:', error)
-      setIsLoggingOut(false)
-    })
-  }
-
-  const handleNavigation = (path: string) => {
-    router.push(path)
-  }
+    if (!loading && user?.role === 'admin') {
+      setIsAdmin(true)
+    }
+  }, [loading, user])
 
   const showAdminMenu = isAdmin
 
+  const navigation = [
+    { name: '儀表板', href: '/dashboard', icon: HomeIcon },
+    { name: '會員管理', href: '/admin/members', icon: UsersIcon },
+    { name: '項目管理', href: '/admin/projects', icon: FolderIcon },
+    { name: '合約管理', href: '/admin/contracts', icon: DocumentTextIcon },
+    { name: '活動管理', href: '/admin/events', icon: CalendarIcon },
+    { name: '系統設定', href: '/admin/settings', icon: CogIcon },
+  ]
+
   return (
     <nav className="bg-white shadow">
-      <div className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-8">
-            <button onClick={() => handleNavigation('/')} className="flex items-center space-x-3">
-              <div className="relative w-10 h-10">
-                <Image
-                  src="/logo.png"
-                  alt="多元商 Logo"
-                  fill
-                  sizes="40px"
-                  priority
-                  className="object-contain"
-                />
-              </div>
-              <span className="text-xl font-semibold text-gray-900 whitespace-nowrap">多元商會員管理系統</span>
-            </button>
-            <div className="flex items-center space-x-6">
-              <NavButton
-                href="/dashboard"
-                active={router.pathname === '/dashboard'}
-                onClick={() => handleNavigation('/dashboard')}
-              >
-                首頁
-              </NavButton>
-              <NavButton
-                href="/members"
-                active={router.pathname === '/members'}
-                onClick={() => handleNavigation('/members')}
-              >
-                會員管理
-              </NavButton>
-              <NavButton
-                href="/contracts"
-                active={router.pathname === '/contracts'}
-                onClick={() => handleNavigation('/contracts')}
-              >
-                合約管理
-              </NavButton>
-              <NavButton
-                href="/projects"
-                active={router.pathname === '/projects'}
-                onClick={() => handleNavigation('/projects')}
-              >
-                項目管理
-              </NavButton>
-              {showAdminMenu && (
-                <NavButton
-                  href="/admin/people"
-                  active={router.pathname === '/admin/people'}
-                  onClick={() => handleNavigation('/admin/people')}
-                >
-                  人員管理
-                </NavButton>
-              )}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex">
+            <div className="flex-shrink-0 flex items-center">
+              <Link href="/dashboard" className="text-xl font-bold text-gray-800">
+                MBC天使俱樂部
+              </Link>
+            </div>
+            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+              {navigation.map((item) => {
+                const isActive = router.pathname === item.href
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
+                      isActive
+                        ? 'border-b-2 border-blue-500 text-gray-900'
+                        : 'border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    }`}
+                  >
+                    <item.icon className="h-5 w-5 mr-2" />
+                    {item.name}
+                  </Link>
+                )
+              })}
             </div>
           </div>
-          <div className="flex items-center space-x-4">
-            <button className="text-gray-600 hover:text-gray-900">
-              <span className="sr-only">通知</span>
-              🔔
-            </button>
-            <button className="text-gray-600 hover:text-gray-900">
-              <span className="sr-only">設定</span>
-              ⚙️
-            </button>
-            <button
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className="text-gray-600 hover:text-gray-900 flex items-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span>{isLoggingOut ? '登出中...' : '登出'}</span>
-              <span>🚪</span>
-            </button>
+          <div className="hidden sm:ml-6 sm:flex sm:items-center">
+            <div className="ml-3 relative">
+              <div className="flex items-center">
+                <span className="text-sm text-gray-500 mr-2">
+                  {user?.name || user?.email}
+                </span>
+                <button
+                  onClick={() => router.push('/profile')}
+                  className="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <span className="sr-only">開啟使用者選單</span>
+                  <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                    <span className="text-sm font-medium text-blue-600">
+                      {(user?.name || user?.email || '')[0]?.toUpperCase()}
+                    </span>
+                  </div>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -115,25 +83,4 @@ export const DashboardNav: FC = () => {
   )
 }
 
-interface NavButtonProps {
-  href: string
-  active: boolean
-  onClick: () => void
-  children: React.ReactNode
-}
-
-const NavButton: FC<NavButtonProps> = ({
-  href,
-  active,
-  onClick,
-  children
-}) => (
-  <button
-    onClick={onClick}
-    className={`text-gray-600 hover:text-gray-900 font-medium ${
-      active ? 'text-blue-600 font-semibold' : ''
-    }`}
-  >
-    {children}
-  </button>
-) 
+export default DashboardNav 
