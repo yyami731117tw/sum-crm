@@ -83,6 +83,13 @@ interface MemberLog {
   }[]
 }
 
+interface User {
+  id: string
+  name: string
+  email: string
+  role: string
+}
+
 const MembersPage: NextPage = () => {
   const { user, loading } = useAuth()
   const router = useRouter()
@@ -98,6 +105,7 @@ const MembersPage: NextPage = () => {
   const [sidebarMemberLogs, setSidebarMemberLogs] = useState<MemberLog[]>([])
   const [sidebarWidth, setSidebarWidth] = useState(600)
   const [isResizing, setIsResizing] = useState(false)
+  const [users, setUsers] = useState<User[]>([])
 
   useEffect(() => {
     setSidebarWidth(window.innerWidth / 2)
@@ -109,9 +117,15 @@ const MembersPage: NextPage = () => {
     }
   }, [loading, user, router])
 
-  // 模擬加載會員數據
+  // 從 localStorage 加載會員數據
   useEffect(() => {
-    // TODO: 替換為實際的 API 調用
+    const savedMembers = localStorage.getItem('members')
+    if (savedMembers) {
+      setMembers(JSON.parse(savedMembers))
+      return
+    }
+
+    // 如果 localStorage 中沒有數據，則使用模擬數據
     const mockMembers: Member[] = [
       {
         id: '1',
@@ -138,6 +152,34 @@ const MembersPage: NextPage = () => {
       }
     ]
     setMembers(mockMembers)
+    localStorage.setItem('members', JSON.stringify(mockMembers))
+  }, [])
+
+  // 當會員資料變更時，更新 localStorage
+  useEffect(() => {
+    if (members.length > 0) {
+      localStorage.setItem('members', JSON.stringify(members))
+    }
+  }, [members])
+
+  // 模擬加載使用者數據
+  useEffect(() => {
+    // TODO: 替換為實際的 API 調用
+    const mockUsers: User[] = [
+      {
+        id: '1',
+        name: '張專員',
+        email: 'zhang@example.com',
+        role: 'staff'
+      },
+      {
+        id: '2',
+        name: '李專員',
+        email: 'li@example.com',
+        role: 'staff'
+      }
+    ]
+    setUsers(mockUsers)
   }, [])
 
   const handleCreateMember = () => {
@@ -265,13 +307,16 @@ const MembersPage: NextPage = () => {
   const handleSaveMember = () => {
     if (!sidebarMember || !user) return
 
+    let updatedMembers: Member[]
+
     // 如果是新增會員
     if (!sidebarMember.id) {
       const newMember = {
         ...sidebarMember,
-        id: String(Date.now())  // 暫時使用時間戳作為ID
+        id: String(Date.now())  // 使用時間戳作為ID
       }
-      setMembers([...members, newMember])
+      updatedMembers = [...members, newMember]
+      setMembers(updatedMembers)
       
       // 新增操作記錄
       const newLog: MemberLog = {
@@ -283,63 +328,65 @@ const MembersPage: NextPage = () => {
         details: '新增會員資料',
       }
       setSidebarMemberLogs([newLog])
-      setIsSidebarOpen(false)
-      return
-    }
+    } else {
+      // 更新會員資料
+      updatedMembers = members.map(m => m.id === sidebarMember.id ? sidebarMember : m)
+      setMembers(updatedMembers)
 
-    // 比對變更項目
-    const originalMember = members.find(m => m.id === sidebarMember.id)
-    if (!originalMember) return
-    
-    const changes: { field: string; oldValue: string; newValue: string }[] = []
-    const fieldNames = {
-      memberCategory: '會員分類',
-      status: '狀態',
-      name: '姓名',
-      phone: '電話',
-      gender: '性別',
-      nickname: '暱稱',
-      serviceStaff: '服務專員',
-      idNumber: '身分證字號',
-      birthday: '生日',
-      joinDate: '加入時間',
-      email: '電子郵件',
-      lineId: 'LINE ID',
-      address: '通訊地址',
-      joinCondition: '入會條件',
-      occupation: '職業',
-      notes: '備註'
-    }
-    
-    Object.keys(fieldNames).forEach(field => {
-      const oldValue = originalMember[field as keyof Member]
-      const newValue = sidebarMember[field as keyof Member]
-      if (oldValue !== newValue) {
-        changes.push({
-          field: fieldNames[field as keyof typeof fieldNames],
-          oldValue: oldValue?.toString() || '-',
-          newValue: newValue?.toString() || '-'
+      // 比對變更項目
+      const originalMember = members.find(m => m.id === sidebarMember.id)
+      if (originalMember) {
+        const changes: { field: string; oldValue: string; newValue: string }[] = []
+        const fieldNames = {
+          memberCategory: '會員分類',
+          status: '狀態',
+          name: '姓名',
+          phone: '電話',
+          gender: '性別',
+          nickname: '暱稱',
+          serviceStaff: '服務專員',
+          idNumber: '身分證字號',
+          birthday: '生日',
+          joinDate: '加入時間',
+          email: '電子郵件',
+          lineId: 'LINE ID',
+          address: '通訊地址',
+          joinCondition: '入會條件',
+          occupation: '職業',
+          notes: '備註'
+        }
+        
+        Object.keys(fieldNames).forEach(field => {
+          const oldValue = originalMember[field as keyof Member]
+          const newValue = sidebarMember[field as keyof Member]
+          if (oldValue !== newValue) {
+            changes.push({
+              field: fieldNames[field as keyof typeof fieldNames],
+              oldValue: oldValue?.toString() || '-',
+              newValue: newValue?.toString() || '-'
+            })
+          }
         })
+        
+        if (changes.length > 0) {
+          // 新增變更記錄
+          const newLog: MemberLog = {
+            id: Date.now().toString(),
+            memberId: sidebarMember.id,
+            action: '更新會員資料',
+            timestamp: new Date().toLocaleString('zh-TW', { hour12: false }),
+            operator: user.email || user.name || '系統管理員',
+            details: `修改了 ${changes.length} 個欄位`,
+            changes
+          }
+          
+          setSidebarMemberLogs([newLog, ...sidebarMemberLogs])
+        }
       }
-    })
-    
-    if (changes.length > 0) {
-      // 新增變更記錄
-      const newLog: MemberLog = {
-        id: Date.now().toString(),
-        memberId: sidebarMember.id,
-        action: '更新會員資料',
-        timestamp: new Date().toLocaleString('zh-TW', { hour12: false }),
-        operator: user.email || user.name || '系統管理員',
-        details: `修改了 ${changes.length} 個欄位`,
-        changes
-      }
-      
-      setSidebarMemberLogs([newLog, ...sidebarMemberLogs])
     }
 
-    // 更新會員資料
-    setMembers(members.map(m => m.id === sidebarMember.id ? sidebarMember : m))
+    // 儲存到 localStorage
+    localStorage.setItem('members', JSON.stringify(updatedMembers))
     setIsSidebarOpen(false)
   }
 
@@ -393,6 +440,25 @@ const MembersPage: NextPage = () => {
       membershipEndDate: formattedEndDate,
       remainingDays
     })
+  }
+
+  // 修改會員期限警示邏輯
+  const getMembershipStatusDisplay = (remainingDays: number) => {
+    if (remainingDays <= 15) {
+      return {
+        color: 'text-orange-600',
+        message: '確認會員是否續約'
+      }
+    } else if (remainingDays <= 30) {
+      return {
+        color: 'text-orange-600',
+        message: '通知會員即將到期'
+      }
+    }
+    return {
+      color: 'text-gray-500',
+      message: ''
+    }
   }
 
   if (loading) {
@@ -523,11 +589,20 @@ const MembersPage: NextPage = () => {
                               <>
                                 {member.membershipEndDate}
                                 <br />
-                                <span className={`text-xs ${
-                                  (member.remainingDays || 0) <= 30 ? 'text-red-600' : 'text-gray-500'
-                                }`}>
-                                  剩餘 {member.remainingDays || 0} 天
-                                </span>
+                                {member.remainingDays !== undefined && (
+                                  <>
+                                    <span className={getMembershipStatusDisplay(member.remainingDays).color}>
+                                      剩餘 {member.remainingDays} 天
+                                    </span>
+                                    {member.remainingDays <= 30 && (
+                                      <div className="text-xs mt-1">
+                                        <span className={`${getMembershipStatusDisplay(member.remainingDays).color} font-medium`}>
+                                          {getMembershipStatusDisplay(member.remainingDays).message}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </>
+                                )}
                               </>
                             )}
                           </td>
