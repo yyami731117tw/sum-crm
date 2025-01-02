@@ -16,24 +16,22 @@ interface Member {
   serviceStaff?: string
   idNumber: string
   birthday: string
+  age?: number
   joinDate: string
   status: 'active' | 'inactive' | 'pending'
   email?: string
   lineId?: string
   address?: string
-  memberType: '一般會員' | 'VIP會員'
+  memberCategory: '一般會員' | 'VIP會員'
   joinCondition?: string
-  occupation?: string
+  occupation?: '家管' | '軍公教' | '製造業' | '服務業' | '農業' | '科技業' | '金融保險' | '商業貿易' | '公共事業'
   notes?: string
-  contactTime?: string
-  contactMethod?: '電話' | 'LINE' | '電子郵件'
   emergencyContact?: string
   emergencyPhone?: string
   emergencyRelation?: string
   interests?: string[]
-  source?: string
-  lastContactDate?: string
-  nextContactDate?: string
+  referrer?: string
+  dietaryHabits?: string
   tags?: string[]
   vipStartDate?: string
   vipEndDate?: string
@@ -104,9 +102,9 @@ const MembersPage: NextPage = () => {
         email: 'ming@example.com',
         lineId: 'ming_123',
         address: '台北市信義區信義路五段7號',
-        memberType: '一般會員',
+        memberCategory: '一般會員',
         joinCondition: '官網註冊',
-        occupation: '工程師',
+        occupation: '科技業',
         notes: '對投資很有興趣'
       }
     ]
@@ -124,7 +122,7 @@ const MembersPage: NextPage = () => {
       birthday: '',
       joinDate: new Date().toISOString().split('T')[0].replace(/-/g, '/'),
       status: 'active',
-      memberType: '一般會員'
+      memberCategory: '一般會員'
     }
     setSidebarMember(newMember)
     setIsSidebarOpen(true)
@@ -266,7 +264,7 @@ const MembersPage: NextPage = () => {
     
     const changes: { field: string; oldValue: string; newValue: string }[] = []
     const fieldNames = {
-      memberType: '會員類型',
+      memberCategory: '會員分類',
       status: '狀態',
       name: '姓名',
       phone: '電話',
@@ -314,6 +312,29 @@ const MembersPage: NextPage = () => {
     // 更新會員資料
     setMembers(members.map(m => m.id === sidebarMember.id ? sidebarMember : m))
     setIsSidebarOpen(false)
+  }
+
+  // 計算年齡
+  const calculateAge = (birthday: string) => {
+    const birthDate = new Date(birthday.replace(/\//g, '-'))
+    const today = new Date()
+    let age = today.getFullYear() - birthDate.getFullYear()
+    const m = today.getMonth() - birthDate.getMonth()
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--
+    }
+    return age
+  }
+
+  // 當生日變更時更新年齡
+  const handleBirthdayChange = (birthday: string) => {
+    const formattedBirthday = birthday.replace(/-/g, '/')
+    const age = calculateAge(formattedBirthday)
+    setSidebarMember({
+      ...sidebarMember!,
+      birthday: formattedBirthday,
+      age
+    })
   }
 
   if (loading) {
@@ -424,7 +445,7 @@ const MembersPage: NextPage = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {member.memberType}
+                            {member.memberCategory}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -580,11 +601,11 @@ const MembersPage: NextPage = () => {
                         </dd>
                       </div>
                       <div className="sm:col-span-1">
-                        <dt className="text-sm font-medium text-gray-500">會員類型</dt>
+                        <dt className="text-sm font-medium text-gray-500">會員分類</dt>
                         <dd className="mt-1">
                           <select
-                            value={sidebarMember.memberType}
-                            onChange={(e) => setSidebarMember({...sidebarMember, memberType: e.target.value as '一般會員' | 'VIP會員'})}
+                            value={sidebarMember.memberCategory}
+                            onChange={(e) => setSidebarMember({...sidebarMember, memberCategory: e.target.value as '一般會員' | 'VIP會員'})}
                             className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                           >
                             <option value="一般會員">一般會員</option>
@@ -644,19 +665,52 @@ const MembersPage: NextPage = () => {
                           <input
                             type="date"
                             value={sidebarMember.birthday.replace(/\//g, '-')}
-                            onChange={(e) => setSidebarMember({...sidebarMember, birthday: e.target.value.replace(/-/g, '/')})}
+                            onChange={(e) => handleBirthdayChange(e.target.value)}
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          />
+                        </dd>
+                      </div>
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">年齡</dt>
+                        <dd className="mt-1">
+                          <input
+                            type="text"
+                            value={sidebarMember.age || ''}
+                            disabled
+                            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 sm:text-sm"
                           />
                         </dd>
                       </div>
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500">職業</dt>
                         <dd className="mt-1">
+                          <select
+                            value={sidebarMember.occupation || ''}
+                            onChange={(e) => setSidebarMember({...sidebarMember, occupation: e.target.value as Member['occupation']})}
+                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                          >
+                            <option value="">請選擇</option>
+                            <option value="家管">家管</option>
+                            <option value="軍公教">軍公教</option>
+                            <option value="製造業">製造業</option>
+                            <option value="服務業">服務業</option>
+                            <option value="農業">農業</option>
+                            <option value="科技業">科技業</option>
+                            <option value="金融保險">金融保險</option>
+                            <option value="商業貿易">商業貿易</option>
+                            <option value="公共事業">公共事業</option>
+                          </select>
+                        </dd>
+                      </div>
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">飲食習慣</dt>
+                        <dd className="mt-1">
                           <input
                             type="text"
-                            value={sidebarMember.occupation || ''}
-                            onChange={(e) => setSidebarMember({...sidebarMember, occupation: e.target.value})}
+                            value={sidebarMember.dietaryHabits || ''}
+                            onChange={(e) => setSidebarMember({...sidebarMember, dietaryHabits: e.target.value})}
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            placeholder="例：素食、不吃海鮮"
                           />
                         </dd>
                       </div>
@@ -695,33 +749,6 @@ const MembersPage: NextPage = () => {
                             value={sidebarMember.lineId || ''}
                             onChange={(e) => setSidebarMember({...sidebarMember, lineId: e.target.value})}
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          />
-                        </dd>
-                      </div>
-                      <div className="sm:col-span-1">
-                        <dt className="text-sm font-medium text-gray-500">聯絡方式</dt>
-                        <dd className="mt-1">
-                          <select
-                            value={sidebarMember.contactMethod || ''}
-                            onChange={(e) => setSidebarMember({...sidebarMember, contactMethod: e.target.value as '電話' | 'LINE' | '電子郵件'})}
-                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                          >
-                            <option value="">請選擇</option>
-                            <option value="電話">電話</option>
-                            <option value="LINE">LINE</option>
-                            <option value="電子郵件">電子郵件</option>
-                          </select>
-                        </dd>
-                      </div>
-                      <div className="sm:col-span-1">
-                        <dt className="text-sm font-medium text-gray-500">方便聯絡時間</dt>
-                        <dd className="mt-1">
-                          <input
-                            type="text"
-                            value={sidebarMember.contactTime || ''}
-                            onChange={(e) => setSidebarMember({...sidebarMember, contactTime: e.target.value})}
-                            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                            placeholder="例：平日下午"
                           />
                         </dd>
                       </div>
@@ -802,52 +829,23 @@ const MembersPage: NextPage = () => {
                         </dd>
                       </div>
                       <div className="sm:col-span-1">
-                        <dt className="text-sm font-medium text-gray-500">來源管道</dt>
+                        <dt className="text-sm font-medium text-gray-500">介紹人</dt>
                         <dd className="mt-1">
-                          <input
-                            type="text"
-                            value={sidebarMember.source || ''}
-                            onChange={(e) => setSidebarMember({...sidebarMember, source: e.target.value})}
-                            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          />
-                        </dd>
-                      </div>
-                      <div className="sm:col-span-1">
-                        <dt className="text-sm font-medium text-gray-500">服務專員</dt>
-                        <dd className="mt-1">
-                          <input
-                            type="text"
-                            value={sidebarMember.serviceStaff || ''}
-                            onChange={(e) => setSidebarMember({...sidebarMember, serviceStaff: e.target.value})}
-                            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          />
-                        </dd>
-                      </div>
-                      <div className="sm:col-span-1">
-                        <dt className="text-sm font-medium text-gray-500">上次聯絡時間</dt>
-                        <dd className="mt-1">
-                          <input
-                            type="date"
-                            value={sidebarMember.lastContactDate?.replace(/\//g, '-') || ''}
-                            onChange={(e) => setSidebarMember({...sidebarMember, lastContactDate: e.target.value.replace(/-/g, '/')})}
-                            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          />
-                        </dd>
-                      </div>
-                      <div className="sm:col-span-1">
-                        <dt className="text-sm font-medium text-gray-500">下次聯絡時間</dt>
-                        <dd className="mt-1">
-                          <input
-                            type="date"
-                            value={sidebarMember.nextContactDate?.replace(/\//g, '-') || ''}
-                            onChange={(e) => setSidebarMember({...sidebarMember, nextContactDate: e.target.value.replace(/-/g, '/')})}
-                            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          />
+                          <select
+                            value={sidebarMember.referrer || ''}
+                            onChange={(e) => setSidebarMember({...sidebarMember, referrer: e.target.value})}
+                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                          >
+                            <option value="">請選擇</option>
+                            {members.map(member => (
+                              <option key={member.id} value={member.id}>{member.name}</option>
+                            ))}
+                          </select>
                         </dd>
                       </div>
 
                       {/* VIP 會員資訊 */}
-                      {sidebarMember.memberType === 'VIP會員' && (
+                      {sidebarMember.memberCategory === 'VIP會員' && (
                         <>
                           <div className="sm:col-span-2">
                             <h3 className="text-lg font-medium text-gray-900 mb-4 mt-8">VIP 會員資訊</h3>
