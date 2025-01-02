@@ -25,3 +25,92 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Member {
+  id                 String    @id @default(uuid())
+  memberNo           String    @unique
+  name               String
+  phone              String
+  gender             String    // '男' | '女'
+  nickname           String?
+  idNumber          String    @unique
+  birthday          DateTime
+  joinDate          DateTime  @default(now())
+  status            String    @default("active")  // 'active' | 'inactive' | 'pending'
+  email             String?
+  lineId            String?
+  address           String?
+  memberCategory    String    @default("一般會員")  // '一般會員' | '天使' | 'VIP' | '合作' | '股東' | '黑名單'
+  joinCondition     String?   // '舊會員' | '會員體驗' | '200萬財力審查'
+  nationality       String?
+  occupation        String?
+  notes             String?
+  emergencyContact  String?
+  emergencyPhone    String?
+  emergencyRelation String?
+  interests         String[]
+  referrer          String?
+  dietaryHabits     String?
+  tags              String[]
+  vipStartDate      DateTime?
+  vipEndDate        DateTime?
+  contractNo        String?
+  contractDate      DateTime?
+  contractAmount    Float?
+  paymentMethod     String?   // '信用卡' | '現金' | '銀行轉帳'
+  bankAccount       String?
+  invoiceInfo       String?
+  passportName      String?
+  passportNo        String?
+  isUSCitizen       Boolean   @default(false)
+  idCardFront       String?
+  idCardBack        String?
+  hasMembershipPeriod Boolean @default(false)
+  membershipStartDate DateTime?
+  membershipEndDate   DateTime?
+  familyStatus      String?
+  education         String?   // '高中以下' | '高中職' | '專科' | '大學' | '碩士' | '博士'
+  expertise         String[]
+  taboos            String[]
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  relatedMembers    RelatedMember[]
+  investments       Investment[]
+  logs              MemberLog[]
+}
+
+model RelatedMember {
+  id           String  @id @default(uuid())
+  memberId     String
+  member       Member  @relation(fields: [memberId], references: [id])
+  relatedId    String
+  relationship String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([memberId, relatedId])
+}
+
+model Investment {
+  id          String   @id @default(uuid())
+  memberId    String
+  member      Member   @relation(fields: [memberId], references: [id])
+  contractId  String
+  projectName String
+  amount      Float
+  date        DateTime
+  status      String   // '進行中' | '已結束' | '已取消'
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model MemberLog {
+  id        String   @id @default(uuid())
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id])
+  action    String
+  details   String
+  operator  String
+  changes   Json?
+  createdAt DateTime @default(now())
+}
