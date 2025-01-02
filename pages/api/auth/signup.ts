@@ -1,114 +1,60 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { v4 as uuidv4 } from 'uuid'
-import { sendEmail, generateVerificationEmailContent } from '../../../utils/email'
-import { checkPasswordStrength } from '../../../utils/password'
-
-interface SignupData {
-  email: string
-  password: string
-  name: string
-  phone: string
-  birthday: string
-}
+import { hash } from 'bcryptjs'
+import prisma from '@/lib/prisma'
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: '方法不允許' })
+    return res.status(405).json({ message: '只允許 POST 請求' })
   }
 
   try {
-    const { email, password, name, phone, birthday } = req.body as SignupData
+    const { name, email, password } = req.body
 
-    // 基本資料驗證
-    if (!email || !password || !name || !phone || !birthday) {
-      return res.status(400).json({
-        success: false,
-        error: 'INVALID_DATA',
-        message: '請填寫所有必要資料'
-      })
+    // 驗證必要欄位
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: '所有欄位都是必填的' })
     }
 
-    // 電子郵件格式驗證
-    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-      return res.status(400).json({
-        success: false,
-        error: 'INVALID_EMAIL',
-        message: '無效的電子郵件格式'
-      })
-    }
-
-    // 密碼強度驗證
-    const passwordStrength = checkPasswordStrength(password)
-    if (passwordStrength.score < 1) {
-      return res.status(400).json({
-        success: false,
-        error: 'INVALID_PASSWORD',
-        message: '密碼需要至少包含8個字符，並包含字母和數字'
-      })
-    }
-
-    // 檢查是否已經註冊
-    const userExists = false // 這裡應該是實際的資料庫查詢
-    
-    if (userExists) {
-      return res.status(400).json({
-        success: false,
-        error: 'USER_EXISTS',
-        message: '此電子郵件已經註冊'
-      })
-    }
-
-    // 生成驗證碼和令牌
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString()
-    const verificationToken = uuidv4()
-
-    // 建立新用戶
-    const user = {
-      id: uuidv4(),
-      email,
-      name,
-      phone,
-      birthday,
-      status: 'pending',
-      role: 'user',
-      verificationCode,
-      verificationToken,
-      createdAt: new Date().toISOString()
-    }
-
-    // 發送驗證郵件
-    const emailContent = generateVerificationEmailContent(name, verificationCode)
-    const emailResult = await sendEmail({
-      to: email,
-      subject: '多元商會員系統 - 電子郵件驗證',
-      html: emailContent
+    // 檢查信箱是否已被使用
+    const existingUser = await prisma.user.findUnique({
+      where: { email }
     })
 
-    if (!emailResult.success) {
-      return res.status(500).json({
-        success: false,
-        message: '發送驗證郵件失敗'
-      })
+    if (existingUser) {
+      return res.status(400).json({ message: '此信箱已被註冊' })
     }
 
-    // TODO: 將用戶資料儲存到資料庫
-    console.log('New user:', user)
+    // 密碼加密
+    const hashedPassword = await hash(password, 12)
 
-    // 返回成功響應
+    // 創建新用戶
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        role: 'guest',      // 預設角色為訪客
+        status: 'pending',  // 預設狀態為待審核
+        joinDate: new Date().toISOString(),
+        lastLogin: null
+      }
+    })
+
+    // 移除密碼後回傳用戶資料
+    const { password: _, ...userWithoutPassword } = user
+
+    // TODO: 發送歡迎郵件
+    // TODO: 通知管理員有新用戶註冊
+
     return res.status(201).json({
-      success: true,
-      message: '註冊成功，請查收驗證郵件',
-      verificationToken
+      message: '註冊成功，請等待管理員審核',
+      user: userWithoutPassword
     })
-
   } catch (error) {
-    console.error('Signup error:', error)
-    return res.status(500).json({
-      success: false,
-      message: '註冊時發生錯誤'
-    })
+    console.error('註冊錯誤:', error)
+    return res.status(500).json({ message: '註冊過程發生錯誤' })
   }
 } 

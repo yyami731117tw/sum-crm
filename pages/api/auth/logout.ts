@@ -1,5 +1,4 @@
-import { NextApiRequest, NextApiResponse } from 'next'
-import cookie from 'cookie'
+import type { NextApiRequest, NextApiResponse } from 'next'
 
 export default async function handler(
   req: NextApiRequest,
@@ -10,21 +9,15 @@ export default async function handler(
   }
 
   try {
-    // 清除 token cookie
+    // 清除 session cookie
     res.setHeader(
       'Set-Cookie',
-      cookie.serialize('token', '', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV !== 'development',
-        expires: new Date(0),
-        sameSite: 'lax',
-        path: '/'
-      })
+      'session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0'
     )
 
-    return res.status(200).json({ success: true, message: '登出成功' })
+    return res.status(200).json({ message: '登出成功' })
   } catch (error) {
-    console.error('登出時發生錯誤:', error)
-    return res.status(500).json({ success: false, message: '登出時發生錯誤' })
+    console.error('登出錯誤:', error)
+    return res.status(500).json({ message: '登出過程發生錯誤' })
   }
 } 

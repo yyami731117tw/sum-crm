@@ -9,8 +9,8 @@ interface User {
   id: string
   name: string
   email: string
-  role: 'admin' | 'staff'
-  status: 'active' | 'inactive'
+  role: 'admin' | 'staff' | 'guest'
+  status: 'pending' | 'active' | 'inactive'
   joinDate: string
   lastLogin: string
 }
@@ -21,6 +21,8 @@ const AdminUsersPage: NextPage = () => {
   const [users, setUsers] = useState<User[]>([])
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<User | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
@@ -53,6 +55,15 @@ const AdminUsersPage: NextPage = () => {
         status: 'active',
         joinDate: '2023/03/15',
         lastLogin: '2024/01/09'
+      },
+      {
+        id: '3',
+        name: '張三',
+        email: 'zhang@example.com',
+        role: 'guest',
+        status: 'pending',
+        joinDate: '2024/01/15',
+        lastLogin: '-'
       }
     ]
     setUsers(mockUsers)
@@ -67,6 +78,59 @@ const AdminUsersPage: NextPage = () => {
     // TODO: 實作更新使用者資料的 API 調用
     setUsers(users.map(u => u.id === updatedUser.id ? updatedUser : u))
     setIsEditModalOpen(false)
+  }
+
+  const handleDeleteClick = (user: User) => {
+    setUserToDelete(user)
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!userToDelete) return
+
+    // TODO: 實作刪除使用者的 API 調用
+    setUsers(users.filter(u => u.id !== userToDelete.id))
+    setIsDeleteModalOpen(false)
+    setUserToDelete(null)
+  }
+
+  const getStatusBadgeColor = (status: User['status']) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800'
+      case 'inactive':
+        return 'bg-red-100 text-red-800'
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getStatusText = (status: User['status']) => {
+    switch (status) {
+      case 'active':
+        return '啟用'
+      case 'inactive':
+        return '停用'
+      case 'pending':
+        return '待審核'
+      default:
+        return status
+    }
+  }
+
+  const getRoleText = (role: User['role']) => {
+    switch (role) {
+      case 'admin':
+        return '管理員'
+      case 'staff':
+        return '客服人員'
+      case 'guest':
+        return '訪客'
+      default:
+        return role
+    }
   }
 
   const filteredUsers = users.filter(user =>
@@ -129,58 +193,81 @@ const AdminUsersPage: NextPage = () => {
                 </div>
 
                 {/* 使用者列表 */}
-                <div className="bg-white shadow overflow-hidden sm:rounded-md">
-                  <ul className="divide-y divide-gray-200">
-                    {filteredUsers.map((user) => (
-                      <li key={user.id}>
-                        <div className="px-4 py-4 sm:px-6">
-                          <div className="flex items-center justify-between">
+                <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          使用者資料
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          角色
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          狀態
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          加入時間
+                        </th>
+                        <th scope="col" className="relative px-6 py-3">
+                          <span className="sr-only">操作</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {filteredUsers.map((user) => (
+                        <tr key={user.id}>
+                          <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <div className="flex-shrink-0">
-                                <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                                  <span className="text-lg font-medium text-gray-600">
+                              <div className="flex-shrink-0 h-10 w-10">
+                                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                  <span className="text-lg font-medium text-blue-600">
                                     {user.name[0]}
                                   </span>
                                 </div>
                               </div>
                               <div className="ml-4">
-                                <div className="text-sm font-medium text-blue-600">{user.name}</div>
+                                <div className="text-sm font-medium text-gray-900">{user.name}</div>
                                 <div className="text-sm text-gray-500">{user.email}</div>
                               </div>
                             </div>
-                            <div className="flex items-center space-x-4">
-                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                              }`}>
-                                {user.status === 'active' ? '啟用' : '停用'}
-                              </span>
-                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
-                              }`}>
-                                {user.role === 'admin' ? '管理員' : '客服人員'}
-                              </span>
-                              <button
-                                onClick={() => handleEditUser(user)}
-                                className="text-blue-600 hover:text-blue-900 text-sm font-medium"
-                              >
-                                編輯
-                              </button>
-                            </div>
-                          </div>
-                          <div className="mt-2 sm:flex sm:justify-between">
-                            <div className="sm:flex">
-                              <div className="text-sm text-gray-500">
-                                加入時間：{user.joinDate}
-                              </div>
-                            </div>
-                            <div className="mt-2 text-sm text-gray-500 sm:mt-0">
-                              最後登入：{user.lastLogin}
-                            </div>
-                          </div>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {getRoleText(user.role)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              getStatusBadgeColor(user.status)
+                            }`}>
+                              {getStatusText(user.status)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {user.joinDate}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button
+                              onClick={() => handleEditUser(user)}
+                              className="text-blue-600 hover:text-blue-900 mr-4"
+                            >
+                              編輯
+                            </button>
+                            <button
+                              onClick={() => handleDeleteClick(user)}
+                              className="text-red-600 hover:text-red-900"
+                              disabled={user.role === 'admin'}
+                            >
+                              刪除
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -210,11 +297,12 @@ const AdminUsersPage: NextPage = () => {
                       value={selectedUser.role}
                       onChange={(e) => setSelectedUser({
                         ...selectedUser,
-                        role: e.target.value as 'admin' | 'staff'
+                        role: e.target.value as User['role']
                       })}
                     >
                       <option value="staff">客服人員</option>
                       <option value="admin">管理員</option>
+                      <option value="guest">訪客</option>
                     </select>
                   </div>
                   <div>
@@ -226,9 +314,10 @@ const AdminUsersPage: NextPage = () => {
                       value={selectedUser.status}
                       onChange={(e) => setSelectedUser({
                         ...selectedUser,
-                        status: e.target.value as 'active' | 'inactive'
+                        status: e.target.value as User['status']
                       })}
                     >
+                      <option value="pending">待審核</option>
                       <option value="active">啟用</option>
                       <option value="inactive">停用</option>
                     </select>
@@ -247,6 +336,57 @@ const AdminUsersPage: NextPage = () => {
                   type="button"
                   className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                   onClick={() => setIsEditModalOpen(false)}
+                >
+                  取消
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 刪除確認 Modal */}
+      {isDeleteModalOpen && userToDelete && (
+        <div className="fixed z-10 inset-0 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <svg className="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">
+                      確認刪除使用者
+                    </h3>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500">
+                        您確定要刪除使用者 {userToDelete.name} 嗎？此操作無法復原。
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                  onClick={handleDeleteConfirm}
+                >
+                  刪除
+                </button>
+                <button
+                  type="button"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                  onClick={() => {
+                    setIsDeleteModalOpen(false)
+                    setUserToDelete(null)
+                  }}
                 >
                   取消
                 </button>
