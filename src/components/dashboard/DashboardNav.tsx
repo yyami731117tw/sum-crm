@@ -5,10 +5,11 @@ import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 
 const navigation = [
-  { name: '儀表板', href: '/dashboard' },
+  { name: '首頁', href: '/dashboard' },
   { name: '會員管理', href: '/admin/members' },
-  { name: '人員管理', href: '/admin/users' },
-  { name: '投資項目', href: '/projects' }
+  { name: '合約管理', href: '/contracts' },
+  { name: '投資項目', href: '/projects' },
+  { name: '人員管理', href: '/admin/users' }
 ]
 
 function classNames(...classes: string[]) {
