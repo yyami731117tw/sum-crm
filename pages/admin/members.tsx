@@ -20,6 +20,10 @@ interface Member {
   email?: string
   lineId?: string
   address?: string
+  memberType: '一般會員' | 'VIP會員'
+  joinCondition?: string
+  occupation?: string
+  notes?: string
 }
 
 interface MemberLog {
@@ -39,6 +43,7 @@ const MembersPage: NextPage = () => {
   const [isLogModalOpen, setIsLogModalOpen] = useState(false)
   const [selectedMemberLogs, setSelectedMemberLogs] = useState<MemberLog[]>([])
   const [searchTerm, setSearchTerm] = useState('')
+  const [isCreateMode, setIsCreateMode] = useState(false)
 
   useEffect(() => {
     if (!loading && !user) {
@@ -50,12 +55,49 @@ const MembersPage: NextPage = () => {
   useEffect(() => {
     // TODO: 替換為實際的 API 調用
     const mockMembers: Member[] = [
-      // ... 會員資料 ...
+      {
+        id: '1',
+        memberNo: 'M001',
+        name: '王小明',
+        phone: '0912-345-678',
+        gender: '男',
+        nickname: '小明',
+        serviceStaff: '張專員',
+        idNumber: 'A123456789',
+        birthday: '1990/01/01',
+        joinDate: '2024/01/01',
+        status: 'active',
+        email: 'ming@example.com',
+        lineId: 'ming_123',
+        address: '台北市信義區信義路五段7號',
+        memberType: '一般會員',
+        joinCondition: '官網註冊',
+        occupation: '工程師',
+        notes: '對投資很有興趣'
+      }
     ]
     setMembers(mockMembers)
   }, [])
 
+  const handleCreateMember = () => {
+    setIsCreateMode(true)
+    setSelectedMember({
+      id: '',
+      memberNo: `M${String(members.length + 1).padStart(3, '0')}`,
+      name: '',
+      phone: '',
+      gender: '男',
+      idNumber: '',
+      birthday: '',
+      joinDate: new Date().toISOString().split('T')[0].replace(/-/g, '/'),
+      status: 'active',
+      memberType: '一般會員'
+    } as Member)
+    setIsEditModalOpen(true)
+  }
+
   const handleEditMember = (member: Member) => {
+    setIsCreateMode(false)
     setSelectedMember(member)
     setIsEditModalOpen(true)
   }
@@ -85,8 +127,18 @@ const MembersPage: NextPage = () => {
   const handleUpdateMember = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedMember) return
-    // TODO: 實作更新會員資料的 API 調用
-    setMembers(members.map(m => m.id === selectedMember.id ? selectedMember : m))
+    
+    if (isCreateMode) {
+      // TODO: 實作新增會員的 API 調用
+      const newMember = {
+        ...selectedMember,
+        id: String(Date.now())  // 暫時使用時間戳作為ID
+      }
+      setMembers([...members, newMember])
+    } else {
+      // TODO: 實作更新會員資料的 API 調用
+      setMembers(members.map(m => m.id === selectedMember.id ? selectedMember : m))
+    }
     setIsEditModalOpen(false)
   }
 
@@ -145,9 +197,9 @@ const MembersPage: NextPage = () => {
           <main>
             <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
               <div className="px-4 py-8 sm:px-0">
-                {/* 搜尋區 */}
-                <div className="mb-6">
-                  <div className="max-w-lg">
+                {/* 搜尋和新增區 */}
+                <div className="mb-6 flex justify-between items-center">
+                  <div className="max-w-lg flex-1 mr-4">
                     <label htmlFor="search" className="sr-only">搜尋會員</label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -166,6 +218,15 @@ const MembersPage: NextPage = () => {
                       />
                     </div>
                   </div>
+                  <button
+                    onClick={handleCreateMember}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+                    </svg>
+                    新增會員
+                  </button>
                 </div>
 
                 {/* 會員列表 */}
@@ -177,7 +238,7 @@ const MembersPage: NextPage = () => {
                           會員資料
                         </th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          性別
+                          會員類型
                         </th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           狀態
@@ -213,7 +274,7 @@ const MembersPage: NextPage = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {member.gender}
+                            {member.memberType}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -250,7 +311,7 @@ const MembersPage: NextPage = () => {
         </div>
       </div>
 
-      {/* 編輯會員 Modal */}
+      {/* 編輯/新增會員 Modal */}
       {isEditModalOpen && selectedMember && (
         <div className="fixed z-10 inset-0 overflow-y-auto">
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -261,9 +322,20 @@ const MembersPage: NextPage = () => {
               <form onSubmit={handleUpdateMember}>
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                    編輯會員資料
+                    {isCreateMode ? '新增會員' : '編輯會員資料'}
                   </h3>
                   <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        會員編號
+                      </label>
+                      <input
+                        type="text"
+                        value={selectedMember.memberNo}
+                        readOnly
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 text-gray-500 sm:text-sm"
+                      />
+                    </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
                         姓名
@@ -283,6 +355,54 @@ const MembersPage: NextPage = () => {
                         type="tel"
                         value={selectedMember.phone}
                         onChange={(e) => setSelectedMember({...selectedMember, phone: e.target.value})}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        性別
+                      </label>
+                      <select
+                        value={selectedMember.gender}
+                        onChange={(e) => setSelectedMember({...selectedMember, gender: e.target.value as '男' | '女'})}
+                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                      >
+                        <option value="男">男</option>
+                        <option value="女">女</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        會員類型
+                      </label>
+                      <select
+                        value={selectedMember.memberType}
+                        onChange={(e) => setSelectedMember({...selectedMember, memberType: e.target.value as '一般會員' | 'VIP會員'})}
+                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                      >
+                        <option value="一般會員">一般會員</option>
+                        <option value="VIP會員">VIP會員</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        身分證字號
+                      </label>
+                      <input
+                        type="text"
+                        value={selectedMember.idNumber}
+                        onChange={(e) => setSelectedMember({...selectedMember, idNumber: e.target.value})}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        生日
+                      </label>
+                      <input
+                        type="date"
+                        value={selectedMember.birthday.replace(/\//g, '-')}
+                        onChange={(e) => setSelectedMember({...selectedMember, birthday: e.target.value.replace(/-/g, '/')})}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       />
                     </div>
@@ -319,6 +439,39 @@ const MembersPage: NextPage = () => {
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       />
                     </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        職業
+                      </label>
+                      <input
+                        type="text"
+                        value={selectedMember.occupation || ''}
+                        onChange={(e) => setSelectedMember({...selectedMember, occupation: e.target.value})}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        入會條件
+                      </label>
+                      <input
+                        type="text"
+                        value={selectedMember.joinCondition || ''}
+                        onChange={(e) => setSelectedMember({...selectedMember, joinCondition: e.target.value})}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        備註
+                      </label>
+                      <textarea
+                        value={selectedMember.notes || ''}
+                        onChange={(e) => setSelectedMember({...selectedMember, notes: e.target.value})}
+                        rows={3}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                    </div>
                   </div>
                 </div>
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
@@ -326,7 +479,7 @@ const MembersPage: NextPage = () => {
                     type="submit"
                     className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
                   >
-                    儲存
+                    {isCreateMode ? '新增' : '儲存'}
                   </button>
                   <button
                     type="button"
