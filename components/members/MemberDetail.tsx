@@ -7,10 +7,9 @@ interface MemberDetailProps {
   member: MemberWithRelations
   onUpdate?: (member: MemberWithRelations) => void
   onClose?: () => void
-  isFullPage?: boolean
 }
 
-export default function MemberDetail({ member: initialMember, onUpdate, onClose, isFullPage = false }: MemberDetailProps) {
+export default function MemberDetail({ member: initialMember, onUpdate, onClose }: MemberDetailProps) {
   const { user } = useAuth()
   const router = useRouter()
   const [member, setMember] = useState(initialMember)
@@ -144,7 +143,7 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose,
   }
 
   return (
-    <div className={`bg-white ${isFullPage ? '' : 'h-full flex flex-col'}`}>
+    <div className="h-full flex flex-col bg-white">
       {/* 標題列 */}
       <div className="px-4 py-4 sm:px-6 border-b border-gray-200 bg-white sticky top-0 z-10">
         <div className="flex items-start justify-between">
@@ -182,23 +181,21 @@ export default function MemberDetail({ member: initialMember, onUpdate, onClose,
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            {!isFullPage && (
-              <button
-                onClick={onClose}
-                className="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none"
-              >
-                <span className="sr-only">關閉</span>
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            )}
+            <button
+              onClick={onClose}
+              className="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none"
+            >
+              <span className="sr-only">關閉</span>
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
 
       {/* 會員資料 */}
-      <div className={`flex-1 px-4 py-6 sm:px-6 overflow-y-auto bg-gray-50 ${isFullPage ? 'max-w-7xl mx-auto' : ''}`}>
+      <div className="flex-1 px-4 py-6 sm:px-6 overflow-y-auto bg-gray-50">
         <dl className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
           {/* 基本資料 */}
           <div className="sm:col-span-2">
