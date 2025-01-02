@@ -3,7 +3,7 @@ import Head from 'next/head'
 import { useAuth } from '../src/hooks/useAuth'
 import { useEffect } from 'react'
 import { useRouter } from 'next/router'
-import Navbar from '../src/components/Navbar'
+import { DashboardNav } from '../components/dashboard/DashboardNav'
 
 const Investments: NextPage = () => {
   const { user, loading } = useAuth()
@@ -30,10 +30,10 @@ const Investments: NextPage = () => {
   return (
     <>
       <Head>
-        <title>投資項目 - MBC天使俱樂部管理系統</title>
+        <title>投資項目 - MBC管理系統</title>
       </Head>
       <div className="min-h-screen bg-gray-100">
-        <Navbar />
+        <DashboardNav />
         
         {/* 主要內容區 */}
         <div className="py-10">

@@ -1,11 +1,11 @@
-import { NextPage } from 'next'
+import type { NextPage } from 'next'
 import Head from 'next/head'
-import { useRouter } from 'next/router'
+import { useAuth } from '../src/hooks/useAuth'
 import { useEffect } from 'react'
-import { useAuth } from '@/hooks/useAuth'
-import { DashboardNav } from '@/components/dashboard/DashboardNav'
+import { useRouter } from 'next/router'
+import { DashboardNav } from '../components/dashboard/DashboardNav'
 
-const ProjectsPage: NextPage = () => {
+const Projects: NextPage = () => {
   const { user, loading } = useAuth()
   const router = useRouter()
 
@@ -30,7 +30,7 @@ const ProjectsPage: NextPage = () => {
   return (
     <>
       <Head>
-        <title>項目管理 - MBC天使俱樂部管理系統</title>
+        <title>項目管理 - MBC管理系統</title>
       </Head>
       <div className="min-h-screen bg-gray-100">
         <DashboardNav />
@@ -46,10 +46,10 @@ const ProjectsPage: NextPage = () => {
           </header>
           <main>
             <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-              {/* 項目列表將在這裡添加 */}
+              {/* 這裡添加項目管理的內容 */}
               <div className="px-4 py-8 sm:px-0">
                 <div className="border-4 border-dashed border-gray-200 rounded-lg h-96">
-                  {/* 項目列表內容將在這裡添加 */}
+                  {/* 項目管理內容將在這裡添加 */}
                 </div>
               </div>
             </div>
@@ -60,4 +60,4 @@ const ProjectsPage: NextPage = () => {
   )
 }
 
-export default ProjectsPage 
+export default Projects 
