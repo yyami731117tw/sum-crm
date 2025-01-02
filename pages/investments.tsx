@@ -60,4 +60,10 @@ const Investments: NextPage = () => {
   )
 }
 
-export default Investments 
+export default Investments
+
+export async function getServerSideProps() {
+  return {
+    props: {},
+  }
+} 

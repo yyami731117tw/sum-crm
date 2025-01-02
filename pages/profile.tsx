@@ -258,4 +258,10 @@ const Profile: NextPage = () => {
   )
 }
 
-export default Profile 
+export default Profile
+
+export async function getServerSideProps() {
+  return {
+    props: {},
+  }
+} 

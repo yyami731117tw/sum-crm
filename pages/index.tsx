@@ -206,4 +206,10 @@ const Home: NextPage = () => {
   )
 }
 
-export default Home 
+export default Home
+
+export async function getServerSideProps() {
+  return {
+    props: {},
+  }
+} 

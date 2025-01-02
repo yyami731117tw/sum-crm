@@ -60,4 +60,10 @@ const Projects: NextPage = () => {
   )
 }
 
-export default Projects 
+export default Projects
+
+export async function getServerSideProps() {
+  return {
+    props: {},
+  }
+} 
