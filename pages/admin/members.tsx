@@ -58,6 +58,18 @@ interface Member {
   taboos?: string[]
   remainingDays?: number
   serviceStaff?: string
+  relationships?: {
+    memberId: string
+    type: string
+  }[]
+  investments?: {
+    id: string
+    contractId: string
+    projectName: string
+    amount: number
+    date: string
+    status: '進行中' | '已結束' | '已取消'
+  }[]
 }
 
 interface MemberLog {
@@ -1160,6 +1172,185 @@ const MembersPage = (): ReactElement => {
                         <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">關係人資訊</h3>
                       </div>
                       <div className="sm:col-span-2">
+                        <dt className="text-sm font-medium text-gray-500">關係人</dt>
+                        <dd className="mt-1">
+                          <div className="border border-gray-200 rounded-md">
+                            {(sidebarMember?.relationships || []).length > 0 ? (
+                              <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                  <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">姓名</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">關係</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">會員編號</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                  {(sidebarMember?.relationships || []).map((relationship, index) => {
+                                    const relatedMember = members.find(m => m.id === relationship.memberId)
+                                    return (
+                                      <tr key={`relationship-${index}`}>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                          <select
+                                            value={relationship.memberId}
+                                            onChange={(e) => {
+                                              if (!sidebarMember) return
+                                              const newRelationships = [...sidebarMember.relationships || []]
+                                              newRelationships[index] = {
+                                                ...relationship,
+                                                memberId: e.target.value
+                                              }
+                                              setSidebarMember({
+                                                ...sidebarMember,
+                                                relationships: newRelationships
+                                              })
+                                              
+                                              // 更新對方的關係人資訊
+                                              const targetMember = members.find(m => m.id === e.target.value)
+                                              if (targetMember) {
+                                                const updatedMembers = members.map(m => {
+                                                  if (m.id === e.target.value) {
+                                                    return {
+                                                      ...m,
+                                                      relationships: [
+                                                        ...(m.relationships || []),
+                                                        {
+                                                          memberId: sidebarMember.id,
+                                                          type: relationship.type
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                  return m
+                                                })
+                                                setMembers(updatedMembers)
+                                              }
+                                            }}
+                                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                                          >
+                                            <option value="">請選擇會員</option>
+                                            {members
+                                              .filter(m => m.id !== sidebarMember?.id)
+                                              .map(member => (
+                                                <option key={member.id} value={member.id}>
+                                                  {member.name} ({member.memberNo})
+                                                </option>
+                                              ))
+                                            }
+                                          </select>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                          <input
+                                            type="text"
+                                            value={relationship.type}
+                                            onChange={(e) => {
+                                              if (!sidebarMember) return
+                                              const newRelationships = [...sidebarMember.relationships || []]
+                                              newRelationships[index] = {
+                                                ...relationship,
+                                                type: e.target.value
+                                              }
+                                              setSidebarMember({
+                                                ...sidebarMember,
+                                                relationships: newRelationships
+                                              })
+                                              
+                                              // 更新對方的關係人資訊
+                                              const targetMember = members.find(m => m.id === relationship.memberId)
+                                              if (targetMember) {
+                                                const updatedMembers = members.map(m => {
+                                                  if (m.id === relationship.memberId) {
+                                                    return {
+                                                      ...m,
+                                                      relationships: m.relationships?.map(r => 
+                                                        r.memberId === sidebarMember.id 
+                                                          ? { ...r, type: e.target.value }
+                                                          : r
+                                                      )
+                                                    }
+                                                  }
+                                                  return m
+                                                })
+                                                setMembers(updatedMembers)
+                                              }
+                                            }}
+                                            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                            placeholder="請輸入關係"
+                                          />
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                          {relatedMember?.memberNo}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              if (!sidebarMember) return
+                                              const newRelationships = [...sidebarMember.relationships || []]
+                                              newRelationships.splice(index, 1)
+                                              setSidebarMember({
+                                                ...sidebarMember,
+                                                relationships: newRelationships
+                                              })
+                                              
+                                              // 更新對方的關係人資訊
+                                              const targetMember = members.find(m => m.id === relationship.memberId)
+                                              if (targetMember) {
+                                                const updatedMembers = members.map(m => {
+                                                  if (m.id === relationship.memberId) {
+                                                    return {
+                                                      ...m,
+                                                      relationships: m.relationships?.filter(r => 
+                                                        r.memberId !== sidebarMember.id
+                                                      )
+                                                    }
+                                                  }
+                                                  return m
+                                                })
+                                                setMembers(updatedMembers)
+                                              }
+                                            }}
+                                            className="text-red-600 hover:text-red-900"
+                                          >
+                                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    )
+                                  })}
+                                </tbody>
+                              </table>
+                            ) : (
+                              <div className="text-center py-4 text-sm text-gray-500">尚無關係人資料</div>
+                            )}
+                          </div>
+                          <div className="mt-4">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (!sidebarMember) return
+                                const newRelationship = {
+                                  memberId: '',
+                                  type: ''
+                                }
+                                setSidebarMember({
+                                  ...sidebarMember,
+                                  relationships: [...(sidebarMember.relationships || []), newRelationship]
+                                })
+                              }}
+                              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            >
+                              <svg className="-ml-0.5 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                              </svg>
+                              新增關係人
+                            </button>
+                          </div>
+                        </dd>
+                      </div>
+                      <div className="sm:col-span-2">
                         <dt className="text-sm font-medium text-gray-500">介紹人</dt>
                         <dd className="mt-1">
                           <select
@@ -1265,6 +1456,73 @@ const MembersPage = (): ReactElement => {
                             placeholder="請用逗號分隔多個禁忌"
                           />
                         </dd>
+                      </div>
+
+                      {/* 投資履歷 */}
+                      <div className="sm:col-span-2">
+                        <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">投資履歷</h3>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                          <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                              <tr>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  投資項目
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  金額
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  日期
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  狀態
+                                </th>
+                                <th scope="col" className="relative px-6 py-3">
+                                  <span className="sr-only">操作</span>
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {sidebarMember.investments?.map((investment) => (
+                                <tr key={investment.id}>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {investment.projectName}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    ${investment.amount.toLocaleString()}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {investment.date}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                      investment.status === '進行中' ? 'bg-green-100 text-green-800' :
+                                      investment.status === '已結束' ? 'bg-gray-100 text-gray-800' :
+                                      'bg-red-100 text-red-800'
+                                    }`}>
+                                      {investment.status}
+                                    </span>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <Link
+                                      href={`/admin/contracts/${investment.contractId}`}
+                                      className="text-blue-600 hover:text-blue-900"
+                                    >
+                                      查看合約
+                                    </Link>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                          {(!sidebarMember.investments || sidebarMember.investments.length === 0) && (
+                            <div className="text-center py-4 text-sm text-gray-500">
+                              尚無投資紀錄
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       {/* 按鈕區 */}
