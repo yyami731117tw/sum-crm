@@ -10,7 +10,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { idNumber, excludeId } = req.query
 
     if (!idNumber) {
-      return res.status(400).json({ message: '身分證字號為必填' })
+      return res.status(400).json({ 
+        success: false,
+        message: '身分證字號為必填' 
+      })
     }
 
     // 查詢是否有其他會員使用相同身分證字號
@@ -24,10 +27,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     })
 
     return res.status(200).json({
-      isDuplicate: !!existingMember
+      success: true,
+      isDuplicate: !!existingMember,
+      message: existingMember ? '此身分證字號已被使用' : ''
     })
   } catch (error) {
     console.error('檢查身分證字號失敗:', error)
-    return res.status(500).json({ message: '檢查失敗，請稍後再試' })
+    return res.status(500).json({ 
+      success: false,
+      message: '檢查失敗，請稍後再試' 
+    })
   }
 } 

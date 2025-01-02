@@ -49,17 +49,22 @@ export const DashboardNav: FC = () => {
               ))}
             </div>
           </div>
-          <div className="flex items-center">
-            <div className="flex items-center space-x-3">
-              <span className="text-sm text-gray-700">
-                {user?.name || user?.email}
+          <div className="flex items-center space-x-4">
+            <span className="text-sm text-gray-700">
+              {user?.name || user?.email}
+            </span>
+            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+              <span className="text-sm font-medium text-blue-600">
+                {(user?.name || user?.email || '')[0]?.toUpperCase()}
               </span>
-              <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                <span className="text-sm font-medium text-blue-600">
-                  {(user?.name || user?.email || '')[0]?.toUpperCase()}
-                </span>
-              </div>
             </div>
+            <Link
+              href="/settings"
+              className="p-2 text-gray-600 hover:text-gray-900 rounded-full hover:bg-gray-100"
+              title="系統設定"
+            >
+              <CogIcon className="h-6 w-6" />
+            </Link>
           </div>
         </div>
       </div>
