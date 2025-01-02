@@ -463,6 +463,7 @@ const MembersPage: NextPage = () => {
 
   const getRemainingDaysColor = (remainingDays: number | undefined) => {
     if (!remainingDays) return 'text-gray-900'
+    if (remainingDays <= 0) return 'text-red-600 font-bold'
     if (remainingDays <= 15) return 'text-red-600'
     if (remainingDays <= 30) return 'text-orange-500'
     return 'text-gray-900'
@@ -470,9 +471,17 @@ const MembersPage: NextPage = () => {
 
   const getRemainingDaysMessage = (remainingDays: number | undefined) => {
     if (!remainingDays) return ''
+    if (remainingDays <= 0) return '會員已到期!!'
     if (remainingDays <= 15) return '確認會員是否續約'
     if (remainingDays <= 30) return '通知會員即將到期'
     return ''
+  }
+
+  const getRemainingDaysDisplay = (remainingDays: number | undefined, hasMembershipPeriod: boolean | undefined) => {
+    if (!hasMembershipPeriod) return '無期限'
+    if (remainingDays === undefined) return ''
+    if (remainingDays <= 0) return '已到期'
+    return `${remainingDays} 天`
   }
 
   if (loading) {
@@ -601,7 +610,7 @@ const MembersPage: NextPage = () => {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex flex-col">
                               <div className={getRemainingDaysColor(member.remainingDays)}>
-                                {member.hasMembershipPeriod ? `${member.remainingDays} 天` : '無期限'}
+                                {getRemainingDaysDisplay(member.remainingDays, member.hasMembershipPeriod)}
                               </div>
                               {getRemainingDaysMessage(member.remainingDays) && (
                                 <div className={`text-sm ${getRemainingDaysColor(member.remainingDays)}`}>
@@ -868,6 +877,24 @@ const MembersPage: NextPage = () => {
                             disabled
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 sm:text-sm"
                           />
+                        </dd>
+                      </div>
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">國籍</dt>
+                        <dd className="mt-1">
+                          <select
+                            value={sidebarMember.nationality || ''}
+                            onChange={(e) => setSidebarMember({...sidebarMember, nationality: e.target.value as Member['nationality']})}
+                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                          >
+                            <option value="">請選擇</option>
+                            <option value="台灣 Taiwan">台灣 Taiwan</option>
+                            <option value="馬來西亞 Malaysia">馬來西亞 Malaysia</option>
+                            <option value="中國 China">中國 China</option>
+                            <option value="香港 Hong Kong">香港 Hong Kong</option>
+                            <option value="澳洲 Australia">澳洲 Australia</option>
+                            <option value="日本 Japan">日本 Japan</option>
+                          </select>
                         </dd>
                       </div>
                       <div className="sm:col-span-1">
@@ -1165,24 +1192,6 @@ const MembersPage: NextPage = () => {
                               </>
                             )}
                           </div>
-                        </dd>
-                      </div>
-                      <div className="sm:col-span-1">
-                        <dt className="text-sm font-medium text-gray-500">國籍</dt>
-                        <dd className="mt-1">
-                          <select
-                            value={sidebarMember.nationality || ''}
-                            onChange={(e) => setSidebarMember({...sidebarMember, nationality: e.target.value as Member['nationality']})}
-                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                          >
-                            <option value="">請選擇</option>
-                            <option value="台灣 Taiwan">台灣 Taiwan</option>
-                            <option value="馬來西亞 Malaysia">馬來西亞 Malaysia</option>
-                            <option value="中國 China">中國 China</option>
-                            <option value="香港 Hong Kong">香港 Hong Kong</option>
-                            <option value="澳洲 Australia">澳洲 Australia</option>
-                            <option value="日本 Japan">日本 Japan</option>
-                          </select>
                         </dd>
                       </div>
                       <div className="sm:col-span-1">
