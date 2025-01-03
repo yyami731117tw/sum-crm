@@ -16,63 +16,15 @@ interface Member {
   id: string
   memberNo: string
   name: string
-  phone: string
-  gender: '男' | '女'
   nickname?: string
-  idNumber: string
-  birthday: string
-  age?: number
-  joinDate: string
-  status: 'active' | 'inactive' | 'pending'
-  email?: string
+  phone: string
+  email: string
   lineId?: string
   address?: string
-  memberCategory: '一般會員' | '天使' | 'VIP' | '合作' | '股東' | '黑名單'
-  joinCondition?: '舊會員' | '會員體驗' | '200萬財力審查'
-  nationality?: '台灣 Taiwan' | '馬來西亞 Malaysia' | '中國 China' | '香港 Hong Kong' | '澳洲 Australia' | '日本 Japan'
-  occupation?: '家管' | '軍公教' | '製造業' | '服務業' | '農業' | '科技業' | '金融保險' | '商業貿易' | '公共事業'
+  status: '一般會員' | 'VIP會員' | '黑名單'
   notes?: string
-  emergencyContact?: string
-  emergencyPhone?: string
-  emergencyRelation?: string
-  interests?: string[]
-  referrer?: string
-  dietaryHabits?: string
-  tags?: string[]
-  vipStartDate?: string
-  vipEndDate?: string
-  contractNo?: string
-  contractDate?: string
-  contractAmount?: number
-  paymentMethod?: '信用卡' | '現金' | '銀行轉帳'
-  bankAccount?: string
-  invoiceInfo?: string
-  passportName?: string
-  passportNo?: string
-  isUSCitizen?: boolean
-  idCardFront?: string
-  idCardBack?: string
-  hasMembershipPeriod?: boolean
-  membershipStartDate?: string
-  membershipEndDate?: string
-  familyStatus?: string
-  education?: '高中以下' | '高中職' | '專科' | '大學' | '碩士' | '博士'
-  expertise?: string[]
-  taboos?: string[]
-  remainingDays?: number
-  serviceStaff?: string
-  relationships?: {
-    memberId: string
-    type: string
-  }[]
-  investments?: {
-    id: string
-    contractId: string
-    projectName: string
-    amount: number
-    date: string
-    status: '進行中' | '已結束' | '已取消'
-  }[]
+  createdAt: string
+  updatedAt: string
 }
 
 interface MemberLog {
@@ -220,14 +172,10 @@ const MembersPage = (): ReactElement => {
       memberNo: generateMemberNo(),
       name: '',  // 必填
       phone: '',  // 必填
-      gender: '男',  // 必填
-      idNumber: '',  // 必填
-      birthday: '',  // 必填
-      joinDate: new Date().toISOString().split('T')[0].replace(/-/g, '/'),
-      status: 'active',
-      memberCategory: '一般會員',  // 必填
-      hasMembershipPeriod: false,
-      remainingDays: undefined,
+      email: '',  // 必填
+      status: '一般會員',  // 必填
+      createdAt: new Date().toISOString().split('T')[0].replace(/-/g, '/'),
+      updatedAt: new Date().toISOString().split('T')[0].replace(/-/g, '/'),
     }
     setSidebarMember(newMember)
     setSidebarMemberLogs([])
@@ -264,8 +212,8 @@ const MembersPage = (): ReactElement => {
     if (!sidebarMember) return
 
     // 檢查必填欄位
-    if (!sidebarMember.name || !sidebarMember.phone || !sidebarMember.idNumber) {
-      alert('請填寫必填欄位：姓名、電話、身分證字號')
+    if (!sidebarMember.name || !sidebarMember.phone || !sidebarMember.email) {
+      alert('請填寫必填欄位：姓名、電話、電子郵件')
       return
     }
 
@@ -462,9 +410,11 @@ const MembersPage = (): ReactElement => {
 
   const getStatusBadgeColor = (status: Member['status']) => {
     switch (status) {
-      case 'active':
+      case '一般會員':
         return 'bg-green-100 text-green-800'
-      case 'inactive':
+      case 'VIP會員':
+        return 'bg-blue-100 text-blue-800'
+      case '黑名單':
         return 'bg-red-100 text-red-800'
       default:
         return 'bg-gray-100 text-gray-800'
@@ -473,9 +423,11 @@ const MembersPage = (): ReactElement => {
 
   const getStatusText = (status: Member['status']) => {
     switch (status) {
-      case 'active':
+      case '一般會員':
         return '啟用'
-      case 'inactive':
+      case 'VIP會員':
+        return '啟用'
+      case '黑名單':
         return '停用'
       default:
         return status
@@ -629,7 +581,7 @@ const MembersPage = (): ReactElement => {
                             </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {member.memberCategory}
+                            {member.status}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -807,18 +759,15 @@ const MembersPage = (): ReactElement => {
                         </dd>
                       </div>
                       <div className="sm:col-span-1">
-                        <dt className="text-sm font-medium text-gray-500">會員分類</dt>
+                        <dt className="text-sm font-medium text-gray-500">會員類型</dt>
                         <dd className="mt-1">
                           <select
-                            value={sidebarMember.memberCategory}
-                            onChange={(e) => setSidebarMember({...sidebarMember, memberCategory: e.target.value as Member['memberCategory']})}
-                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                            value={sidebarMember.status}
+                            onChange={(e) => setSidebarMember({...sidebarMember, status: e.target.value as Member['status']})}
+                            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           >
                             <option value="一般會員">一般會員</option>
-                            <option value="天使">天使</option>
-                            <option value="VIP">VIP</option>
-                            <option value="合作">合作</option>
-                            <option value="股東">股東</option>
+                            <option value="VIP會員">VIP會員</option>
                             <option value="黑名單">黑名單</option>
                           </select>
                         </dd>
