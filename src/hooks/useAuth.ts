@@ -1,3 +1,4 @@
+import { useSession, signIn, signOut } from 'next-auth/react'
 import { useRouter } from 'next/router'
 
 export interface User {
