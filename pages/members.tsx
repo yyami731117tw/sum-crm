@@ -250,8 +250,8 @@ const MembersPage = (): ReactElement => {
     if (!sidebarMember) return
 
     // 檢查必填欄位
-    if (!sidebarMember.name || !sidebarMember.phone || !sidebarMember.email) {
-      alert('請填寫必填欄位：姓名、電話、電子郵件')
+    if (!sidebarMember.name || !sidebarMember.phone || !sidebarMember.idNumber) {
+      alert('請填寫必填欄位：姓名、電話、身分證字號')
       return
     }
 
