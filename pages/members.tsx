@@ -380,4 +380,10 @@ const MembersPage: NextPage = () => {
   )
 }
 
-export default MembersPage 
+export default MembersPage
+
+export async function getServerSideProps() {
+  return {
+    props: {},
+  }
+} 

@@ -481,4 +481,10 @@ const AdminUsersPage: NextPage = () => {
   )
 }
 
-export default AdminUsersPage 
+export default AdminUsersPage
+
+export async function getServerSideProps() {
+  return {
+    props: {},
+  }
+} 

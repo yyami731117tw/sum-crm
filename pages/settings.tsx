@@ -145,4 +145,10 @@ const Settings: NextPage = () => {
   )
 }
 
-export default Settings 
+export default Settings
+
+export async function getServerSideProps() {
+  return {
+    props: {},
+  }
+} 

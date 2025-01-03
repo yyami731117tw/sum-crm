@@ -152,4 +152,10 @@ const DashboardPage: NextPage = () => {
   )
 }
 
-export default DashboardPage 
+export default DashboardPage
+
+export async function getServerSideProps() {
+  return {
+    props: {},
+  }
+} 
