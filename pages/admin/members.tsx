@@ -1,15 +1,15 @@
 import type { NextPage } from 'next'
 import type { ReactElement } from 'react'
 import Head from 'next/head'
-import { useAuth } from '@/hooks/useAuth'
-import { DashboardNav } from '@/components/dashboard/DashboardNav'
+import { useAuth } from '../../src/hooks/useAuth'
+import { DashboardNav } from '../../src/components/dashboard/DashboardNav'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import type { Staff } from '../../src/data/staffs'
 import { mockStaffs } from '../../src/data/staffs'
-import { useMembersCache } from '@/hooks/useMembersCache'
-import { config } from '@/utils/config'
+import { useMembersCache } from '../../src/hooks/useMembersCache'
+import { config } from '../../src/utils/config'
 
 interface Member {
   id: string
