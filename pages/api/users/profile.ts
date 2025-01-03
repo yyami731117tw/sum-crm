@@ -31,12 +31,13 @@ export default async function handler(
       const updatedUser = await prisma.user.update({
         where: { id: userId },
         data: {
-          name: name || undefined,
-          phone: phone || undefined,
-          lineId: lineId || undefined,
-          address: address || undefined,
-          birthday: birthday ? new Date(birthday) : undefined,
-          image: image || undefined,
+          name: name || null,
+          nickname: nickname || null,
+          phone: phone || null,
+          lineId: lineId || null,
+          address: address || null,
+          birthday: birthday ? new Date(birthday) : null,
+          image: image || null,
         },
       })
 
