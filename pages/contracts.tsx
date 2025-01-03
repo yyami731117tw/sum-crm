@@ -764,70 +764,6 @@ const ContractsPage = (): ReactElement => {
                           </dd>
                         </div>
 
-                        {/* 其他資訊 */}
-                        <div className="sm:col-span-2">
-                          <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">其他資訊</h3>
-                        </div>
-                        <div className="sm:col-span-2">
-                          <dt className="text-sm font-medium text-gray-500">發票資訊</dt>
-                          <dd className="mt-1">
-                            <input
-                              type="text"
-                              value={sidebarContract.invoiceInfo || ''}
-                              onChange={(e) => setSidebarContract({...sidebarContract, invoiceInfo: e.target.value})}
-                              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                              placeholder="請輸入發票資訊"
-                            />
-                          </dd>
-                        </div>
-                        <div className="sm:col-span-2">
-                          <dt className="text-sm font-medium text-gray-500">備註</dt>
-                          <dd className="mt-1">
-                            <textarea
-                              value={sidebarContract.notes || ''}
-                              onChange={(e) => setSidebarContract({...sidebarContract, notes: e.target.value})}
-                              rows={4}
-                              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                              placeholder="請輸入備註"
-                            />
-                          </dd>
-                        </div>
-
-                        {/* 變更紀錄 */}
-                        <div className="sm:col-span-2">
-                          <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">變更紀錄</h3>
-                        </div>
-                        <div className="sm:col-span-2">
-                          <div className="space-y-4">
-                            {sidebarContractLogs.map(log => (
-                              <div key={log.id} className="border-b border-gray-200 pb-4">
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <p className="text-sm font-medium text-gray-900">{log.action}</p>
-                                    <p className="text-sm text-gray-500">{log.details}</p>
-                                    {log.changes && (
-                                      <div className="mt-2 space-y-1">
-                                        {log.changes.map((change, index) => (
-                                          <p key={index} className="text-sm text-gray-500">
-                                            {change.field}: {change.oldValue} → {change.newValue}
-                                          </p>
-                                        ))}
-                                      </div>
-                                    )}
-                                    <p className="text-sm text-gray-500 mt-1">操作人員：{log.operator}</p>
-                                  </div>
-                                  <p className="text-sm text-gray-500">{log.timestamp}</p>
-                                </div>
-                              </div>
-                            ))}
-                            {sidebarContractLogs.length === 0 && (
-                              <div className="text-center py-4 text-sm text-gray-500">
-                                尚無變更紀錄
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
                         {/* 檔案上傳 */}
                         <div className="sm:col-span-2">
                           <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">檔案上傳</h3>
@@ -950,6 +886,70 @@ const ContractsPage = (): ReactElement => {
                               </div>
                             </div>
                           </dd>
+                        </div>
+
+                        {/* 其他資訊 */}
+                        <div className="sm:col-span-2">
+                          <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">其他資訊</h3>
+                        </div>
+                        <div className="sm:col-span-2">
+                          <dt className="text-sm font-medium text-gray-500">發票資訊</dt>
+                          <dd className="mt-1">
+                            <input
+                              type="text"
+                              value={sidebarContract.invoiceInfo || ''}
+                              onChange={(e) => setSidebarContract({...sidebarContract, invoiceInfo: e.target.value})}
+                              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                              placeholder="請輸入發票資訊"
+                            />
+                          </dd>
+                        </div>
+                        <div className="sm:col-span-2">
+                          <dt className="text-sm font-medium text-gray-500">備註</dt>
+                          <dd className="mt-1">
+                            <textarea
+                              value={sidebarContract.notes || ''}
+                              onChange={(e) => setSidebarContract({...sidebarContract, notes: e.target.value})}
+                              rows={4}
+                              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                              placeholder="請輸入備註"
+                            />
+                          </dd>
+                        </div>
+
+                        {/* 變更紀錄 */}
+                        <div className="sm:col-span-2">
+                          <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">變更紀錄</h3>
+                        </div>
+                        <div className="sm:col-span-2">
+                          <div className="space-y-4">
+                            {sidebarContractLogs.map(log => (
+                              <div key={log.id} className="border-b border-gray-200 pb-4">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <p className="text-sm font-medium text-gray-900">{log.action}</p>
+                                    <p className="text-sm text-gray-500">{log.details}</p>
+                                    {log.changes && (
+                                      <div className="mt-2 space-y-1">
+                                        {log.changes.map((change, index) => (
+                                          <p key={index} className="text-sm text-gray-500">
+                                            {change.field}: {change.oldValue} → {change.newValue}
+                                          </p>
+                                        ))}
+                                      </div>
+                                    )}
+                                    <p className="text-sm text-gray-500 mt-1">操作人員：{log.operator}</p>
+                                  </div>
+                                  <p className="text-sm text-gray-500">{log.timestamp}</p>
+                                </div>
+                              </div>
+                            ))}
+                            {sidebarContractLogs.length === 0 && (
+                              <div className="text-center py-4 text-sm text-gray-500">
+                                尚無變更紀錄
+                              </div>
+                            )}
+                          </div>
                         </div>
 
                         {/* 按鈕區 */}
