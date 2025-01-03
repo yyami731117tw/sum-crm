@@ -462,9 +462,9 @@ const MembersPage = (): ReactElement => {
   const getStatusText = (status: Member['status']) => {
     switch (status) {
       case '一般會員':
-        return '啟用'
+        return '審查中'  // 未來可根據審查機制調整
       case 'VIP會員':
-        return '啟用'
+        return '活躍'
       case '黑名單':
         return '停用'
       default:
