@@ -46,7 +46,7 @@ export function DashboardNav() {
             <Link href="/dashboard" className="text-gray-900 hover:text-gray-500 px-3 py-2 rounded-md text-sm font-medium">
               首頁
             </Link>
-            <Link href="/admin/members" className="text-gray-900 hover:text-gray-500 px-3 py-2 rounded-md text-sm font-medium">
+            <Link href="/members" className="text-gray-900 hover:text-gray-500 px-3 py-2 rounded-md text-sm font-medium">
               會員管理
             </Link>
             <Link href="/contracts" className="text-gray-900 hover:text-gray-500 px-3 py-2 rounded-md text-sm font-medium">
