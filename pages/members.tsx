@@ -21,7 +21,7 @@ interface Member {
   email: string
   lineId?: string
   address?: string
-  status: '一般會員' | 'VIP會員' | '黑名單'
+  status: '一般會員' | 'VIP會員' | '天使會員' | '股東' | '合作' | '黑名單'
   notes?: string
   createdAt: string
   updatedAt: string
@@ -452,6 +452,12 @@ const MembersPage = (): ReactElement => {
         return 'bg-green-100 text-green-800'
       case 'VIP會員':
         return 'bg-blue-100 text-blue-800'
+      case '天使會員':
+        return 'bg-purple-100 text-purple-800'
+      case '股東':
+        return 'bg-yellow-100 text-yellow-800'
+      case '合作':
+        return 'bg-teal-100 text-teal-800'
       case '黑名單':
         return 'bg-red-100 text-red-800'
       default:
@@ -464,6 +470,12 @@ const MembersPage = (): ReactElement => {
       case '一般會員':
         return '啟用'
       case 'VIP會員':
+        return '啟用'
+      case '天使會員':
+        return '啟用'
+      case '股東':
+        return '啟用'
+      case '合作':
         return '啟用'
       case '黑名單':
         return '停用'
@@ -808,8 +820,11 @@ const MembersPage = (): ReactElement => {
                             onChange={(e) => setSidebarMember({...sidebarMember, status: e.target.value as Member['status']})}
                             className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                           >
-                            <option value="VIP會員">VIP會員</option>
                             <option value="一般會員">一般會員</option>
+                            <option value="VIP會員">VIP會員</option>
+                            <option value="天使會員">天使會員</option>
+                            <option value="股東">股東</option>
+                            <option value="合作">合作</option>
                             <option value="黑名單">黑名單</option>
                           </select>
                         </dd>
