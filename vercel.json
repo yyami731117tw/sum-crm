@@ -4,7 +4,9 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install",
   "env": {
-    "NEXT_PUBLIC_BASE_URL": "https://sum-crm.vercel.app"
+    "NEXT_PUBLIC_BASE_URL": "https://sum-crm.vercel.app",
+    "NEXTAUTH_URL": "https://sum-crm.vercel.app",
+    "NEXTAUTH_SECRET": "your-secret-key-at-least-32-characters-long"
   },
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }

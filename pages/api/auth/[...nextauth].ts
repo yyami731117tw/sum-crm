@@ -16,6 +16,7 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         try {
           if (!credentials?.email || !credentials?.password) {
+            console.error('缺少認證資訊')
             throw new Error('請輸入信箱和密碼')
           }
 
@@ -24,12 +25,26 @@ export const authOptions: NextAuthOptions = {
           const user = await prisma.user.findUnique({
             where: {
               email: credentials.email
+            },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              password: true,
+              role: true,
+              status: true,
+              phone: true,
+              lineId: true,
+              address: true,
+              birthday: true,
+              image: true
             }
           })
 
           console.log('找到使用者:', user ? '是' : '否')
 
-          if (!user) {
+          if (!user || !user.password) {
+            console.error('使用者不存在或密碼未設置')
             throw new Error('找不到此使用者')
           }
 
@@ -38,6 +53,7 @@ export const authOptions: NextAuthOptions = {
           console.log('密碼驗證:', isValid ? '成功' : '失敗')
 
           if (!isValid) {
+            console.error('密碼驗證失敗')
             throw new Error('密碼錯誤')
           }
 
@@ -54,7 +70,7 @@ export const authOptions: NextAuthOptions = {
             image: user.image
           }
         } catch (error) {
-          console.error('認證錯誤:', error)
+          console.error('認證過程中發生錯誤:', error)
           throw error
         }
       }
@@ -68,6 +84,7 @@ export const authOptions: NextAuthOptions = {
     signIn: '/login',
     error: '/login',
   },
+  secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === 'development',
   callbacks: {
     async jwt({ token, user }) {
