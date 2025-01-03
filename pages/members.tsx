@@ -10,11 +10,21 @@ interface Member {
   memberNo: string
   name: string
   nickname?: string
+  gender: string
   phone: string
   email?: string
-  lineId?: string
+  birthday: string
+  age?: number
   address?: string
+  idNumber: string
   status: string
+  memberType: string
+  membershipStartDate?: string
+  membershipEndDate?: string
+  remainingDays?: number
+  occupation?: string
+  lineId?: string
+  notes?: string
   createdAt: string
   updatedAt: string
 }
@@ -44,6 +54,9 @@ const MembersPage: NextPage = () => {
   const [isCreateMode, setIsCreateMode] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [sidebarMember, setSidebarMember] = useState<Member | null>(null)
+  const [sidebarWidth, setSidebarWidth] = useState(800)
+  const [isResizing, setIsResizing] = useState(false)
+  const [startX, setStartX] = useState(0)
   const [sidebarMemberLogs, setSidebarMemberLogs] = useState<MemberLog[]>([])
 
   useEffect(() => {
@@ -72,6 +85,30 @@ const MembersPage: NextPage = () => {
 
     loadMembers()
   }, [loading, user, router])
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return
+      
+      const diff = startX - e.pageX
+      const newWidth = Math.max(400, Math.min(1200, sidebarWidth + diff))
+      setSidebarWidth(newWidth)
+    }
+
+    const handleMouseUp = () => {
+      setIsResizing(false)
+    }
+
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isResizing, startX, sidebarWidth])
 
   const handleViewMember = (member: Member) => {
     setSidebarMember(member)
@@ -107,7 +144,7 @@ const MembersPage: NextPage = () => {
       <DashboardNav />
 
       <main className="py-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold text-gray-900">會員管理</h1>
             <button
@@ -130,7 +167,7 @@ const MembersPage: NextPage = () => {
           </div>
 
           {/* 會員列表 */}
-          <div className="bg-white shadow overflow-hidden rounded-lg">
+          <div className="bg-white shadow overflow-x-auto rounded-lg">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -144,10 +181,13 @@ const MembersPage: NextPage = () => {
                     電話
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    狀態
+                    會員類型
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    加入日期
+                    會員期限
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    狀態
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     操作
@@ -173,6 +213,14 @@ const MembersPage: NextPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {member.phone}
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {member.memberType === 'regular' ? '一般會員' : 
+                       member.memberType === 'vip' ? 'VIP會員' : 
+                       member.memberType === 'enterprise' ? '企業會員' : '未指定'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {member.membershipEndDate ? new Date(member.membershipEndDate).toLocaleDateString('zh-TW') : '永久'}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         member.status === 'active'
@@ -181,9 +229,6 @@ const MembersPage: NextPage = () => {
                       }`}>
                         {member.status === 'active' ? '啟用' : '停用'}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(member.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
@@ -211,140 +256,139 @@ const MembersPage: NextPage = () => {
       {isSidebarOpen && (
         <div className="fixed inset-0 overflow-hidden z-50">
           <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+            <div 
+              className="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
+              onClick={() => setIsSidebarOpen(false)}
+            />
             <div className="fixed inset-y-0 right-0 pl-10 max-w-full flex">
-              <div className="relative w-screen max-w-2xl">
-                <div className="h-full flex flex-col py-6 bg-white shadow-xl overflow-y-scroll">
-                  <div className="px-4 sm:px-6">
-                    <div className="flex items-start justify-between">
-                      <h2 className="text-lg font-medium text-gray-900">
-                        會員詳細資料
-                      </h2>
+              <div 
+                className="relative w-screen"
+                style={{ maxWidth: `${sidebarWidth}px` }}
+              >
+                <div 
+                  className="absolute -ml-8 top-1/2 -translate-y-1/2 w-8 h-16 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-l cursor-ew-resize"
+                  onMouseDown={(e) => {
+                    setIsResizing(true)
+                    setStartX(e.pageX)
+                  }}
+                >
+                  <div className="w-1 h-8 bg-gray-400 rounded-full" />
+                </div>
+                <div className="h-full flex flex-col bg-white shadow-xl overflow-hidden">
+                  <div className="flex-shrink-0 px-4 py-5 sm:px-6 border-b border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-medium text-gray-900">會員詳細資料</h3>
                       <button
                         onClick={() => setIsSidebarOpen(false)}
                         className="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <span className="sr-only">關閉面板</span>
-                        <svg
-                          className="h-6 w-6"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          aria-hidden="true"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
+                        <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </button>
                     </div>
                   </div>
-                  <div className="mt-6 relative flex-1 px-4 sm:px-6">
-                    {/* 會員詳細資料內容 */}
+                  <div className="flex-1 overflow-y-auto">
+                    <div className="px-4 py-6 sm:px-6">
                     {sidebarMember && (
                       <div className="space-y-6">
-                        <div>
-                          <h3 className="text-lg font-medium text-gray-900">
-                            基本資料
-                          </h3>
-                          <dl className="mt-2 border-t border-b border-gray-200 divide-y divide-gray-200">
-                            <div className="py-3 flex justify-between text-sm">
-                              <dt className="text-gray-500">會員編號</dt>
-                              <dd className="text-gray-900">
-                                {sidebarMember.memberNo}
+                          <section>
+                            <h4 className="font-medium text-gray-900">基本資料</h4>
+                            <dl className="mt-4 border-t border-gray-200">
+                              <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                                <dt className="text-sm font-medium text-gray-500">會員編號</dt>
+                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{sidebarMember.memberNo}</dd>
+                              </div>
+                              <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                                <dt className="text-sm font-medium text-gray-500">姓名</dt>
+                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{sidebarMember.name}</dd>
+                              </div>
+                              <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                                <dt className="text-sm font-medium text-gray-500">暱稱</dt>
+                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{sidebarMember.nickname || '-'}</dd>
+                              </div>
+                              <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                                <dt className="text-sm font-medium text-gray-500">身份證字號</dt>
+                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{sidebarMember.idNumber || '-'}</dd>
+                              </div>
+                              <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                                <dt className="text-sm font-medium text-gray-500">性別</dt>
+                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                  {sidebarMember.gender === 'male' ? '男' : 
+                                   sidebarMember.gender === 'female' ? '女' : '未指定'}
                               </dd>
                             </div>
-                            <div className="py-3 flex justify-between text-sm">
-                              <dt className="text-gray-500">姓名</dt>
-                              <dd className="text-gray-900">
-                                {sidebarMember.name}
+                              <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                                <dt className="text-sm font-medium text-gray-500">生日</dt>
+                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                  {sidebarMember.birthday ? 
+                                    new Date(sidebarMember.birthday).toLocaleDateString('zh-TW') : '-'}
                               </dd>
                             </div>
-                            <div className="py-3 flex justify-between text-sm">
-                              <dt className="text-gray-500">暱稱</dt>
-                              <dd className="text-gray-900">
-                                {sidebarMember.nickname || '-'}
+                              <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                                <dt className="text-sm font-medium text-gray-500">電話</dt>
+                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{sidebarMember.phone}</dd>
+                            </div>
+                              <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                                <dt className="text-sm font-medium text-gray-500">電子郵件</dt>
+                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{sidebarMember.email || '-'}</dd>
+                            </div>
+                              <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                                <dt className="text-sm font-medium text-gray-500">會員類型</dt>
+                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                  {sidebarMember.memberType === 'regular' ? '一般會員' : 
+                                   sidebarMember.memberType === 'vip' ? 'VIP會員' : 
+                                   sidebarMember.memberType === 'enterprise' ? '企業會員' : '未指定'}
                               </dd>
                             </div>
-                            <div className="py-3 flex justify-between text-sm">
-                              <dt className="text-gray-500">電話</dt>
-                              <dd className="text-gray-900">
-                                {sidebarMember.phone}
+                              <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                                <dt className="text-sm font-medium text-gray-500">會員期限</dt>
+                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                  {sidebarMember.membershipEndDate ? 
+                                    new Date(sidebarMember.membershipEndDate).toLocaleDateString('zh-TW') : '永久'}
                               </dd>
                             </div>
-                            <div className="py-3 flex justify-between text-sm">
-                              <dt className="text-gray-500">電子郵件</dt>
-                              <dd className="text-gray-900">
-                                {sidebarMember.email || '-'}
-                              </dd>
-                            </div>
-                            <div className="py-3 flex justify-between text-sm">
-                              <dt className="text-gray-500">LINE ID</dt>
-                              <dd className="text-gray-900">
-                                {sidebarMember.lineId || '-'}
-                              </dd>
-                            </div>
-                            <div className="py-3 flex justify-between text-sm">
-                              <dt className="text-gray-500">地址</dt>
-                              <dd className="text-gray-900">
-                                {sidebarMember.address || '-'}
+                              <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                                <dt className="text-sm font-medium text-gray-500">狀態</dt>
+                                <dd className="mt-1 sm:mt-0 sm:col-span-2">
+                                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                    sidebarMember.status === 'active'
+                                      ? 'bg-green-100 text-green-800'
+                                      : 'bg-red-100 text-red-800'
+                                  }`}>
+                                    {sidebarMember.status === 'active' ? '啟用' : '停用'}
+                                  </span>
                               </dd>
                             </div>
                           </dl>
-                        </div>
+                          </section>
 
-                        <div>
-                          <h3 className="text-lg font-medium text-gray-900">
-                            變更記錄
-                          </h3>
-                          <div className="mt-2 flow-root">
+                          <section className="mt-8">
+                            <h4 className="font-medium text-gray-900">最近記錄</h4>
+                            <div className="mt-4 flow-root">
                             <ul className="-mb-8">
-                              {sidebarMemberLogs.map((log, logIdx) => (
+                                {sidebarMemberLogs.map((log, index) => (
                                 <li key={log.id}>
                                   <div className="relative pb-8">
-                                    {logIdx !== sidebarMemberLogs.length - 1 ? (
-                                      <span
-                                        className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"
-                                        aria-hidden="true"
-                                      />
-                                    ) : null}
+                                      {index < sidebarMemberLogs.length - 1 && (
+                                        <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true" />
+                                      )}
                                     <div className="relative flex space-x-3">
                                       <div>
-                                        <span className="h-8 w-8 rounded-full bg-gray-400 flex items-center justify-center ring-8 ring-white">
-                                          <svg
-                                            className="h-5 w-5 text-white"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 20 20"
-                                            fill="currentColor"
-                                          >
-                                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                                            <path
-                                              fillRule="evenodd"
-                                              d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                                              clipRule="evenodd"
-                                            />
+                                          <span className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white">
+                                            <svg className="h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                              <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0h8v12H6V4z" clipRule="evenodd" />
                                           </svg>
                                         </span>
                                       </div>
-                                      <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                                        <div className="min-w-0 flex-1">
                                         <div>
-                                          <p className="text-sm text-gray-500">
-                                            {log.action}
-                                          </p>
-                                          <p className="text-sm text-gray-900">
-                                            {log.details}
-                                          </p>
-                                        </div>
-                                        <div className="text-right text-sm whitespace-nowrap text-gray-500">
-                                          <time dateTime={log.createdAt}>
-                                            {new Date(
-                                              log.createdAt
-                                            ).toLocaleString()}
-                                          </time>
+                                            <p className="text-sm text-gray-500">{log.action}</p>
+                                            <p className="mt-0.5 text-sm text-gray-900">{log.details}</p>
+                                          </div>
+                                          <div className="mt-2 text-sm text-gray-500">
+                                            <time dateTime={log.createdAt}>{new Date(log.createdAt).toLocaleString('zh-TW')}</time>
                                         </div>
                                       </div>
                                     </div>
@@ -353,9 +397,10 @@ const MembersPage: NextPage = () => {
                               ))}
                             </ul>
                           </div>
+                          </section>
                         </div>
+                      )}
                       </div>
-                    )}
                   </div>
                 </div>
               </div>
