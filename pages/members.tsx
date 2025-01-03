@@ -572,87 +572,87 @@ const MembersPage = (): ReactElement => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          會員資料
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    會員資料
                   </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          會員類型
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    會員類型
                   </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          服務專員
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    電話
                   </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          電話
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    服務專員
                   </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     狀態
                   </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          加入時間
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    加入時間
                   </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          會員期限
-                        </th>
-                        <th scope="col" className="relative px-6 py-3">
-                          <span className="sr-only">操作</span>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    會員期限
+                  </th>
+                  <th scope="col" className="relative px-6 py-3">
+                    <span className="sr-only">操作</span>
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                      {filteredMembers.map((member) => (
+                {filteredMembers.map((member) => (
                   <tr key={member.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div>
-                                <div className="text-sm font-medium text-gray-900">
-                                  <button
-                                    onClick={() => handleViewMember(member)}
-                                    className="text-sm font-medium text-blue-600 hover:text-blue-900 hover:underline"
-                                  >
-                                    {member.name}
-                                  </button>
-                                </div>
-                                <div className="text-sm text-gray-500">會員編號：{member.memberNo}</div>
-                              </div>
-                            </div>
+                      <div className="flex items-center">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            <button
+                              onClick={() => handleViewMember(member)}
+                              className="text-sm font-medium text-blue-600 hover:text-blue-900 hover:underline"
+                            >
+                              {member.name}
+                            </button>
+                          </div>
+                          <div className="text-sm text-gray-500">會員編號：{member.memberNo}</div>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {member.status}
+                      {member.status}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {users.find(user => user.id === member.serviceStaff)?.name || '-'}
+                      {member.phone}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {member.phone}
+                      {users.find(user => user.id === member.serviceStaff)?.name || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              getStatusBadgeColor(member.status)
+                        getStatusBadgeColor(member.status)
                       }`}>
-                              {getStatusText(member.status)}
+                        {getStatusText(member.status)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {member.joinDate}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex flex-col">
-                              <div className={getRemainingDaysColor(member.remainingDays, member.hasMembershipPeriod)}>
-                                {getRemainingDaysDisplay(member.remainingDays, member.hasMembershipPeriod)}
-                              </div>
-                              {getRemainingDaysMessage(member.remainingDays, member.hasMembershipPeriod) && (
-                                <div className={`text-sm ${getRemainingDaysColor(member.remainingDays, member.hasMembershipPeriod)}`}>
-                                  {getRemainingDaysMessage(member.remainingDays, member.hasMembershipPeriod)}
-                                </div>
-                              )}
-                            </div>
+                      {member.joinDate}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <div className={getRemainingDaysColor(member.remainingDays, member.hasMembershipPeriod)}>
+                          {getRemainingDaysDisplay(member.remainingDays, member.hasMembershipPeriod)}
+                        </div>
+                        {getRemainingDaysMessage(member.remainingDays, member.hasMembershipPeriod) && (
+                          <div className={`text-sm ${getRemainingDaysColor(member.remainingDays, member.hasMembershipPeriod)}`}>
+                            {getRemainingDaysMessage(member.remainingDays, member.hasMembershipPeriod)}
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
                         onClick={() => handleViewMember(member)}
                         className="text-green-600 hover:text-green-900"
                       >
-                              使用記錄
+                        使用記錄
                       </button>
                     </td>
                   </tr>
