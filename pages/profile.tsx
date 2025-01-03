@@ -101,7 +101,12 @@ const Profile: NextPage = () => {
 
       // 更新個人資料
       const success = await updateUser({
-        ...profile,
+        name: profile.name,
+        nickname: profile.nickname,
+        phone: profile.phone,
+        lineId: profile.lineId,
+        address: profile.address,
+        birthday: profile.birthday,
         image: imageUrl
       })
 

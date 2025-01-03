@@ -8,16 +8,15 @@ export interface UserSession {
   id: string
   email: string
   name: string
-  picture?: string
   role: string
-  googleId?: string
-  nickname?: string
-  phone?: string
-  lineId?: string
-  address?: string
-  birthday?: string
-  image?: string
   status: string
+  nickname?: string | null
+  phone?: string | null
+  lineId?: string | null
+  address?: string | null
+  birthday?: string | null
+  image?: string | null
+  googleId?: string
 }
 
 export async function createSession(user: UserSession) {

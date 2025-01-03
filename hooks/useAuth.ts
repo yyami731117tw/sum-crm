@@ -58,12 +58,27 @@ export function useAuth(): UseAuthReturn {
     return true
   }
 
-  const updateUser = async (userData: Partial<UserSession>) => {
-    if (user) {
-      setUser({ ...user, ...userData })
+  const updateUser = async (userData: Partial<UserSession>): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/users/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      })
+
+      if (!response.ok) {
+        throw new Error('更新失敗')
+      }
+
+      const updatedUser = await response.json()
+      setUser(updatedUser)
       return true
+    } catch (error) {
+      console.error('更新個人資料失敗:', error)
+      return false
     }
-    return false
   }
 
   return {
