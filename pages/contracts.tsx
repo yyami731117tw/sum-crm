@@ -17,6 +17,7 @@ interface Contract {
   id: string
   contractNo: string
   projectName: string
+  memberId: string
   memberName: string
   memberNo: string
   amount: number
@@ -58,6 +59,9 @@ const ContractsPage = (): ReactElement => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [sidebarContract, setSidebarContract] = useState<Contract | null>(null)
   const [sidebarContractLogs, setSidebarContractLogs] = useState<ContractLog[]>([])
+  const [members, setMembers] = useState<any[]>([])
+  const [memberSearchTerm, setMemberSearchTerm] = useState('')
+  const [showMemberSearch, setShowMemberSearch] = useState(false)
 
   useEffect(() => {
     if (!loading && !user) {
@@ -86,6 +90,21 @@ const ContractsPage = (): ReactElement => {
     loadContracts()
   }, [loading, user, router])
 
+  useEffect(() => {
+    // 載入會員資料
+    const loadMembers = async () => {
+      try {
+        const response = await fetch('/api/members')
+        if (!response.ok) throw new Error('載入會員資料失敗')
+        const data = await response.json()
+        setMembers(data)
+      } catch (error) {
+        console.error('載入會員資料失敗:', error)
+      }
+    }
+    loadMembers()
+  }, [])
+
   const handleViewContract = (contract: Contract) => {
     setSidebarContract(contract)
     setIsSidebarOpen(true)
@@ -111,13 +130,9 @@ const ContractsPage = (): ReactElement => {
   }
 
   const generateContractNo = () => {
-    const year = new Date().getFullYear().toString().slice(-2)
-    const existingContracts = contracts.filter(c => c.contractNo.startsWith(year))
-    const maxSeq = existingContracts.length > 0
-      ? Math.max(...existingContracts.map(c => parseInt(c.contractNo.slice(-4))))
-      : 0
-    const nextSeq = (maxSeq + 1).toString().padStart(4, '0')
-    return `${year}${nextSeq}`
+    const timestamp = Date.now().toString(36)
+    const randomStr = Math.random().toString(36).substring(2, 7)
+    return `${timestamp}${randomStr}`.toUpperCase()
   }
 
   const handleCreateContract = () => {
@@ -125,6 +140,7 @@ const ContractsPage = (): ReactElement => {
       id: generateId(),
       contractNo: generateContractNo(),
       projectName: '',
+      memberId: '',
       memberName: '',
       memberNo: '',
       amount: 0,
@@ -137,7 +153,7 @@ const ContractsPage = (): ReactElement => {
     setIsSidebarOpen(true)
   }
 
-  const handleSaveContract = () => {
+  const handleSaveContract = async () => {
     if (!sidebarContract) return
 
     // 檢查必填欄位
@@ -149,74 +165,155 @@ const ContractsPage = (): ReactElement => {
     const now = new Date()
     const timestamp = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
 
-    // 從 localStorage 讀取現有的變更紀錄
-    const savedLogs = localStorage.getItem('contractLogs')
-    const allLogs: ContractLog[] = savedLogs ? JSON.parse(savedLogs) : []
-
-    // 如果是新合約
-    if (!sidebarContract.id) {
-      const newContract = {
-        ...sidebarContract,
-        id: generateId(),
-      }
-      setContracts(prevContracts => [...prevContracts, newContract])
-
-      // 記錄新增合約的變更
-      const newLog: ContractLog = {
-        id: generateId(),
-        contractId: newContract.id,
-        action: '新增合約',
-        timestamp,
-        details: `新增合約：${newContract.projectName}（${newContract.contractNo}）`,
-        operator: user?.name || '系統管理員'
-      }
-      
-      // 更新 localStorage 中的變更紀錄
-      const updatedLogs = [newLog, ...allLogs]
-      localStorage.setItem('contractLogs', JSON.stringify(updatedLogs))
-      setSidebarContractLogs(prevLogs => [newLog, ...prevLogs])
-    } else {
-      // 如果是編輯現有合約
-      const oldContract = contracts.find(c => c.id === sidebarContract.id)
-      if (oldContract) {
-        // 比較變更的欄位
-        const changes: { field: string; oldValue: string; newValue: string }[] = []
-        Object.entries(sidebarContract).forEach(([key, value]) => {
-          const oldValue = oldContract[key as keyof Contract]
-          if (oldValue !== value) {
-            changes.push({
-              field: key,
-              oldValue: String(oldValue || ''),
-              newValue: String(value || '')
-            })
-          }
+    try {
+      // 如果是新合約
+      if (!sidebarContract.id) {
+        // 建立新合約
+        const response = await fetch('/api/contracts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(sidebarContract),
         })
 
-        if (changes.length > 0) {
-          const newLog: ContractLog = {
-            id: generateId(),
-            contractId: sidebarContract.id,
-            action: '更新合約資料',
-            timestamp,
-            details: `更新合約：${sidebarContract.projectName}（${sidebarContract.contractNo}）的資料`,
-            operator: user?.name || '系統管理員',
-            changes
+        if (!response.ok) {
+          throw new Error('建立合約失敗')
+        }
+
+        const newContract = await response.json()
+
+        // 更新會員的投資紀錄
+        const memberResponse = await fetch(`/api/members/${sidebarContract.memberId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            investments: {
+              create: {
+                contractId: newContract.id,
+                projectName: sidebarContract.projectName,
+                amount: sidebarContract.amount,
+                date: sidebarContract.signDate,
+                status: sidebarContract.status,
+              },
+            },
+          }),
+        })
+
+        if (!memberResponse.ok) {
+          throw new Error('更新會員投資紀錄失敗')
+        }
+
+        setContracts(prevContracts => [...prevContracts, newContract])
+
+        // 記錄新增合約的變更
+        const newLog: ContractLog = {
+          id: generateId(),
+          contractId: newContract.id,
+          action: '新增合約',
+          timestamp,
+          details: `新增合約：${newContract.projectName}（${newContract.contractNo}）`,
+          operator: user?.name || '系統管理員'
+        }
+        
+        // 更新 localStorage 中的變更紀錄
+        const savedLogs = localStorage.getItem('contractLogs')
+        const allLogs: ContractLog[] = savedLogs ? JSON.parse(savedLogs) : []
+        const updatedLogs = [newLog, ...allLogs]
+        localStorage.setItem('contractLogs', JSON.stringify(updatedLogs))
+        setSidebarContractLogs(prevLogs => [newLog, ...prevLogs])
+      } else {
+        // 如果是編輯現有合約
+        const oldContract = contracts.find(c => c.id === sidebarContract.id)
+        if (oldContract) {
+          // 比較變更的欄位
+          const changes: { field: string; oldValue: string; newValue: string }[] = []
+          Object.entries(sidebarContract).forEach(([key, value]) => {
+            const oldValue = oldContract[key as keyof Contract]
+            if (oldValue !== value) {
+              changes.push({
+                field: key,
+                oldValue: String(oldValue || ''),
+                newValue: String(value || '')
+              })
+            }
+          })
+
+          if (changes.length > 0) {
+            // 更新合約
+            const response = await fetch(`/api/contracts/${sidebarContract.id}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(sidebarContract),
+            })
+
+            if (!response.ok) {
+              throw new Error('更新合約失敗')
+            }
+
+            const updatedContract = await response.json()
+
+            // 如果金額或狀態有變更，更新會員的投資紀錄
+            if (oldContract.amount !== sidebarContract.amount || oldContract.status !== sidebarContract.status) {
+              const memberResponse = await fetch(`/api/members/${sidebarContract.memberId}`, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  investments: {
+                    update: {
+                      where: {
+                        contractId: sidebarContract.id,
+                      },
+                      data: {
+                        amount: sidebarContract.amount,
+                        status: sidebarContract.status,
+                      },
+                    },
+                  },
+                }),
+              })
+
+              if (!memberResponse.ok) {
+                throw new Error('更新會員投資紀錄失敗')
+              }
+            }
+
+            setContracts(prevContracts => prevContracts.map(contract =>
+              contract.id === sidebarContract.id ? updatedContract : contract
+            ))
+
+            const newLog: ContractLog = {
+              id: generateId(),
+              contractId: sidebarContract.id,
+              action: '更新合約資料',
+              timestamp,
+              details: `更新合約：${sidebarContract.projectName}（${sidebarContract.contractNo}）的資料`,
+              operator: user?.name || '系統管理員',
+              changes
+            }
+            
+            // 更新 localStorage 中的變更紀錄
+            const savedLogs = localStorage.getItem('contractLogs')
+            const allLogs: ContractLog[] = savedLogs ? JSON.parse(savedLogs) : []
+            const updatedLogs = [newLog, ...allLogs]
+            localStorage.setItem('contractLogs', JSON.stringify(updatedLogs))
+            setSidebarContractLogs(prevLogs => [newLog, ...prevLogs])
           }
-          
-          // 更新 localStorage 中的變更紀錄
-          const updatedLogs = [newLog, ...allLogs]
-          localStorage.setItem('contractLogs', JSON.stringify(updatedLogs))
-          setSidebarContractLogs(prevLogs => [newLog, ...prevLogs])
         }
       }
 
-      setContracts(prevContracts => prevContracts.map(contract =>
-        contract.id === sidebarContract.id ? sidebarContract : contract
-      ))
+      setIsSidebarOpen(false)
+      setSidebarContract(null)
+    } catch (error) {
+      console.error('儲存合約失敗:', error)
+      alert('儲存合約失敗，請稍後再試')
     }
-
-    setIsSidebarOpen(false)
-    setSidebarContract(null)
   }
 
   // 生成唯一 ID
@@ -287,6 +384,22 @@ const ContractsPage = (): ReactElement => {
       attachments: newAttachments
     })
   }
+
+  const handleSelectMember = (member: any) => {
+    setSidebarContract({
+      ...sidebarContract!,
+      memberId: member.id,
+      memberName: member.name,
+      memberNo: member.memberNo
+    })
+    setShowMemberSearch(false)
+    setMemberSearchTerm('')
+  }
+
+  const filteredMembers = members.filter(member => 
+    member.name.toLowerCase().includes(memberSearchTerm.toLowerCase()) ||
+    member.memberNo.toLowerCase().includes(memberSearchTerm.toLowerCase())
+  )
 
   if (loading) {
     return (
@@ -469,6 +582,17 @@ const ContractsPage = (): ReactElement => {
                           <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200">基本資料</h3>
                         </div>
                         <div className="sm:col-span-2">
+                          <dt className="text-sm font-medium text-gray-500">合約編號</dt>
+                          <dd className="mt-1">
+                            <input
+                              type="text"
+                              value={sidebarContract.contractNo}
+                              readOnly
+                              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            />
+                          </dd>
+                        </div>
+                        <div className="sm:col-span-2">
                           <dt className="text-sm font-medium text-gray-500">專案名稱 <span className="text-red-500">*</span></dt>
                           <dd className="mt-1">
                             <input
@@ -483,21 +607,69 @@ const ContractsPage = (): ReactElement => {
                         <div className="sm:col-span-2">
                           <dt className="text-sm font-medium text-gray-500">會員資料 <span className="text-red-500">*</span></dt>
                           <dd className="mt-1">
-                            <div className="flex space-x-4">
-                              <input
-                                type="text"
-                                value={sidebarContract.memberName}
-                                onChange={(e) => setSidebarContract({...sidebarContract, memberName: e.target.value})}
-                                className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                placeholder="會員姓名"
-                              />
-                              <input
-                                type="text"
-                                value={sidebarContract.memberNo}
-                                onChange={(e) => setSidebarContract({...sidebarContract, memberNo: e.target.value})}
-                                className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                placeholder="會員編號"
-                              />
+                            <div className="relative">
+                              <div className="flex space-x-4">
+                                <div className="flex-1">
+                                  <input
+                                    type="text"
+                                    value={sidebarContract.memberName}
+                                    readOnly
+                                    className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                    placeholder="會員姓名"
+                                  />
+                                </div>
+                                <div className="flex-1">
+                                  <input
+                                    type="text"
+                                    value={sidebarContract.memberNo}
+                                    readOnly
+                                    className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                    placeholder="會員編號"
+                                  />
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setShowMemberSearch(true)}
+                                  className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                >
+                                  選擇會員
+                                </button>
+                              </div>
+
+                              {/* 會員搜尋下拉選單 */}
+                              {showMemberSearch && (
+                                <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
+                                  <div className="sticky top-0 z-10 bg-white">
+                                    <input
+                                      type="text"
+                                      className="block w-full border-0 border-b border-gray-300 px-4 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-blue-500 sm:text-sm"
+                                      placeholder="搜尋會員..."
+                                      value={memberSearchTerm}
+                                      onChange={(e) => setMemberSearchTerm(e.target.value)}
+                                    />
+                                  </div>
+                                  <div className="max-h-48 overflow-y-auto">
+                                    {filteredMembers.map((member) => (
+                                      <div
+                                        key={member.id}
+                                        className="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-gray-50"
+                                        onClick={() => handleSelectMember(member)}
+                                      >
+                                        <div className="flex items-center">
+                                          <span className="font-normal block truncate">
+                                            {member.name} ({member.memberNo})
+                                          </span>
+                                        </div>
+                                      </div>
+                                    ))}
+                                    {filteredMembers.length === 0 && (
+                                      <div className="text-center py-2 text-sm text-gray-500">
+                                        找不到符合的會員
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </dd>
                         </div>
