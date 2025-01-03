@@ -556,9 +556,6 @@ const ContractsPage = (): ReactElement => {
                           <h2 className="text-lg font-medium text-gray-900">
                             合約詳細資料
                           </h2>
-                          <p className="mt-1 text-sm text-gray-500">
-                            合約編號：{sidebarContract.contractNo}
-                          </p>
                         </div>
                         <div className="ml-3 h-7 flex items-center">
                           <button
