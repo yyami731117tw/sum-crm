@@ -1,15 +1,16 @@
 import type { NextPage } from 'next'
 import type { ReactElement } from 'react'
 import Head from 'next/head'
-import { useAuth } from '../../src/hooks/useAuth'
+import { useAuth } from '@/hooks/useAuth'
 import { DashboardNav } from '@/components/dashboard/DashboardNav'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
-import type { Staff } from '../../src/data/staffs'
-import { mockStaffs } from '../../src/data/staffs'
-import { useMembersCache } from '../../src/hooks/useMembersCache'
-import { config } from '../../src/utils/config'
+import type { Staff } from '@/data/staffs'
+import { mockStaffs } from '@/data/staffs'
+import { useMembersCache } from '@/hooks/useMembersCache'
+import { config } from '@/utils/config'
+import { PATHS } from '@/utils/paths'
 
 interface Member {
   id: string
@@ -145,9 +146,15 @@ const MembersPage = (): ReactElement => {
         const response = await fetch(`${config.apiUrl}/api/members`)
         const data = await response.json()
         setMembers(data)
+        // 更新快取
         membersCache.updateCache(data)
       } catch (error) {
         console.error('讀取會員資料失敗:', error)
+        // 如果 API 請求失敗，嘗試從快取讀取舊資料
+        const oldCachedData = membersCache.loadFromCache()
+        if (oldCachedData) {
+          setMembers(oldCachedData)
+        }
       }
     }
 
