@@ -396,10 +396,12 @@ const ContractsPage = (): ReactElement => {
     setMemberSearchTerm('')
   }
 
-  const filteredMembers = members.filter(member => 
-    member.name.toLowerCase().includes(memberSearchTerm.toLowerCase()) ||
-    member.memberNo.toLowerCase().includes(memberSearchTerm.toLowerCase())
-  )
+  const filteredMembers = members.filter(member => {
+    const isValidMember = member.status !== '一般會員' && member.status !== '黑名單'
+    const matchesSearch = member.name.toLowerCase().includes(memberSearchTerm.toLowerCase()) ||
+      member.memberNo.toLowerCase().includes(memberSearchTerm.toLowerCase())
+    return isValidMember && matchesSearch
+  })
 
   if (loading) {
     return (
@@ -661,7 +663,7 @@ const ContractsPage = (): ReactElement => {
                                     ))}
                                     {filteredMembers.length === 0 && (
                                       <div className="text-center py-2 text-sm text-gray-500">
-                                        找不到符合的會員
+                                        找不到符合的會員或無可投資會員
                                       </div>
                                     )}
                                   </div>
