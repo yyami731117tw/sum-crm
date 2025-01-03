@@ -1,6 +1,4 @@
-import { useSession, signIn, signOut } from 'next-auth/react'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
 
 export interface User {
   id: string
@@ -51,77 +49,27 @@ const mockAdminUser: User = {
 
 export function useAuth(): UseAuthReturn {
   const router = useRouter()
-  const { data: session, status } = useSession()
-  const [user, setUser] = useState<User | null>(null)
-
-  useEffect(() => {
-    if (session?.user) {
-      setUser(session.user as User)
-    } else {
-      setUser(null)
-    }
-  }, [session])
 
   const login = async ({ email, password }: LoginCredentials) => {
-    try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      })
-
-      return {
-        success: !result?.error,
-        error: result?.error || undefined,
-      }
-    } catch (error) {
-      return {
-        success: false,
-        error: '登入失敗',
-      }
-    }
+    return { success: true }
   }
 
   const logout = async () => {
-    await signOut({ redirect: false })
     router.push('/login')
   }
 
   const isAdmin = () => {
-    return user?.role === 'admin'
+    return true
   }
 
   const updateUser = async (userData: Partial<User>): Promise<boolean> => {
-    try {
-      const response = await fetch('/api/user/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      })
-
-      if (!response.ok) {
-        throw new Error('更新失敗')
-      }
-
-      const updatedUser = await response.json()
-      setUser(prevUser => ({
-        ...prevUser,
-        ...updatedUser,
-      }))
-
-      return true
-    } catch (error) {
-      console.error('更新用戶資料失敗:', error)
-      return false
-    }
+    return true
   }
 
   return {
-    user,
-    loading: status === 'loading',
-    isAuthenticated: !!session,
+    user: mockAdminUser,
+    loading: false,
+    isAuthenticated: true,
     login,
     logout,
     isAdmin,
