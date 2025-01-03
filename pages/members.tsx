@@ -405,8 +405,10 @@ const MembersPage = (): ReactElement => {
     })
   }
 
+  type MemberStatus = 'enabled' | 'review' | 'active' | 'disabled'
+
   // 計算會員狀態
-  const getMemberStatus = (member: Member) => {
+  const getMemberStatus = (member: Member): MemberStatus => {
     // 如果是黑名單，直接返回停用
     if (member.status === '黑名單') {
       return 'disabled'
