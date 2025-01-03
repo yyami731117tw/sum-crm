@@ -8,6 +8,8 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import type { Staff } from '../../src/data/staffs'
 import { mockStaffs } from '../../src/data/staffs'
+import { useMembersCache } from '@/hooks/useMembersCache'
+import { config } from '@/utils/config'
 
 interface Member {
   id: string
@@ -118,9 +120,9 @@ const MembersPage = (): ReactElement => {
   const [sidebarMemberLogs, setSidebarMemberLogs] = useState<MemberLog[]>([])
   const [staffs, setStaffs] = useState<Staff[]>([])
 
-  useEffect(() => {
-    setSidebarWidth(window.innerWidth / 2)
-  }, [])
+  // 使用快取 hook
+  const membersCache = useMembersCache<Member[]>(config.cacheKeys.members)
+  const memberLogsCache = useMembersCache<MemberLog[]>(config.cacheKeys.memberLogs)
 
   useEffect(() => {
     if (!loading && !user) {
@@ -128,49 +130,40 @@ const MembersPage = (): ReactElement => {
     }
   }, [loading, user, router])
 
-  // 從 localStorage 加載會員數據
+  // 從快取或 API 加載會員數據
   useEffect(() => {
-    const savedMembers = localStorage.getItem('members')
-    if (savedMembers) {
-      setMembers(JSON.parse(savedMembers))
-      return
+    const loadMembers = async () => {
+      // 先嘗試從快取讀取
+      const cachedMembers = membersCache.loadFromCache()
+      if (cachedMembers) {
+        setMembers(cachedMembers)
+        return
+      }
+
+      try {
+        // 如果快取不存在或已過期，從 API 讀取
+        const response = await fetch(`${config.apiUrl}/api/members`)
+        const data = await response.json()
+        setMembers(data)
+        membersCache.updateCache(data)
+      } catch (error) {
+        console.error('讀取會員資料失敗:', error)
+      }
     }
 
-    // 如果 localStorage 中沒有數據，則使用模擬數據
-    const mockMembers: Member[] = [
-      {
-        id: '1',
-        memberNo: 'M001',
-        name: '王小明',
-        phone: '0912-345-678',
-        gender: '男',
-        nickname: '小明',
-        idNumber: 'A123456789',
-        birthday: '1990/01/01',
-        joinDate: '2024/01/01',
-        status: 'active',
-        email: 'ming@example.com',
-        lineId: 'ming_123',
-        address: '台北市信義區信義路五段7號',
-        memberCategory: '一般會員',
-        joinCondition: '會員體驗',
-        nationality: '台灣 Taiwan',
-        occupation: '科技業',
-        notes: '對投資很有興趣',
-        hasMembershipPeriod: false,  // 初始化會員期限設定
-        remainingDays: undefined,  // 初始化剩餘天數
-      }
-    ]
-    setMembers(mockMembers)
-    localStorage.setItem('members', JSON.stringify(mockMembers))
+    loadMembers()
   }, [])
 
-  // 當會員資料變更時，更新 localStorage
+  // 當會員資料變更時，更新快取
   useEffect(() => {
     if (members.length > 0) {
-      localStorage.setItem('members', JSON.stringify(members))
+      membersCache.updateCache(members)
     }
   }, [members])
+
+  useEffect(() => {
+    setSidebarWidth(window.innerWidth / 2)
+  }, [])
 
   // 初始化人員資料
   useEffect(() => {
