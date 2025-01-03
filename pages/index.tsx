@@ -77,15 +77,21 @@ const IndexPage: NextPage = () => {
           <header>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="bg-white shadow-sm rounded-lg p-6 mb-8">
-                <h1 className="text-3xl font-bold leading-tight text-gray-900 mb-2">
-                  歡迎回來，{user.nickname || user.name}
-                </h1>
-                <p className="text-gray-600">
-                  今天是 {new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}
-                </p>
-                <p className="text-gray-600 mt-2">
-                  祝您有個美好的一天！讓我們一起管理並創造更多價值。
-                </p>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h1 className="text-3xl font-bold leading-tight text-gray-900 mb-2">
+                      歡迎回來，{user.nickname || user.name}
+                    </h1>
+                    <p className="text-gray-600 mt-2">
+                      祝您有個美好的一天！讓我們一起創造更多價值。
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-gray-600">
+                      {new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </header>
