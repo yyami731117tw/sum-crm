@@ -46,7 +46,7 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
-  password      String    @db.Text
+  password      String?   @db.Text
   accounts      Account[]
   sessions      Session[]
   phone         String?
@@ -58,6 +58,7 @@ model User {
   status        String    @default("pending")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  logs          UserLog[]
 
   @@map("users")
 }
@@ -133,4 +134,17 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model UserLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  details   String
+  operator  String
+  timestamp DateTime @default(now())
+  changes   Json?
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
