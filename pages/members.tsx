@@ -405,22 +405,65 @@ const MembersPage = (): ReactElement => {
     })
   }
 
-  // 修改會員期限警示邏輯
-  const getMembershipStatusDisplay = (remainingDays: number | undefined) => {
-    if (remainingDays === undefined || remainingDays <= 15) {
-      return {
-        color: 'text-orange-600',
-        message: '確認會員是否續約'
-      }
-    } else if (remainingDays <= 30) {
-      return {
-        color: 'text-orange-600',
-        message: '通知會員即將到期'
-      }
+  // 計算會員狀態
+  const getMemberStatus = (member: Member) => {
+    // 如果是黑名單，直接返回停用
+    if (member.status === '黑名單') {
+      return 'disabled'
     }
-    return {
-      color: 'text-gray-500',
-      message: ''
+
+    // 檢查是否需要審查
+    // VIP會員需要上傳身分證
+    if ((member.status === 'VIP會員' || member.status === '天使會員') && 
+        (!member.idCardFront || !member.idCardBack)) {
+      return 'review'
+    }
+
+    // 檢查活躍條件
+    // 1. 有投資紀錄
+    // 2. 會員期限內
+    const hasInvestments = member.investments && member.investments.length > 0
+    const isWithinMembership = member.hasMembershipPeriod && 
+                              member.remainingDays !== undefined && 
+                              member.remainingDays > 0
+
+    if (hasInvestments || isWithinMembership) {
+      return 'active'
+    }
+
+    // 預設為啟用
+    return 'enabled'
+  }
+
+  const getStatusBadgeColor = (member: Member) => {
+    const memberStatus = getMemberStatus(member)
+    switch (memberStatus) {
+      case 'enabled':
+        return 'bg-green-100 text-green-800'
+      case 'review':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'active':
+        return 'bg-blue-100 text-blue-800'
+      case 'disabled':
+        return 'bg-red-100 text-red-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getStatusText = (member: Member) => {
+    const memberStatus = getMemberStatus(member)
+    switch (memberStatus) {
+      case 'enabled':
+        return '啟用'
+      case 'review':
+        return '審查'
+      case 'active':
+        return '活躍'
+      case 'disabled':
+        return '停用'
+      default:
+        return '啟用'
     }
   }
 
@@ -444,44 +487,6 @@ const MembersPage = (): ReactElement => {
     if (!hasMembershipPeriod) return '無期限'
     if (days === undefined || days <= 0) return '已到期'
     return `剩餘 ${days} 天`
-  }
-
-  const getStatusBadgeColor = (status: Member['status']) => {
-    switch (status) {
-      case '一般會員':
-        return 'bg-green-100 text-green-800'
-      case 'VIP會員':
-        return 'bg-blue-100 text-blue-800'
-      case '天使會員':
-        return 'bg-purple-100 text-purple-800'
-      case '股東':
-        return 'bg-yellow-100 text-yellow-800'
-      case '合作':
-        return 'bg-teal-100 text-teal-800'
-      case '黑名單':
-        return 'bg-red-100 text-red-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
-  }
-
-  const getStatusText = (status: Member['status']) => {
-    switch (status) {
-      case '一般會員':
-        return '啟用'
-      case 'VIP會員':
-        return '啟用'
-      case '天使會員':
-        return '啟用'
-      case '股東':
-        return '啟用'
-      case '合作':
-        return '啟用'
-      case '黑名單':
-        return '停用'
-      default:
-        return '啟用'
-    }
   }
 
   const filteredMembers = members.filter(member =>
@@ -616,14 +621,14 @@ const MembersPage = (): ReactElement => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-gray-900">
                             <button
                               onClick={() => handleViewMember(member)}
                               className="text-sm font-medium text-blue-600 hover:text-blue-900 hover:underline"
                             >
-                              {member.name}
+                        {member.name}
                             </button>
-                          </div>
+                      </div>
                           <div className="text-sm text-gray-500">會員編號：{member.memberNo}</div>
                         </div>
                       </div>
@@ -639,9 +644,9 @@ const MembersPage = (): ReactElement => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        getStatusBadgeColor(member.status)
+                        getStatusBadgeColor(member)
                       }`}>
-                        {getStatusText(member.status)}
+                        {getStatusText(member)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -773,9 +778,9 @@ const MembersPage = (): ReactElement => {
                               會員編號：{sidebarMember.memberNo}
                             </p>
                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              getStatusBadgeColor(sidebarMember.status)
+                              getStatusBadgeColor(sidebarMember)
                             }`}>
-                              {getStatusText(sidebarMember.status)}
+                              {getStatusText(sidebarMember)}
                             </span>
                           </div>
                         </div>
