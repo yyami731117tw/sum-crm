@@ -6,24 +6,30 @@ import { DashboardNav } from '@/components/dashboard/DashboardNav'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 
+interface Attachment {
+  id: string
+  name: string
+  url: string
+  uploadDate: string
+}
+
 interface Contract {
   id: string
   contractNo: string
   projectName: string
-  memberId: string
   memberName: string
   memberNo: string
   amount: number
+  paymentMethod?: '現金' | '信用卡' | '銀行轉帳'
+  bankAccount?: string
   signDate: string
   startDate: string
   endDate: string
   status: '進行中' | '已結束' | '已取消'
-  paymentMethod: '信用卡' | '現金' | '銀行轉帳'
-  bankAccount?: string
   invoiceInfo?: string
   notes?: string
-  createdAt: string
-  updatedAt: string
+  contractFile?: string
+  attachments?: Attachment[]
 }
 
 interface ContractLog {
@@ -116,23 +122,18 @@ const ContractsPage = (): ReactElement => {
 
   const handleCreateContract = () => {
     const newContract: Contract = {
-      id: '',
+      id: generateId(),
       contractNo: generateContractNo(),
       projectName: '',
-      memberId: '',
       memberName: '',
       memberNo: '',
       amount: 0,
       signDate: new Date().toISOString().split('T')[0].replace(/-/g, '/'),
-      startDate: '',
-      endDate: '',
-      status: '進行中',
-      paymentMethod: '現金',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      startDate: new Date().toISOString().split('T')[0].replace(/-/g, '/'),
+      endDate: new Date().toISOString().split('T')[0].replace(/-/g, '/'),
+      status: '進行中'
     }
     setSidebarContract(newContract)
-    setSidebarContractLogs([])
     setIsSidebarOpen(true)
   }
 
@@ -242,6 +243,50 @@ const ContractsPage = (): ReactElement => {
     contract.memberName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     contract.memberNo.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  const handleFileUpload = async (file: File, type: 'contract' | 'attachment') => {
+    try {
+      // TODO: 實作檔案上傳 API
+      // 這裡先模擬上傳成功，返回檔案 URL
+      const mockUrl = `https://example.com/uploads/${file.name}`
+      
+      if (type === 'contract') {
+        setSidebarContract({
+          ...sidebarContract!,
+          contractFile: file.name
+        })
+      } else {
+        const newAttachment = {
+          id: generateId(),
+          name: file.name,
+          url: mockUrl,
+          uploadDate: new Date().toISOString().split('T')[0].replace(/-/g, '/')
+        }
+        setSidebarContract({
+          ...sidebarContract!,
+          attachments: [...(sidebarContract?.attachments || []), newAttachment]
+        })
+      }
+    } catch (error) {
+      console.error('檔案上傳失敗:', error)
+      alert('檔案上傳失敗，請稍後再試')
+    }
+  }
+
+  const handleDownloadFile = (attachment: Attachment) => {
+    // TODO: 實作檔案下載功能
+    window.open(attachment.url, '_blank')
+  }
+
+  const handleRemoveAttachment = (index: number) => {
+    if (!sidebarContract) return
+    const newAttachments = [...(sidebarContract.attachments || [])]
+    newAttachments.splice(index, 1)
+    setSidebarContract({
+      ...sidebarContract,
+      attachments: newAttachments
+    })
+  }
 
   if (loading) {
     return (
@@ -609,6 +654,130 @@ const ContractsPage = (): ReactElement => {
                               </div>
                             )}
                           </div>
+                        </div>
+
+                        {/* 檔案上傳 */}
+                        <div className="sm:col-span-2">
+                          <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">檔案上傳</h3>
+                        </div>
+                        <div className="sm:col-span-2">
+                          <dt className="text-sm font-medium text-gray-500">合約掃描檔</dt>
+                          <dd className="mt-1">
+                            <div className="flex items-center space-x-4">
+                              {sidebarContract.contractFile ? (
+                                <div className="relative">
+                                  <div className="flex items-center space-x-2 p-2 border border-gray-300 rounded-md">
+                                    <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                    </svg>
+                                    <span className="text-sm text-gray-500">{sidebarContract.contractFile}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setSidebarContract({...sidebarContract, contractFile: undefined})}
+                                      className="text-red-600 hover:text-red-800"
+                                    >
+                                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex justify-center items-center w-full">
+                                  <label className="relative cursor-pointer w-full">
+                                    <div className="flex justify-center items-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md appearance-none hover:border-gray-400 focus:outline-none">
+                                      <div className="flex flex-col items-center space-y-2">
+                                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                        </svg>
+                                        <span className="font-medium text-gray-600">
+                                          點擊上傳或拖放檔案至此
+                                        </span>
+                                        <span className="text-xs text-gray-500">
+                                          支援 PDF、JPG、PNG 格式
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <input
+                                      type="file"
+                                      className="hidden"
+                                      accept=".pdf,.jpg,.jpeg,.png"
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0]
+                                        if (file) {
+                                          handleFileUpload(file, 'contract')
+                                        }
+                                      }}
+                                    />
+                                  </label>
+                                </div>
+                              )}
+                            </div>
+                          </dd>
+                        </div>
+                        <div className="sm:col-span-2">
+                          <dt className="text-sm font-medium text-gray-500">其他文件</dt>
+                          <dd className="mt-1">
+                            <div className="space-y-4">
+                              {sidebarContract.attachments?.map((attachment, index) => (
+                                <div key={index} className="flex items-center justify-between p-2 border border-gray-300 rounded-md">
+                                  <div className="flex items-center space-x-2">
+                                    <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                    </svg>
+                                    <span className="text-sm text-gray-500">{attachment.name}</span>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDownloadFile(attachment)}
+                                      className="text-blue-600 hover:text-blue-800"
+                                    >
+                                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                      </svg>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveAttachment(index)}
+                                      className="text-red-600 hover:text-red-800"
+                                    >
+                                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                              <div className="flex justify-center items-center w-full">
+                                <label className="relative cursor-pointer w-full">
+                                  <div className="flex justify-center items-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md appearance-none hover:border-gray-400 focus:outline-none">
+                                    <div className="flex flex-col items-center space-y-2">
+                                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                      </svg>
+                                      <span className="font-medium text-gray-600">
+                                        點擊上傳或拖放檔案至此
+                                      </span>
+                                      <span className="text-xs text-gray-500">
+                                        支援各種文件格式
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <input
+                                    type="file"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0]
+                                      if (file) {
+                                        handleFileUpload(file, 'attachment')
+                                      }
+                                    }}
+                                  />
+                                </label>
+                              </div>
+                            </div>
+                          </dd>
                         </div>
 
                         {/* 按鈕區 */}
