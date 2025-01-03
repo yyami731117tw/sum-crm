@@ -1608,30 +1608,46 @@ const MembersPage = (): ReactElement => {
                         <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">變更紀錄</h3>
                       </div>
                       <div className="sm:col-span-2">
-                        <div className="space-y-4">
-                          {sidebarMemberLogs.map(log => (
-                            <div key={log.id} className="border-b border-gray-200 pb-4">
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <p className="text-sm font-medium text-gray-900">{log.action}</p>
-                                  <p className="text-sm text-gray-500">{log.details}</p>
-                                  {log.changes && (
-                                    <div className="mt-2 space-y-1">
-                                      {log.changes.map((change, index) => (
-                                        <p key={index} className="text-sm text-gray-500">
-                                          {change.field}: {change.oldValue} → {change.newValue}
-                                        </p>
-                                      ))}
-                                    </div>
-                                  )}
-                                  <p className="text-sm text-gray-500 mt-1">操作人員：{log.operator}</p>
-                                </div>
-                                <p className="text-sm text-gray-500">{log.timestamp}</p>
-                              </div>
-                            </div>
-                          ))}
+                        <div className="max-h-40 overflow-y-auto">
+                          <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50 sticky top-0">
+                              <tr>
+                                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500">時間</th>
+                                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500">操作</th>
+                                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500">內容</th>
+                                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500">操作人</th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {sidebarMemberLogs.map(log => (
+                                <tr key={log.id} className="hover:bg-gray-50">
+                                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
+                                    {log.timestamp}
+                                  </td>
+                                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                                    {log.action}
+                                  </td>
+                                  <td className="px-3 py-2 text-xs text-gray-500">
+                                    <div>{log.details}</div>
+                                    {log.changes && (
+                                      <div className="text-xs text-gray-400">
+                                        {log.changes.map((change, index) => (
+                                          <div key={index}>
+                                            {change.field}: {change.oldValue} → {change.newValue}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
+                                    {log.operator}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                           {sidebarMemberLogs.length === 0 && (
-                            <div className="text-center py-4 text-sm text-gray-500">
+                            <div className="text-center py-3 text-sm text-gray-500">
                               尚無變更紀錄
                             </div>
                           )}
