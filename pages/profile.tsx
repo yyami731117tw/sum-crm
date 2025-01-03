@@ -9,19 +9,19 @@ import Image from 'next/image'
 interface UserProfile {
   id: string
   name: string
-  nickname?: string
   email: string
+  nickname?: string | null
   phone: string
-  lineId?: string
-  address?: string
-  birthday?: string
+  lineId?: string | null
+  address?: string | null
+  birthday?: string | null
   role: string
   status: string
-  image?: string
+  image?: string | null
 }
 
 const Profile: NextPage = () => {
-  const { user, loading } = useAuth()
+  const { user, loading, updateUser } = useAuth()
   const router = useRouter()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isEditing, setIsEditing] = useState(false)
@@ -77,7 +77,7 @@ const Profile: NextPage = () => {
   }
 
   const handleSave = async () => {
-    if (!profile) return
+    if (!profile || !updateUser) return
     setIsSaving(true)
     try {
       // 如果有新的頭像，先上傳圖片
@@ -100,23 +100,15 @@ const Profile: NextPage = () => {
       }
 
       // 更新個人資料
-      const response = await fetch('/api/users/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...profile,
-          image: imageUrl
-        }),
+      const success = await updateUser({
+        ...profile,
+        image: imageUrl
       })
 
-      if (!response.ok) {
+      if (!success) {
         throw new Error('更新失敗')
       }
 
-      const updatedProfile = await response.json()
-      setProfile(updatedProfile)
       setIsEditing(false)
     } catch (error) {
       console.error('更新個人資料失敗:', error)
@@ -189,37 +181,6 @@ const Profile: NextPage = () => {
                 </div>
                 <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
                   <dl className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
-                    {/* 角色和狀態 */}
-                    <div className="sm:col-span-1">
-                      <dt className="text-sm font-medium text-gray-500">角色</dt>
-                      <dd className="mt-1">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          profile.role === 'admin' ? 'bg-purple-100 text-purple-800' :
-                          profile.role === 'staff' ? 'bg-blue-100 text-blue-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {profile.role === 'admin' ? '管理員' :
-                           profile.role === 'staff' ? '客服人員' :
-                           '訪客'}
-                        </span>
-                      </dd>
-                    </div>
-
-                    <div className="sm:col-span-1">
-                      <dt className="text-sm font-medium text-gray-500">狀態</dt>
-                      <dd className="mt-1">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          profile.status === 'active' ? 'bg-green-100 text-green-800' :
-                          profile.status === 'inactive' ? 'bg-red-100 text-red-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {profile.status === 'active' ? '啟用' :
-                           profile.status === 'inactive' ? '停用' :
-                           '待審核'}
-                        </span>
-                      </dd>
-                    </div>
-
                     {/* 頭像上傳 */}
                     <div className="sm:col-span-2">
                       <dt className="text-sm font-medium text-gray-500">頭像</dt>
@@ -278,6 +239,37 @@ const Profile: NextPage = () => {
                             </div>
                           )}
                         </div>
+                      </dd>
+                    </div>
+
+                    {/* 角色和狀態 */}
+                    <div className="sm:col-span-1">
+                      <dt className="text-sm font-medium text-gray-500">角色</dt>
+                      <dd className="mt-1">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          profile.role === 'admin' ? 'bg-purple-100 text-purple-800' :
+                          profile.role === 'staff' ? 'bg-blue-100 text-blue-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {profile.role === 'admin' ? '管理員' :
+                           profile.role === 'staff' ? '客服人員' :
+                           '訪客'}
+                        </span>
+                      </dd>
+                    </div>
+
+                    <div className="sm:col-span-1">
+                      <dt className="text-sm font-medium text-gray-500">狀態</dt>
+                      <dd className="mt-1">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          profile.status === 'active' ? 'bg-green-100 text-green-800' :
+                          profile.status === 'inactive' ? 'bg-red-100 text-red-800' :
+                          'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {profile.status === 'active' ? '啟用' :
+                           profile.status === 'inactive' ? '停用' :
+                           '待審核'}
+                        </span>
                       </dd>
                     </div>
 

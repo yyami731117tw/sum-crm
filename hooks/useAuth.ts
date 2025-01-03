@@ -10,8 +10,30 @@ interface LoginCredentials {
   step: number
 }
 
-export function useAuth() {
-  const [user, setUser] = useState<UserSession | null>({ id: '1', email: 'admin@example.com', name: 'Admin', role: 'admin' })
+interface UseAuthReturn {
+  user: UserSession | null
+  isAuthenticated: boolean
+  loading: boolean
+  login: (credentials: LoginCredentials) => Promise<{ success: boolean }>
+  logout: () => Promise<void>
+  isAdmin: () => boolean
+  updateUser: (userData: Partial<UserSession>) => Promise<boolean>
+}
+
+export function useAuth(): UseAuthReturn {
+  const [user, setUser] = useState<UserSession | null>({ 
+    id: '1', 
+    email: 'admin@example.com', 
+    name: 'Admin', 
+    role: 'admin',
+    nickname: 'Admin',
+    phone: '',
+    lineId: '',
+    address: '',
+    birthday: '',
+    image: '',
+    status: 'active'
+  })
   const [isAuthenticated, setIsAuthenticated] = useState(true)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -36,12 +58,21 @@ export function useAuth() {
     return true
   }
 
+  const updateUser = async (userData: Partial<UserSession>) => {
+    if (user) {
+      setUser({ ...user, ...userData })
+      return true
+    }
+    return false
+  }
+
   return {
     user,
     isAuthenticated,
     loading,
     login,
     logout,
-    isAdmin
+    isAdmin,
+    updateUser
   }
 } 

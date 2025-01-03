@@ -11,6 +11,13 @@ export interface UserSession {
   picture?: string
   role: string
   googleId?: string
+  nickname?: string
+  phone?: string
+  lineId?: string
+  address?: string
+  birthday?: string
+  image?: string
+  status: string
 }
 
 export async function createSession(user: UserSession) {
