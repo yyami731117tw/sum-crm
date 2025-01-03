@@ -25,6 +25,44 @@ interface Member {
   notes?: string
   createdAt: string
   updatedAt: string
+  serviceStaff?: string
+  joinDate?: string
+  remainingDays?: number
+  hasMembershipPeriod?: boolean
+  idNumber?: string
+  birthday?: string
+  age?: number
+  gender?: '男' | '女'
+  nationality?: string
+  occupation?: string
+  dietaryHabits?: string
+  isUSCitizen?: boolean
+  idCardFront?: string
+  idCardBack?: string
+  emergencyContact?: string
+  emergencyRelation?: string
+  emergencyPhone?: string
+  membershipStartDate?: string
+  membershipEndDate?: string
+  relationships?: Array<{
+    memberId: string
+    type: string
+  }>
+  referrer?: string
+  memberCategory?: 'VIP' | '天使'
+  expertise?: string[]
+  taboos?: string[]
+  familyStatus?: string
+  education?: '高中以下' | '高中職' | '專科' | '大學' | '碩士' | '博士'
+  investments?: Array<{
+    id: string
+    projectName: string
+    amount: number
+    date: string
+    status: string
+    contractId: string
+  }>
+  joinCondition?: '舊會員' | '會員體驗' | '200萬財力審查'
 }
 
 interface MemberLog {
@@ -541,6 +579,12 @@ const MembersPage = (): ReactElement => {
                           會員類型
                   </th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          服務專員
+                  </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          電話
+                  </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     狀態
                   </th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -559,29 +603,27 @@ const MembersPage = (): ReactElement => {
                   <tr key={member.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <div className="flex-shrink-0 h-10 w-10">
-                                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                  <span className="text-lg font-medium text-blue-600">
-                                    {member.name[0]}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">
                                   <button
                                     onClick={() => handleViewMember(member)}
                                     className="text-sm font-medium text-blue-600 hover:text-blue-900 hover:underline"
                                   >
-                        {member.name}
+                                    {member.name}
                                   </button>
-                      </div>
+                                </div>
                                 <div className="text-sm text-gray-500">會員編號：{member.memberNo}</div>
-                                <div className="text-sm text-gray-500">{member.phone}</div>
-                        </div>
+                              </div>
                             </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {member.status}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {users.find(user => user.id === member.serviceStaff)?.name || '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {member.phone}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -1097,7 +1139,7 @@ const MembersPage = (): ReactElement => {
                         <dd className="mt-1">
                           <input
                             type="date"
-                            value={sidebarMember.joinDate.replace(/\//g, '-')}
+                            value={sidebarMember.joinDate?.replace(/\//g, '-') || ''}
                             onChange={(e) => setSidebarMember({...sidebarMember, joinDate: e.target.value.replace(/-/g, '/')})}
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           />
