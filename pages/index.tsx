@@ -87,7 +87,7 @@ const IndexPage: NextPage = () => {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-gray-600">
+                    <p className="text-base font-medium text-gray-900">
                       {new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}
                     </p>
                   </div>
