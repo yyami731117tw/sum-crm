@@ -667,9 +667,9 @@ const MembersPage = (): ReactElement => {
                       ))}
                     </tbody>
                   </table>
-                  {(!filteredMembers || filteredMembers.length === 0) && (
-                    <div className="text-center py-4 text-sm text-gray-500">
-                      尚無投資紀錄
+                  {(!members || members.length === 0) && (
+                    <div className="text-center py-8 text-sm text-gray-500">
+                      尚無會員資料
                     </div>
                   )}
                 </div>

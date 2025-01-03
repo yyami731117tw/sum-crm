@@ -52,14 +52,24 @@ export function DashboardNav() {
                 首頁
               </Link>
               {user?.role === 'admin' && (
-                <Link
-                  href="/admin/members"
-                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                    router.pathname === '/admin/members' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  會員管理
-                </Link>
+                <>
+                  <Link
+                    href="/admin/members"
+                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                      router.pathname === '/admin/members' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    會員管理
+                  </Link>
+                  <Link
+                    href="/admin/staffs"
+                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                      router.pathname === '/admin/staffs' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    人員管理
+                  </Link>
+                </>
               )}
               <Link
                 href="/investments"
