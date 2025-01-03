@@ -76,7 +76,7 @@ const Home: NextPage = () => {
           <header>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <h1 className="text-3xl font-bold leading-tight text-gray-900">
-                歡迎回來，{user.name}
+                歡迎回來，{user.nickname || user.name}
               </h1>
             </div>
           </header>

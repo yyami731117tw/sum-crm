@@ -9,6 +9,7 @@ import Image from 'next/image'
 interface UserProfile {
   id: string
   name: string
+  nickname?: string
   email: string
   phone: string
   lineId?: string
@@ -188,6 +189,37 @@ const Profile: NextPage = () => {
                 </div>
                 <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
                   <dl className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
+                    {/* 角色和狀態 */}
+                    <div className="sm:col-span-1">
+                      <dt className="text-sm font-medium text-gray-500">角色</dt>
+                      <dd className="mt-1">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          profile.role === 'admin' ? 'bg-purple-100 text-purple-800' :
+                          profile.role === 'staff' ? 'bg-blue-100 text-blue-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {profile.role === 'admin' ? '管理員' :
+                           profile.role === 'staff' ? '客服人員' :
+                           '訪客'}
+                        </span>
+                      </dd>
+                    </div>
+
+                    <div className="sm:col-span-1">
+                      <dt className="text-sm font-medium text-gray-500">狀態</dt>
+                      <dd className="mt-1">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          profile.status === 'active' ? 'bg-green-100 text-green-800' :
+                          profile.status === 'inactive' ? 'bg-red-100 text-red-800' :
+                          'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {profile.status === 'active' ? '啟用' :
+                           profile.status === 'inactive' ? '停用' :
+                           '待審核'}
+                        </span>
+                      </dd>
+                    </div>
+
                     {/* 頭像上傳 */}
                     <div className="sm:col-span-2">
                       <dt className="text-sm font-medium text-gray-500">頭像</dt>
@@ -252,15 +284,22 @@ const Profile: NextPage = () => {
                     <div className="sm:col-span-1">
                       <dt className="text-sm font-medium text-gray-500">姓名</dt>
                       <dd className="mt-1">
+                        <p className="text-sm text-gray-900">{profile.name}</p>
+                      </dd>
+                    </div>
+
+                    <div className="sm:col-span-1">
+                      <dt className="text-sm font-medium text-gray-500">暱稱</dt>
+                      <dd className="mt-1">
                         {isEditing ? (
                           <input
                             type="text"
-                            value={profile.name}
-                            onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                            value={profile.nickname || ''}
+                            onChange={(e) => setProfile({ ...profile, nickname: e.target.value })}
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           />
                         ) : (
-                          <p className="text-sm text-gray-900">{profile.name}</p>
+                          <p className="text-sm text-gray-900">{profile.nickname || '-'}</p>
                         )}
                       </dd>
                     </div>
@@ -333,36 +372,6 @@ const Profile: NextPage = () => {
                         ) : (
                           <p className="text-sm text-gray-900">{profile.birthday || '-'}</p>
                         )}
-                      </dd>
-                    </div>
-
-                    <div className="sm:col-span-1">
-                      <dt className="text-sm font-medium text-gray-500">角色</dt>
-                      <dd className="mt-1">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          profile.role === 'admin' ? 'bg-purple-100 text-purple-800' :
-                          profile.role === 'staff' ? 'bg-blue-100 text-blue-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {profile.role === 'admin' ? '管理員' :
-                           profile.role === 'staff' ? '客服人員' :
-                           '訪客'}
-                        </span>
-                      </dd>
-                    </div>
-
-                    <div className="sm:col-span-1">
-                      <dt className="text-sm font-medium text-gray-500">狀態</dt>
-                      <dd className="mt-1">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          profile.status === 'active' ? 'bg-green-100 text-green-800' :
-                          profile.status === 'inactive' ? 'bg-red-100 text-red-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {profile.status === 'active' ? '啟用' :
-                           profile.status === 'inactive' ? '停用' :
-                           '待審核'}
-                        </span>
                       </dd>
                     </div>
                   </dl>

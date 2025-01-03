@@ -3,6 +3,7 @@ import { useSession } from 'next-auth/react'
 export interface User {
   id: string
   name?: string | null
+  nickname?: string | null
   email?: string | null
   image?: string | null
   phone?: string | null
@@ -17,6 +18,7 @@ export interface User {
 const mockUser: User = {
   id: '1',
   name: '管理員',
+  nickname: '管理員',
   email: 'admin@mbc.com',
   role: 'admin',
   status: 'active',
