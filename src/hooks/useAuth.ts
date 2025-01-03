@@ -17,8 +17,7 @@ export interface User {
 
 interface LoginCredentials {
   email: string
-  password?: string
-  step: number
+  password: string
 }
 
 interface UseAuthReturn {

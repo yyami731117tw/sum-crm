@@ -28,10 +28,11 @@ const Login: NextPage = () => {
       const result = await login({
         email,
         password,
-        step: 1,
       })
 
-      if (!result.success) {
+      if (result.success) {
+        router.push('/')
+      } else {
         setError('登入失敗，請檢查您的信箱和密碼')
       }
     } catch (error) {
