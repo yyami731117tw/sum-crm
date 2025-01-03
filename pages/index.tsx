@@ -3,7 +3,7 @@ import Head from 'next/head'
 import { useAuth } from '../src/hooks/useAuth'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
-import { DashboardNav } from '../components/dashboard/DashboardNav'
+import { DashboardNav } from '@/components/dashboard/DashboardNav'
 import prisma from '@/lib/prisma'
 
 interface DashboardStats {

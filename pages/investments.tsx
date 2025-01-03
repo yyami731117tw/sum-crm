@@ -3,7 +3,7 @@ import Head from 'next/head'
 import { useAuth } from '../src/hooks/useAuth'
 import { useEffect } from 'react'
 import { useRouter } from 'next/router'
-import { DashboardNav } from '../components/dashboard/DashboardNav'
+import { DashboardNav } from '@/components/dashboard/DashboardNav'
 
 const Investments: NextPage = () => {
   const { user, loading } = useAuth()
