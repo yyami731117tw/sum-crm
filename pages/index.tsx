@@ -68,7 +68,7 @@ const Home: NextPage = () => {
       <Head>
         <title>首頁 - MBC管理系統</title>
       </Head>
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen bg-gray-100 pt-16">
         <DashboardNav />
         
         {/* 主要內容區 */}

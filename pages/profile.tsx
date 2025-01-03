@@ -83,10 +83,9 @@ const Profile: NextPage = () => {
       <Head>
         <title>個人資料 - MBC管理系統</title>
       </Head>
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen bg-gray-100 pt-16">
         <DashboardNav />
         
-        {/* 主要內容區 */}
         <div className="py-10">
           <header>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

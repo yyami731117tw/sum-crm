@@ -44,7 +44,7 @@ const Settings: NextPage = () => {
       <Head>
         <title>系統設定 - MBC管理系統</title>
       </Head>
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen bg-gray-100 pt-16">
         <DashboardNav />
         
         <div className="py-10">

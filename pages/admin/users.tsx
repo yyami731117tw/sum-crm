@@ -312,7 +312,7 @@ const AdminUsersPage: NextPage = () => {
       <Head>
         <title>人員管理 - MBC天使俱樂部</title>
       </Head>
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen bg-gray-100 pt-16">
         <DashboardNav />
         
         <div className="py-10">
