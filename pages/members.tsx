@@ -462,13 +462,13 @@ const MembersPage = (): ReactElement => {
   const getStatusText = (status: Member['status']) => {
     switch (status) {
       case '一般會員':
-        return '審查中'  // 未來可根據審查機制調整
+        return '啟用'
       case 'VIP會員':
-        return '活躍'
+        return '啟用'
       case '黑名單':
         return '停用'
       default:
-        return status
+        return '啟用'
     }
   }
 
@@ -806,10 +806,10 @@ const MembersPage = (): ReactElement => {
                           <select
                             value={sidebarMember.status}
                             onChange={(e) => setSidebarMember({...sidebarMember, status: e.target.value as Member['status']})}
-                            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                           >
-                            <option value="一般會員">一般會員</option>
                             <option value="VIP會員">VIP會員</option>
+                            <option value="一般會員">一般會員</option>
                             <option value="黑名單">黑名單</option>
                           </select>
                         </dd>
