@@ -43,7 +43,7 @@ export function DashboardNav() {
             </span>
           </div>
           <div className="flex items-center space-x-8">
-            <Link href="/" className="text-gray-900 hover:text-gray-500 px-3 py-2 rounded-md text-sm font-medium">
+            <Link href="/dashboard" className="text-gray-900 hover:text-gray-500 px-3 py-2 rounded-md text-sm font-medium">
               首頁
             </Link>
             <Link href="/admin/members" className="text-gray-900 hover:text-gray-500 px-3 py-2 rounded-md text-sm font-medium">
@@ -56,7 +56,7 @@ export function DashboardNav() {
               項目管理
             </Link>
             {user?.role === 'admin' && (
-              <Link href="/admin/staffs" className="text-gray-900 hover:text-gray-500 px-3 py-2 rounded-md text-sm font-medium">
+              <Link href="/admin/users" className="text-gray-900 hover:text-gray-500 px-3 py-2 rounded-md text-sm font-medium">
                 人員管理
               </Link>
             )}

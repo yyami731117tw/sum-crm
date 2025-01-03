@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { getSession } from 'next-auth/react'
-import prisma from '../../../src/lib/prisma'
+import prisma from '@/lib/prisma'
 
 export default async function handler(
   req: NextApiRequest,
@@ -16,7 +16,7 @@ export default async function handler(
 
   if (req.method === 'PUT') {
     try {
-      const { name, phone, lineId, address, birthday } = req.body
+      const { name, phone, lineId, address, birthday, image } = req.body
 
       const updatedUser = await prisma.user.update({
         where: { id: userId },
@@ -26,6 +26,7 @@ export default async function handler(
           lineId,
           address,
           birthday: birthday ? new Date(birthday) : null,
+          image,
         },
         select: {
           id: true,
@@ -37,6 +38,7 @@ export default async function handler(
           birthday: true,
           role: true,
           status: true,
+          image: true,
         },
       })
 
