@@ -240,7 +240,7 @@ const MembersPage = (): ReactElement => {
     // 如果是新會員（id 為空），則不顯示變更紀錄
     if (!member.id) {
       setSidebarMemberLogs([])
-      setIsSidebarOpen(true)
+    setIsSidebarOpen(true)
       return
     }
     
@@ -519,7 +519,7 @@ const MembersPage = (): ReactElement => {
   }, [isResizing])
 
   if (loading) {
-    return (
+  return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
@@ -532,15 +532,15 @@ const MembersPage = (): ReactElement => {
         <title>會員管理 - MBC天使俱樂部</title>
       </Head>
       <div className="min-h-screen bg-gray-100 pt-16">
-        <DashboardNav />
-        
+      <DashboardNav />
+
         <div className="py-10">
           <header>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <h1 className="text-3xl font-bold leading-tight text-gray-900">
                 會員管理
               </h1>
-            </div>
+          </div>
           </header>
           <main>
             <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -555,14 +555,14 @@ const MembersPage = (): ReactElement => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                       </div>
-                      <input
-                        type="text"
+            <input
+              type="text"
                         name="search"
                         id="search"
                         className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         placeholder="搜尋會員編號、姓名或電話"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
                       />
                     </div>
                   </div>
@@ -575,37 +575,37 @@ const MembersPage = (): ReactElement => {
                     </svg>
                     新增會員
                   </button>
-                </div>
+          </div>
 
-                {/* 會員列表 */}
-                <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
+          {/* 會員列表 */}
+          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           會員資料
-                        </th>
+                  </th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           會員類型
-                        </th>
+                  </th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          狀態
-                        </th>
+                    狀態
+                  </th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           加入時間
-                        </th>
+                  </th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           會員期限
                         </th>
                         <th scope="col" className="relative px-6 py-3">
                           <span className="sr-only">操作</span>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
                       {filteredMembers.map((member) => (
-                        <tr key={member.id}>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                  <tr key={member.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
                               <div className="flex-shrink-0 h-10 w-10">
                                 <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
@@ -615,30 +615,30 @@ const MembersPage = (): ReactElement => {
                                 </div>
                               </div>
                               <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-gray-900">
                                   <button
                                     onClick={() => handleViewMember(member)}
                                     className="text-sm font-medium text-blue-600 hover:text-blue-900 hover:underline"
                                   >
-                                    {member.name}
+                        {member.name}
                                   </button>
-                                </div>
+                      </div>
                                 <div className="text-sm text-gray-500">會員編號：{member.memberNo}</div>
                                 <div className="text-sm text-gray-500">{member.phone}</div>
-                              </div>
+                        </div>
                             </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {member.memberCategory}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                               getStatusBadgeColor(member.status)
-                            }`}>
+                      }`}>
                               {getStatusText(member.status)}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {member.joinDate}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -652,28 +652,28 @@ const MembersPage = (): ReactElement => {
                                 </div>
                               )}
                             </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button
-                              onClick={() => handleViewMember(member)}
-                              className="text-green-600 hover:text-green-900"
-                            >
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button
+                        onClick={() => handleViewMember(member)}
+                        className="text-green-600 hover:text-green-900"
+                      >
                               使用記錄
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
                   {(!members || members.length === 0) && (
                     <div className="text-center py-8 text-sm text-gray-500">
                       尚無會員資料
                     </div>
                   )}
                 </div>
-              </div>
-            </div>
-          </main>
+          </div>
+        </div>
+      </main>
         </div>
       </div>
 
@@ -761,7 +761,7 @@ const MembersPage = (): ReactElement => {
                                 ({sidebarMember.nickname})
                               </span>
                             )}
-                          </h2>
+                      </h2>
                           <div className="mt-1 flex items-center space-x-4">
                             <p className="text-sm text-gray-500">
                               會員編號：{sidebarMember.memberNo}
@@ -775,8 +775,8 @@ const MembersPage = (): ReactElement => {
                         </div>
                       </div>
                       <div className="flex items-center space-x-4">
-                        <button
-                          onClick={() => setIsSidebarOpen(false)}
+                      <button
+                        onClick={() => setIsSidebarOpen(false)}
                           className="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none"
                         >
                           <span className="sr-only">關閉</span>
@@ -985,9 +985,9 @@ const MembersPage = (): ReactElement => {
                                   >
                                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                  </button>
-                                </div>
+                        </svg>
+                      </button>
+                    </div>
                               ) : (
                                 <div className="flex justify-center items-center w-48 h-32 border-2 border-gray-300 border-dashed rounded-lg">
                                   <label className="relative cursor-pointer">
@@ -996,7 +996,7 @@ const MembersPage = (): ReactElement => {
                                         <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                       </svg>
                                       <p className="mt-1 text-sm text-gray-600">點擊上傳</p>
-                                    </div>
+                  </div>
                                     <input
                                       type="file"
                                       className="hidden"
@@ -1007,7 +1007,7 @@ const MembersPage = (): ReactElement => {
                                 </div>
                               )}
                             </div>
-                            <div>
+                        <div>
                               <p className="mb-2 text-sm text-gray-500">反面</p>
                               {sidebarMember.idCardBack ? (
                                 <div className="relative">
@@ -1046,8 +1046,8 @@ const MembersPage = (): ReactElement => {
                               )}
                             </div>
                           </div>
-                        </dd>
-                      </div>
+                              </dd>
+                            </div>
 
                       {/* 聯絡資訊 */}
                       <div className="sm:col-span-2">
@@ -1065,8 +1065,8 @@ const MembersPage = (): ReactElement => {
                             required
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           />
-                        </dd>
-                      </div>
+                              </dd>
+                            </div>
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500">電子郵件</dt>
                         <dd className="mt-1">
@@ -1076,8 +1076,8 @@ const MembersPage = (): ReactElement => {
                             onChange={(e) => setSidebarMember({...sidebarMember, email: e.target.value})}
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           />
-                        </dd>
-                      </div>
+                              </dd>
+                            </div>
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500">LINE ID</dt>
                         <dd className="mt-1">
@@ -1087,8 +1087,8 @@ const MembersPage = (): ReactElement => {
                             onChange={(e) => setSidebarMember({...sidebarMember, lineId: e.target.value})}
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           />
-                        </dd>
-                      </div>
+                              </dd>
+                            </div>
                       <div className="sm:col-span-2">
                         <dt className="text-sm font-medium text-gray-500">通訊地址</dt>
                         <dd className="mt-1">
@@ -1098,8 +1098,8 @@ const MembersPage = (): ReactElement => {
                             onChange={(e) => setSidebarMember({...sidebarMember, address: e.target.value})}
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           />
-                        </dd>
-                      </div>
+                              </dd>
+                            </div>
 
                       {/* 緊急聯絡人 */}
                       <div className="sm:col-span-2">
@@ -1114,8 +1114,8 @@ const MembersPage = (): ReactElement => {
                             onChange={(e) => setSidebarMember({...sidebarMember, emergencyContact: e.target.value})}
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           />
-                        </dd>
-                      </div>
+                              </dd>
+                            </div>
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500">關係</dt>
                         <dd className="mt-1">
@@ -1125,8 +1125,8 @@ const MembersPage = (): ReactElement => {
                             onChange={(e) => setSidebarMember({...sidebarMember, emergencyRelation: e.target.value})}
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           />
-                        </dd>
-                      </div>
+                              </dd>
+                            </div>
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500">電話</dt>
                         <dd className="mt-1">
@@ -1137,7 +1137,7 @@ const MembersPage = (): ReactElement => {
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           />
                         </dd>
-                      </div>
+                        </div>
 
                       {/* 會員資訊 */}
                       <div className="sm:col-span-2">
@@ -1223,19 +1223,19 @@ const MembersPage = (): ReactElement => {
                                   {getRemainingDaysMessage(sidebarMember.remainingDays, sidebarMember.hasMembershipPeriod) && (
                                     <span className="ml-2">
                                       ({getRemainingDaysMessage(sidebarMember.remainingDays, sidebarMember.hasMembershipPeriod)})
-                                    </span>
+                                        </span>
                                   )}
-                                </div>
+                                      </div>
                               </>
                             )}
-                          </div>
+                                        </div>
                         </dd>
-                      </div>
+                                        </div>
 
                       {/* 關係人資訊 */}
                       <div className="sm:col-span-2">
                         <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">關係人資訊</h3>
-                      </div>
+                                      </div>
                       <div className="sm:col-span-2">
                         <dt className="text-sm font-medium text-gray-500">關係人</dt>
                         <dd className="mt-1">
@@ -1390,7 +1390,7 @@ const MembersPage = (): ReactElement => {
                             ) : (
                               <div className="text-center py-4 text-sm text-gray-500">尚無關係人資料</div>
                             )}
-                          </div>
+                                    </div>
                           <div className="mt-4">
                             <button
                               type="button"
@@ -1412,7 +1412,7 @@ const MembersPage = (): ReactElement => {
                               </svg>
                               新增關係人
                             </button>
-                          </div>
+                                  </div>
                         </dd>
                       </div>
                       <div className="sm:col-span-2">
@@ -1429,14 +1429,14 @@ const MembersPage = (): ReactElement => {
                             ))}
                           </select>
                         </dd>
-                      </div>
+                          </div>
 
                       {/* VIP 會員資訊 */}
                       {(sidebarMember.memberCategory === 'VIP' || sidebarMember.memberCategory === '天使') && (
                         <>
                           <div className="sm:col-span-2">
                             <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">VIP 會員資訊</h3>
-                          </div>
+                        </div>
                           <div className="sm:col-span-1">
                             <dt className="text-sm font-medium text-gray-500">專長</dt>
                             <dd className="mt-1">
@@ -1448,7 +1448,7 @@ const MembersPage = (): ReactElement => {
                                 placeholder="請用逗號分隔多個專長"
                               />
                             </dd>
-                          </div>
+                      </div>
                           <div className="sm:col-span-1">
                             <dt className="text-sm font-medium text-gray-500">禁忌</dt>
                             <dd className="mt-1">
@@ -1467,7 +1467,7 @@ const MembersPage = (): ReactElement => {
                       {/* 其他資訊 */}
                       <div className="sm:col-span-2">
                         <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">其他資訊</h3>
-                      </div>
+                  </div>
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500">家庭狀況</dt>
                         <dd className="mt-1">
@@ -1479,7 +1479,7 @@ const MembersPage = (): ReactElement => {
                             placeholder="例：已婚、育有2子"
                           />
                         </dd>
-                      </div>
+                </div>
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500">學歷</dt>
                         <dd className="mt-1">
@@ -1497,7 +1497,7 @@ const MembersPage = (): ReactElement => {
                             <option value="博士">博士</option>
                           </select>
                         </dd>
-                      </div>
+              </div>
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500">專長</dt>
                         <dd className="mt-1">
@@ -1509,7 +1509,7 @@ const MembersPage = (): ReactElement => {
                             placeholder="請用逗號分隔多個專長"
                           />
                         </dd>
-                      </div>
+            </div>
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500">禁忌</dt>
                         <dd className="mt-1">
@@ -1521,7 +1521,7 @@ const MembersPage = (): ReactElement => {
                             placeholder="請用逗號分隔多個禁忌"
                           />
                         </dd>
-                      </div>
+          </div>
 
                       {/* 投資履歷 */}
                       <div className="sm:col-span-2">
@@ -1585,9 +1585,9 @@ const MembersPage = (): ReactElement => {
                           {(!sidebarMember.investments || sidebarMember.investments.length === 0) && (
                             <div className="text-center py-4 text-sm text-gray-500">
                               尚無投資紀錄
-                            </div>
-                          )}
-                        </div>
+        </div>
+      )}
+    </div>
                       </div>
 
                       {/* 變更紀錄 */}
