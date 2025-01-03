@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/pages/api/auth/[...nextauth]'
+import { authOptions } from '../auth/[...nextauth]'
 
 type MemberLogWithMember = {
   id: string
@@ -16,8 +16,13 @@ type MemberLogWithMember = {
 
 type Investment = {
   id: string
-  name: string
+  status: string
   createdAt: Date
+  type: string
+  memberId: string
+  amount: number
+  date: Date
+  notes: string | null
 }
 
 export default async function handler(
@@ -86,7 +91,7 @@ export default async function handler(
         id: investment.id,
         type: 'investment' as const,
         action: '新投資案',
-        target: investment.name,
+        target: `${investment.type} - ${investment.amount}`,
         date: investment.createdAt.toLocaleString('zh-TW', {
           year: 'numeric',
           month: '2-digit',
