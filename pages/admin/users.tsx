@@ -27,6 +27,19 @@ interface UserLog {
   details: string
 }
 
+interface EditUserDialogProps {
+  user: User
+  isOpen: boolean
+  onClose: () => void
+  onUpdate: (id: string, data: {
+    name: string
+    email: string
+    password?: string
+    role: User['role']
+    status: User['status']
+  }) => Promise<void>
+}
+
 const AdminUsersPage: NextPage = () => {
   const { user, loading } = useAuth()
   const router = useRouter()
@@ -114,11 +127,15 @@ const AdminUsersPage: NextPage = () => {
     setIsLogModalOpen(true)
   }
 
-  const handleUpdateUser = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedUser) return
+  const handleUpdateUser = async (id: string, data: {
+    name: string
+    email: string
+    password?: string
+    role: User['role']
+    status: User['status']
+  }) => {
     // TODO: 實作更新使用者資料的 API 調用
-    setUsers(users.map(u => u.id === selectedUser.id ? selectedUser : u))
+    setUsers(users.map(u => u.id === id ? { ...u, ...data } : u))
     setIsEditModalOpen(false)
   }
 
@@ -166,6 +183,117 @@ const AdminUsersPage: NextPage = () => {
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.phone.includes(searchTerm)
   )
+
+  const EditUserDialog = ({ user, isOpen, onClose, onUpdate }: EditUserDialogProps) => {
+    const [formData, setFormData] = useState({
+      name: user?.name || '',
+      email: user?.email || '',
+      password: '',
+      role: user?.role || 'staff',
+      status: user?.status || 'active'
+    })
+
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault()
+      try {
+        await onUpdate(user.id, formData)
+        onClose()
+      } catch (error) {
+        console.error('更新使用者失敗:', error)
+      }
+    }
+
+    return (
+      <div className={`fixed inset-0 z-50 ${isOpen ? 'block' : 'hidden'}`}>
+        <div className="fixed inset-0 bg-black bg-opacity-25" onClick={onClose} />
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <h3 className="text-lg font-medium leading-6 text-gray-900">
+                編輯使用者
+              </h3>
+              <form onSubmit={handleSubmit} className="mt-4">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">角色</label>
+                    <select
+                      value={formData.role}
+                      onChange={(e) => setFormData({ ...formData, role: e.target.value as User['role'] })}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    >
+                      <option value="admin">管理員</option>
+                      <option value="staff">客服人員</option>
+                      <option value="guest">訪客</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">狀態</label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value as User['status'] })}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    >
+                      <option value="active">啟用</option>
+                      <option value="inactive">停用</option>
+                      <option value="pending">待審核</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">名稱</label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">電子郵件</label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      新密碼（若不修改請留空）
+                    </label>
+                    <input
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+                <div className="mt-6 flex justify-end space-x-3">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    取消
+                  </button>
+                  <button
+                    type="submit"
+                    className="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                  >
+                    儲存
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (loading) {
     return (
@@ -302,128 +430,12 @@ const AdminUsersPage: NextPage = () => {
 
       {/* 編輯使用者 Modal */}
       {isEditModalOpen && selectedUser && (
-        <div className="fixed z-10 inset-0 overflow-y-auto">
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-            </div>
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <form onSubmit={handleUpdateUser}>
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                  編輯使用者資料
-                </h3>
-                <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        姓名
-                      </label>
-                      <input
-                        type="text"
-                        value={selectedUser.name}
-                        onChange={(e) => setSelectedUser({...selectedUser, name: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        電話
-                      </label>
-                      <input
-                        type="tel"
-                        value={selectedUser.phone}
-                        onChange={(e) => setSelectedUser({...selectedUser, phone: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        LINE ID
-                      </label>
-                      <input
-                        type="text"
-                        value={selectedUser.lineId || ''}
-                        onChange={(e) => setSelectedUser({...selectedUser, lineId: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        通訊地址
-                      </label>
-                      <input
-                        type="text"
-                        value={selectedUser.address || ''}
-                        onChange={(e) => setSelectedUser({...selectedUser, address: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        生日
-                      </label>
-                      <input
-                        type="text"
-                        value={selectedUser.birthday || ''}
-                        onChange={(e) => setSelectedUser({...selectedUser, birthday: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      角色
-                    </label>
-                    <select
-                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                      value={selectedUser.role}
-                      onChange={(e) => setSelectedUser({
-                        ...selectedUser,
-                          role: e.target.value as User['role']
-                      })}
-                    >
-                      <option value="staff">客服人員</option>
-                      <option value="admin">管理員</option>
-                        <option value="guest">訪客</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      狀態
-                    </label>
-                    <select
-                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                      value={selectedUser.status}
-                      onChange={(e) => setSelectedUser({
-                        ...selectedUser,
-                          status: e.target.value as User['status']
-                      })}
-                    >
-                        <option value="pending">待審核</option>
-                      <option value="active">啟用</option>
-                      <option value="inactive">停用</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button
-                    type="submit"
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
-                >
-                  儲存
-                </button>
-                <button
-                  type="button"
-                    onClick={() => setIsEditModalOpen(false)}
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                  >
-                    取消
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
+        <EditUserDialog
+          user={selectedUser}
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onUpdate={handleUpdateUser}
+        />
       )}
 
       {/* 使用記錄 Modal */}
