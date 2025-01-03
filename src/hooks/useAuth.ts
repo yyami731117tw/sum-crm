@@ -20,11 +20,16 @@ interface LoginCredentials {
   password: string
 }
 
+interface LoginResult {
+  success: boolean
+  error?: string
+}
+
 interface UseAuthReturn {
   user: User | null
   isAuthenticated: boolean
   loading: boolean
-  login: (credentials: LoginCredentials) => Promise<{ success: boolean }>
+  login: (credentials: LoginCredentials) => Promise<LoginResult>
   logout: () => Promise<void>
   isAdmin: () => boolean
   updateUser: (userData: Partial<User>) => Promise<boolean>
@@ -40,12 +45,20 @@ export function useAuth(): UseAuthReturn {
         email,
         password,
         redirect: false,
+        callbackUrl: '/'
       })
 
-      return { success: !result?.error }
+      console.log('登入結果:', result)
+
+      if (result?.error) {
+        console.error('登入錯誤:', result.error)
+        return { success: false, error: result.error }
+      }
+
+      return { success: true }
     } catch (error) {
       console.error('登入失敗:', error)
-      return { success: false }
+      return { success: false, error: '登入過程中發生錯誤' }
     }
   }
 

@@ -25,17 +25,21 @@ const Login: NextPage = () => {
     setIsLoading(true)
 
     try {
+      console.log('嘗試登入:', email)
       const result = await login({
         email,
         password,
       })
 
+      console.log('登入結果:', result)
+
       if (result.success) {
         router.push('/')
       } else {
-        setError('登入失敗，請檢查您的信箱和密碼')
+        setError(result.error || '登入失敗，請檢查您的信箱和密碼')
       }
     } catch (error) {
+      console.error('登入錯誤:', error)
       setError('發生錯誤，請稍後再試')
     } finally {
       setIsLoading(false)

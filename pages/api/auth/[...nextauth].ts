@@ -14,37 +14,48 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error('請輸入信箱和密碼')
-        }
-
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            throw new Error('請輸入信箱和密碼')
           }
-        }) as User
 
-        if (!user) {
-          throw new Error('找不到此使用者')
-        }
+          console.log('嘗試認證使用者:', credentials.email)
 
-        const isValid = await compare(credentials.password, user.password)
+          const user = await prisma.user.findUnique({
+            where: {
+              email: credentials.email
+            }
+          })
 
-        if (!isValid) {
-          throw new Error('密碼錯誤')
-        }
+          console.log('找到使用者:', user ? '是' : '否')
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          status: user.status,
-          phone: user.phone,
-          lineId: user.lineId,
-          address: user.address,
-          birthday: user.birthday?.toISOString().split('T')[0],
-          image: user.image
+          if (!user) {
+            throw new Error('找不到此使用者')
+          }
+
+          const isValid = await compare(credentials.password, user.password)
+
+          console.log('密碼驗證:', isValid ? '成功' : '失敗')
+
+          if (!isValid) {
+            throw new Error('密碼錯誤')
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            status: user.status,
+            phone: user.phone,
+            lineId: user.lineId,
+            address: user.address,
+            birthday: user.birthday?.toISOString().split('T')[0],
+            image: user.image
+          }
+        } catch (error) {
+          console.error('認證錯誤:', error)
+          throw error
         }
       }
     })
@@ -57,6 +68,7 @@ export const authOptions: NextAuthOptions = {
     signIn: '/login',
     error: '/login',
   },
+  debug: process.env.NODE_ENV === 'development',
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
