@@ -112,113 +112,132 @@ const MembersPage: NextPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <>
       <Head>
         <title>會員管理 - MBC管理系統</title>
       </Head>
+      <div className="min-h-screen bg-gray-100 pt-16">
+        <DashboardNav />
+        
+        <div className="py-10">
+          <header>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="bg-white shadow-sm rounded-lg p-6 mb-8">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h1 className="text-3xl font-bold leading-tight text-gray-900 mb-2">
+                      會員管理
+                    </h1>
+                    <p className="text-gray-600 mt-2">
+                      管理所有會員資料及其相關記錄。
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <button
+                      onClick={() => setIsCreateMode(true)}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                    >
+                      新增會員
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </header>
+          <main>
+            <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+              <div className="px-4 py-8 sm:px-0">
+                {/* 搜尋欄 */}
+                <div className="mb-6">
+                  <input
+                    type="text"
+                    placeholder="搜尋會員..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
 
-      <DashboardNav />
-
-      <main className="py-10">
-        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">會員管理</h1>
-            <button
-              onClick={() => setIsCreateMode(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-            >
-              新增會員
-            </button>
-          </div>
-
-          {/* 搜尋欄 */}
-          <div className="mb-6">
-            <input
-              type="text"
-              placeholder="搜尋會員..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* 會員列表 */}
-          <div className="bg-white shadow overflow-x-auto rounded-lg">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    會員編號
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    姓名
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    電話
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    狀態
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    加入日期
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    操作
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {members.map((member) => (
-                  <tr key={member.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {member.memberNo}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {member.name}
-                      </div>
-                      {member.nickname && (
-                        <div className="text-sm text-gray-500">
-                          {member.nickname}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {member.phone}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        member.status === 'active'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {member.status === 'active' ? '啟用' : '停用'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(member.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => handleViewMember(member)}
-                        className="text-blue-600 hover:text-blue-900 mr-4"
-                      >
-                        查看
-                      </button>
-                      <button
-                        onClick={() => handleViewLogs(member)}
-                        className="text-green-600 hover:text-green-900"
-                      >
-                        記錄
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                {/* 會員列表 */}
+                <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          會員編號
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          姓名
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          電話
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          狀態
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          加入日期
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          操作
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {members.map((member) => (
+                        <tr key={member.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {member.memberNo}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">
+                              {member.name}
+                            </div>
+                            {member.nickname && (
+                              <div className="text-sm text-gray-500">
+                                {member.nickname}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {member.phone}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              member.status === 'active'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {member.status === 'active' ? '啟用' : '停用'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(member.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button
+                              onClick={() => handleViewMember(member)}
+                              className="text-blue-600 hover:text-blue-900 mr-4"
+                            >
+                              查看
+                            </button>
+                            <button
+                              onClick={() => handleViewLogs(member)}
+                              className="text-green-600 hover:text-green-900"
+                            >
+                              記錄
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </main>
         </div>
-      </main>
+      </div>
 
       {/* 側邊欄 */}
       {isSidebarOpen && (
@@ -376,7 +395,7 @@ const MembersPage: NextPage = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }
 
