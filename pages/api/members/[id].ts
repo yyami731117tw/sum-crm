@@ -1,7 +1,14 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '@/lib/prisma'
+import { getSession } from 'next-auth/react'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // 檢查使用者是否已登入
+  const session = await getSession({ req })
+  if (!session) {
+    return res.status(401).json({ error: '請先登入' })
+  }
+
   const { id } = req.query
 
   try {

@@ -128,38 +128,29 @@ const MembersPage = (): ReactElement => {
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login')
+      return
     }
-  }, [loading, user, router])
 
-  // 從快取或 API 加載會員數據
-  useEffect(() => {
+    // 從 API 載入會員資料
     const loadMembers = async () => {
-      // 先嘗試從快取讀取
-      const cachedMembers = membersCache.loadFromCache()
-      if (cachedMembers) {
-        setMembers(cachedMembers)
-        return
-      }
-
       try {
-        // 如果快取不存在或已過期，從 API 讀取
-        const response = await fetch(`${config.apiUrl}/api/members`)
+        const response = await fetch('/api/members', {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        if (!response.ok) {
+          throw new Error('讀取會員資料失敗')
+        }
         const data = await response.json()
         setMembers(data)
-        // 更新快取
-        membersCache.updateCache(data)
       } catch (error) {
         console.error('讀取會員資料失敗:', error)
-        // 如果 API 請求失敗，嘗試從快取讀取舊資料
-        const oldCachedData = membersCache.loadFromCache()
-        if (oldCachedData) {
-          setMembers(oldCachedData)
-        }
       }
     }
 
     loadMembers()
-  }, [])
+  }, [loading, user, router])
 
   // 當會員資料變更時，更新快取
   useEffect(() => {
