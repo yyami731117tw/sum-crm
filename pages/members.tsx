@@ -138,8 +138,11 @@ const MembersPage: NextPage = () => {
                     </p>
                     <button
                       onClick={() => setIsCreateMode(true)}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-150 ease-in-out"
+                      className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
                     >
+                      <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
                       新增會員
                     </button>
                   </div>
@@ -174,29 +177,29 @@ const MembersPage: NextPage = () => {
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             會員編號
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             姓名
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             電話
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             狀態
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             加入日期
                           </th>
-                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                             操作
                           </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {members.map((member) => (
-                          <tr key={member.id}>
+                          <tr key={member.id} className="hover:bg-gray-50 transition duration-150 ease-in-out">
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                               {member.memberNo}
                             </td>
@@ -223,18 +226,18 @@ const MembersPage: NextPage = () => {
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {new Date(member.createdAt).toLocaleDateString()}
+                              {new Date(member.createdAt).toLocaleDateString('zh-TW')}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                               <button
                                 onClick={() => handleViewMember(member)}
-                                className="text-blue-600 hover:text-blue-900 mr-4"
+                                className="text-blue-600 hover:text-blue-900 mr-4 transition duration-150 ease-in-out"
                               >
                                 查看
                               </button>
                               <button
                                 onClick={() => handleViewLogs(member)}
-                                className="text-green-600 hover:text-green-900"
+                                className="text-green-600 hover:text-green-900 transition duration-150 ease-in-out"
                               >
                                 記錄
                               </button>
