@@ -1,31 +1,30 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import { useAuth } from '../src/hooks/useAuth'
+import { useAuth } from '@/hooks/useAuth'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { DashboardNav } from '@/components/dashboard/DashboardNav'
-import prisma from '@/lib/prisma'
 
 interface DashboardStats {
   totalMembers: number
-  activeMembers: number
-  totalInvestments: number
+  newMembersThisMonth: number
+  pendingTasks: number
   recentActivities: {
     id: string
-    type: 'member' | 'investment'
+    type: string
     action: string
     target: string
     date: string
   }[]
 }
 
-const Home: NextPage = () => {
+const IndexPage: NextPage = () => {
   const { user, loading } = useAuth()
   const router = useRouter()
   const [stats, setStats] = useState<DashboardStats>({
     totalMembers: 0,
-    activeMembers: 0,
-    totalInvestments: 0,
+    newMembersThisMonth: 0,
+    pendingTasks: 0,
     recentActivities: []
   })
 
@@ -39,10 +38,13 @@ const Home: NextPage = () => {
     const fetchStats = async () => {
       try {
         const response = await fetch('/api/dashboard/stats')
+        if (!response.ok) {
+          throw new Error('獲取統計數據失敗')
+        }
         const data = await response.json()
         setStats(data)
       } catch (error) {
-        console.error('Error fetching dashboard stats:', error)
+        console.error('獲取統計數據失敗:', error)
       }
     }
 
@@ -71,129 +73,139 @@ const Home: NextPage = () => {
       <div className="min-h-screen bg-gray-100 pt-16">
         <DashboardNav />
         
-        {/* 主要內容區 */}
         <div className="py-10">
           <header>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <h1 className="text-3xl font-bold leading-tight text-gray-900">
-                歡迎回來，{user.nickname || user.name}
-              </h1>
+              <div className="bg-white shadow-sm rounded-lg p-6 mb-8">
+                <h1 className="text-3xl font-bold leading-tight text-gray-900 mb-2">
+                  歡迎回來，{user.nickname || user.name}
+                </h1>
+                <p className="text-gray-600">
+                  今天是 {new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}
+                </p>
+                <p className="text-gray-600 mt-2">
+                  祝您有個美好的一天！讓我們一起管理並創造更多價值。
+                </p>
+              </div>
             </div>
           </header>
           <main>
             <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-              {/* 統計卡片區 */}
-              <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {/* 會員統計 */}
-                <div className="bg-white overflow-hidden shadow rounded-lg">
-                  <div className="p-5">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-gray-500 truncate">
-                            總會員數
-                          </dt>
-                          <dd className="text-lg font-medium text-gray-900">
-                            {stats.totalMembers}
-                          </dd>
-                        </dl>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 活躍會員 */}
-                <div className="bg-white overflow-hidden shadow rounded-lg">
-                  <div className="p-5">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-gray-500 truncate">
-                            活躍會員
-                          </dt>
-                          <dd className="text-lg font-medium text-gray-900">
-                            {stats.activeMembers}
-                          </dd>
-                        </dl>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 投資案件數 */}
-                <div className="bg-white overflow-hidden shadow rounded-lg">
-                  <div className="p-5">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                        </svg>
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-gray-500 truncate">
-                            投資案件數
-                          </dt>
-                          <dd className="text-lg font-medium text-gray-900">
-                            {stats.totalInvestments}
-                          </dd>
-                        </dl>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 最近活動區 */}
-              <div className="mt-8">
-                <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                  <div className="px-4 py-5 sm:px-6">
-                    <h2 className="text-lg font-medium text-gray-900">最近活動</h2>
-                  </div>
-                  <div className="border-t border-gray-200">
-                    <ul className="divide-y divide-gray-200">
-                      {stats.recentActivities.map((activity) => (
-                        <li key={activity.id} className="px-4 py-4 sm:px-6">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                              <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${
-                                activity.type === 'member' ? 'bg-blue-100' : 'bg-green-100'
-                              }`}>
-                                {activity.type === 'member' ? (
-                                  <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                  </svg>
-                                ) : (
-                                  <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                  </svg>
-                                )}
+              <div className="px-4 py-8 sm:px-0">
+                {/* 統計卡片區域 */}
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {/* 會員總數 */}
+                  <div className="bg-white overflow-hidden shadow rounded-lg">
+                    <div className="p-5">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                          </svg>
+                        </div>
+                        <div className="ml-5 w-0 flex-1">
+                          <dl>
+                            <dt className="text-sm font-medium text-gray-500 truncate">
+                              會員總數
+                            </dt>
+                            <dd className="flex items-baseline">
+                              <div className="text-2xl font-semibold text-gray-900">
+                                {stats.totalMembers}
                               </div>
-                              <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">
+                            </dd>
+                          </dl>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 本月新增會員 */}
+                  <div className="bg-white overflow-hidden shadow rounded-lg">
+                    <div className="p-5">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                          </svg>
+                        </div>
+                        <div className="ml-5 w-0 flex-1">
+                          <dl>
+                            <dt className="text-sm font-medium text-gray-500 truncate">
+                              本月新增會員
+                            </dt>
+                            <dd className="flex items-baseline">
+                              <div className="text-2xl font-semibold text-gray-900">
+                                {stats.newMembersThisMonth}
+                              </div>
+                            </dd>
+                          </dl>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 待處理事項 */}
+                  <div className="bg-white overflow-hidden shadow rounded-lg">
+                    <div className="p-5">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                          </svg>
+                        </div>
+                        <div className="ml-5 w-0 flex-1">
+                          <dl>
+                            <dt className="text-sm font-medium text-gray-500 truncate">
+                              待處理事項
+                            </dt>
+                            <dd className="flex items-baseline">
+                              <div className="text-2xl font-semibold text-gray-900">
+                                {stats.pendingTasks}
+                              </div>
+                            </dd>
+                          </dl>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 最近活動 */}
+                <div className="mt-8">
+                  <h2 className="text-lg leading-6 font-medium text-gray-900">
+                    最近活動
+                  </h2>
+                  <div className="mt-2 bg-white shadow overflow-hidden sm:rounded-md">
+                    <ul role="list" className="divide-y divide-gray-200">
+                      {stats.recentActivities.length > 0 ? (
+                        stats.recentActivities.map((activity) => (
+                          <li key={activity.id} className="p-4">
+                            <div className="flex items-center space-x-4">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900">
                                   {activity.action}
-                                </div>
-                                <div className="text-sm text-gray-500">
+                                </p>
+                                <p className="text-sm text-gray-500">
                                   {activity.target}
-                                </div>
+                                </p>
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {new Date(activity.date).toLocaleDateString('zh-TW')}
                               </div>
                             </div>
-                            <div className="text-sm text-gray-500">
-                              {activity.date}
+                          </li>
+                        ))
+                      ) : (
+                        <li className="p-4">
+                          <div className="flex items-center space-x-4">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900 truncate">
+                                暫無活動記錄
+                              </p>
                             </div>
                           </div>
                         </li>
-                      ))}
+                      )}
                     </ul>
                   </div>
                 </div>
@@ -206,7 +218,7 @@ const Home: NextPage = () => {
   )
 }
 
-export default Home
+export default IndexPage
 
 export async function getServerSideProps() {
   return {

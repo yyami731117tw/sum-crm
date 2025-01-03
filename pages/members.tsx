@@ -120,7 +120,7 @@ const MembersPage: NextPage = () => {
       <DashboardNav />
 
       <main className="py-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold text-gray-900">會員管理</h1>
             <button
@@ -143,7 +143,7 @@ const MembersPage: NextPage = () => {
           </div>
 
           {/* 會員列表 */}
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+          <div className="bg-white shadow overflow-x-auto rounded-lg">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -222,11 +222,11 @@ const MembersPage: NextPage = () => {
 
       {/* 側邊欄 */}
       {isSidebarOpen && (
-        <div className="fixed inset-0 overflow-hidden">
+        <div className="fixed inset-0 overflow-hidden z-50">
           <div className="absolute inset-0 overflow-hidden">
             <div className="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
             <div className="fixed inset-y-0 right-0 pl-10 max-w-full flex">
-              <div className="relative w-screen max-w-md">
+              <div className="relative w-screen max-w-2xl">
                 <div className="h-full flex flex-col py-6 bg-white shadow-xl overflow-y-scroll">
                   <div className="px-4 sm:px-6">
                     <div className="flex items-start justify-between">
