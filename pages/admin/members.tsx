@@ -227,19 +227,19 @@ const MembersPage = (): ReactElement => {
     const newMember: Member = {
       id: '',  // 留空，等儲存時生成
       memberNo: generateMemberNo(),
-      name: '',
-      phone: '',
-      gender: '男',
-      idNumber: '',
-      birthday: '',
+      name: '',  // 必填
+      phone: '',  // 必填
+      gender: '男',  // 必填
+      idNumber: '',  // 必填
+      birthday: '',  // 必填
       joinDate: new Date().toISOString().split('T')[0].replace(/-/g, '/'),
       status: 'active',
-      memberCategory: '一般會員',
-      hasMembershipPeriod: false,  // 初始化會員期限設定
-      remainingDays: undefined,  // 初始化剩餘天數
+      memberCategory: '一般會員',  // 必填
+      hasMembershipPeriod: false,
+      remainingDays: undefined,
     }
     setSidebarMember(newMember)
-    setSidebarMemberLogs([])  // 清空變更紀錄
+    setSidebarMemberLogs([])
     setIsSidebarOpen(true)
   }
 
@@ -833,12 +833,15 @@ const MembersPage = (): ReactElement => {
                         </dd>
                       </div>
                       <div className="sm:col-span-1">
-                        <dt className="text-sm font-medium text-gray-500">姓名</dt>
+                        <dt className="text-sm font-medium text-gray-500">
+                          姓名 <span className="text-red-500">*</span>
+                        </dt>
                         <dd className="mt-1">
                           <input
                             type="text"
                             value={sidebarMember.name}
                             onChange={(e) => setSidebarMember({...sidebarMember, name: e.target.value})}
+                            required
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           />
                         </dd>
@@ -868,23 +871,29 @@ const MembersPage = (): ReactElement => {
                         </dd>
                       </div>
                       <div className="sm:col-span-1">
-                        <dt className="text-sm font-medium text-gray-500">身分證字號</dt>
+                        <dt className="text-sm font-medium text-gray-500">
+                          身分證字號 <span className="text-red-500">*</span>
+                        </dt>
                         <dd className="mt-1">
                           <input
                             type="text"
                             value={sidebarMember.idNumber}
                             onChange={(e) => setSidebarMember({...sidebarMember, idNumber: e.target.value})}
+                            required
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           />
                         </dd>
                       </div>
                       <div className="sm:col-span-1">
-                        <dt className="text-sm font-medium text-gray-500">生日</dt>
+                        <dt className="text-sm font-medium text-gray-500">
+                          生日 <span className="text-red-500">*</span>
+                        </dt>
                         <dd className="mt-1">
                           <input
                             type="date"
                             value={sidebarMember.birthday?.replace(/\//g, '-') || ''}
                             onChange={(e) => handleBirthdayChange(e.target.value)}
+                            required
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           />
                         </dd>
@@ -1057,12 +1066,15 @@ const MembersPage = (): ReactElement => {
                         <h3 className="text-lg font-medium text-gray-900 pb-3 border-b border-gray-200 mt-8">聯絡資訊</h3>
                       </div>
                       <div className="sm:col-span-1">
-                        <dt className="text-sm font-medium text-gray-500">電話</dt>
+                        <dt className="text-sm font-medium text-gray-500">
+                          電話 <span className="text-red-500">*</span>
+                        </dt>
                         <dd className="mt-1">
                           <input
                             type="tel"
                             value={sidebarMember.phone}
                             onChange={(e) => setSidebarMember({...sidebarMember, phone: e.target.value})}
+                            required
                             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           />
                         </dd>
