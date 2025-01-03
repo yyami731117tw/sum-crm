@@ -1,21 +1,25 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '@/lib/prisma'
-import { getSession } from 'next-auth/react'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '../auth/[...nextauth]'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // 檢查使用者是否已登入
-  const session = await getSession({ req })
+  const session = await getServerSession(req, res, authOptions)
   if (!session) {
     return res.status(401).json({ error: '請先登入' })
   }
 
   const { id } = req.query
 
+  if (typeof id !== 'string') {
+    return res.status(400).json({ error: '無效的會員 ID' })
+  }
+
   try {
     switch (req.method) {
       case 'GET':
         const member = await prisma.member.findUnique({
-          where: { id: String(id) },
+          where: { id },
           include: {
             relatedMembers: true,
             investments: true,
@@ -26,14 +30,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
           }
         })
+
         if (!member) {
           return res.status(404).json({ error: '找不到會員' })
         }
+
         return res.status(200).json(member)
 
       case 'PUT':
         const updatedMember = await prisma.member.update({
-          where: { id: String(id) },
+          where: { id },
           data: req.body,
           include: {
             relatedMembers: true,
@@ -41,24 +47,46 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             logs: true
           }
         })
-        
-        // 記錄變更
-        if (req.body.changes) {
-          await prisma.memberLog.create({
-            data: {
-              memberId: String(id),
-              action: '更新會員資料',
-              details: `修改了 ${Object.keys(req.body.changes).length} 個欄位`,
-              operator: req.body.operator || 'system',
-              changes: req.body.changes
+
+        // 記錄更新操作
+        await prisma.memberLog.create({
+          data: {
+            memberId: id,
+            action: '更新會員資料',
+            details: '更新會員資料',
+            operator: session.user.name || '系統管理員',
+            changes: {
+              type: 'update',
+              data: req.body
             }
-          })
-        }
-        
+          }
+        })
+
         return res.status(200).json(updatedMember)
 
+      case 'DELETE':
+        const deletedMember = await prisma.member.delete({
+          where: { id }
+        })
+
+        // 記錄刪除操作
+        await prisma.memberLog.create({
+          data: {
+            memberId: id,
+            action: '刪除會員',
+            details: '刪除會員資料',
+            operator: session.user.name || '系統管理員',
+            changes: {
+              type: 'delete',
+              data: deletedMember
+            }
+          }
+        })
+
+        return res.status(200).json(deletedMember)
+
       default:
-        res.setHeader('Allow', ['GET', 'PUT'])
+        res.setHeader('Allow', ['GET', 'PUT', 'DELETE'])
         return res.status(405).end(`Method ${req.method} Not Allowed`)
     }
   } catch (error) {

@@ -1,4 +1,5 @@
-import { useSession } from 'next-auth/react'
+import { useSession, signIn, signOut } from 'next-auth/react'
+import { useRouter } from 'next/router'
 
 export interface User {
   id: string
@@ -14,26 +15,78 @@ export interface User {
   status: string
 }
 
-// 模擬的管理員用戶
-const mockUser: User = {
-  id: '1',
-  name: '管理員',
-  nickname: '管理員',
-  email: 'admin@mbc.com',
-  role: 'admin',
-  status: 'active',
-  phone: null,
-  lineId: null,
-  address: null,
-  birthday: null,
-  image: null,
+interface LoginCredentials {
+  email: string
+  password?: string
+  step: number
 }
 
-export function useAuth() {
-  // 暫時返回模擬的用戶資料
+interface UseAuthReturn {
+  user: User | null
+  isAuthenticated: boolean
+  loading: boolean
+  login: (credentials: LoginCredentials) => Promise<{ success: boolean }>
+  logout: () => Promise<void>
+  isAdmin: () => boolean
+  updateUser: (userData: Partial<User>) => Promise<boolean>
+}
+
+export function useAuth(): UseAuthReturn {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
+  const login = async ({ email, password }: LoginCredentials) => {
+    try {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      })
+
+      return { success: !result?.error }
+    } catch (error) {
+      console.error('登入失敗:', error)
+      return { success: false }
+    }
+  }
+
+  const logout = async () => {
+    await signOut({ redirect: false })
+    router.push('/login')
+  }
+
+  const isAdmin = () => {
+    return session?.user?.role === 'admin'
+  }
+
+  const updateUser = async (userData: Partial<User>): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/users/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      })
+
+      if (!response.ok) {
+        throw new Error('更新失敗')
+      }
+
+      return true
+    } catch (error) {
+      console.error('更新個人資料失敗:', error)
+      return false
+    }
+  }
+
   return {
-    user: mockUser,
-    loading: false,
-    isAuthenticated: true,
+    user: session?.user as User,
+    loading: status === 'loading',
+    isAuthenticated: status === 'authenticated',
+    login,
+    logout,
+    isAdmin,
+    updateUser
   }
 } 

@@ -1,10 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '@/lib/prisma'
-import { getSession } from 'next-auth/react'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '../auth/[...nextauth]'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // 檢查使用者是否已登入
-  const session = await getSession({ req })
+  const session = await getServerSession(req, res, authOptions)
   if (!session) {
     return res.status(401).json({ error: '請先登入' })
   }
@@ -42,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             memberId: newMember.id,
             action: '新增會員',
             details: '建立新會員資料',
-            operator: req.body.operator || 'system',
+            operator: session.user.name || '系統管理員',
             changes: {
               type: 'create',
               data: req.body
