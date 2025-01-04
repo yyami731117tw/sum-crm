@@ -15,10 +15,11 @@ const Login: NextPage = () => {
     password: ''
   })
 
-  // 如果已經登入，重定向到首頁
+  // 如果已經登入，重定向到目標頁面或首頁
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
-      router.push('/')
+      const callbackUrl = router.query.callbackUrl as string
+      router.push(callbackUrl || '/')
     }
   }, [isAuthenticated, authLoading, router])
 
@@ -32,6 +33,9 @@ const Login: NextPage = () => {
           break
         case 'account_pending':
           setError('您的帳號正在審核中，請耐心等待')
+          break
+        case 'session_expired':
+          setError('登入階段已過期，請重新登入')
           break
         default:
           setError(String(error))
@@ -90,6 +94,11 @@ const Login: NextPage = () => {
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
               登入系統
             </h2>
+            {router.query.callbackUrl && (
+              <p className="mt-2 text-center text-sm text-gray-600">
+                請先登入以繼續訪問
+              </p>
+            )}
           </div>
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             <div className="rounded-md shadow-sm -space-y-px">
