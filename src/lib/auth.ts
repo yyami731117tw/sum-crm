@@ -1,13 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '../pages/api/auth/[...nextauth]'
+import { authOptions } from '@/pages/api/auth/[...nextauth]'
 
 export function withAuth(handler: any) {
   return async (req: NextApiRequest, res: NextApiResponse) => {
     const session = await getServerSession(req, res, authOptions)
 
     if (!session) {
-      return res.status(401).json({ message: '請先登入' })
+      return res.status(401).json({ message: '未授權訪問' })
     }
 
     return handler(req, res, session)
