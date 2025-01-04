@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { withAuth, withRole, withStatus } from '@/lib/auth'
-import prisma from '@/lib/prisma'
+import { withAuth, withRole, withStatus } from '../../../lib/auth'
+import prisma from '../../../lib/prisma'
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {

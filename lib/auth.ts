@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/pages/api/auth/[...nextauth]'
+import { authOptions } from '../pages/api/auth/[...nextauth]'
 
 export function withAuth(handler: any) {
   return async (req: NextApiRequest, res: NextApiResponse) => {

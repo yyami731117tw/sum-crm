@@ -1,6 +1,6 @@
 import type { NextPage } from 'next'
 import { useState, useEffect } from 'react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '../src/hooks/useAuth'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
 import Image from 'next/image'
