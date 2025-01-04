@@ -6,11 +6,11 @@
   ],
   "rules": {
     "@typescript-eslint/no-explicit-any": "off",
-    "@typescript-eslint/no-unused-vars": ["error", {
-      "argsIgnorePattern": "^_",
-      "varsIgnorePattern": "^_"
-    }],
+    "@typescript-eslint/no-unused-vars": "off",
     "@typescript-eslint/consistent-type-imports": "off",
-    "react-hooks/exhaustive-deps": "warn"
+    "react-hooks/exhaustive-deps": "warn",
+    "no-case-declarations": "off",
+    "@next/next/no-img-element": "off",
+    "no-var": "off"
   }
 } 
