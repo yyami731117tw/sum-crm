@@ -52,12 +52,12 @@ model User {
   accounts          Account[]
   sessions          Session[]
   logs              UserLog[]
-  verificationCodes VerificationCode[]
+  verificationCodes verificationCode[]
 
   @@map("users")
 }
 
-model VerificationCode {
+model verificationCode {
   id        String   @id @default(cuid())
   code      String
   userId    String
@@ -67,6 +67,7 @@ model VerificationCode {
   used      Boolean  @default(false)
 
   @@index([userId])
+  @@map("verification_codes")
 }
 
 model Member {
