@@ -17,15 +17,14 @@ export interface User {
 
 interface LoginCredentials {
   email: string
-  password?: string
-  step: number
+  password: string
 }
 
 interface UseAuthReturn {
   user: User | null
   isAuthenticated: boolean
   loading: boolean
-  login: (credentials: LoginCredentials) => Promise<{ success: boolean }>
+  login: (email: string, password: string) => Promise<{ success: boolean }>
   logout: () => Promise<void>
   isAdmin: () => boolean
   updateUser: (userData: Partial<User>) => Promise<boolean>
@@ -35,7 +34,7 @@ export function useAuth(): UseAuthReturn {
   const { data: session, status } = useSession()
   const router = useRouter()
 
-  const login = async ({ email, password }: LoginCredentials) => {
+  const login = async (email: string, password: string) => {
     try {
       const result = await signIn('credentials', {
         email,

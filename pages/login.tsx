@@ -83,6 +83,15 @@ export default function LoginPage() {
             {isLoading ? '登入中...' : '登入'}
           </Button>
         </form>
+
+        <div className="mt-4 text-center">
+          <p className="text-sm text-gray-600">
+            還沒有帳號？{' '}
+            <a href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
+              立即註冊
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   )
