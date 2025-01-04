@@ -4,6 +4,7 @@ import { useAuth } from '../src/hooks/useAuth'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
 import Image from 'next/image'
+import Link from 'next/link'
 
 const Login: NextPage = () => {
   const router = useRouter()
@@ -163,6 +164,17 @@ const Login: NextPage = () => {
                   '登入'
                 )}
               </button>
+            </div>
+            <div className="text-center mt-4">
+              <div className="text-sm">
+                <span className="text-gray-500">還沒有帳號？</span>{' '}
+                <Link
+                  href="/signup"
+                  className="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200"
+                >
+                  立即註冊
+                </Link>
+              </div>
             </div>
           </form>
         </div>
