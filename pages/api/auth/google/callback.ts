@@ -5,137 +5,91 @@ import { sendEmail, generateVerificationEmailContent } from '../../../../utils/e
 import { logger } from '../../../../utils/logger'
 import { createSession } from '../../../../utils/auth'
 import { PrismaClient } from '@prisma/client'
+import { OAuth2Client } from 'google-auth-library'
+import cookie from 'cookie'
+import google from 'googleapis'
 
 const prisma = new PrismaClient()
+
+// 設置會話過期時間為 30 天
+const SESSION_EXPIRY = 30 * 24 * 60 * 60 * 1000 // 30 days in milliseconds
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const requestId = uuidv4()
-
   if (req.method !== 'GET') {
-    logger.warn('Invalid method for Google callback', {
-      requestId,
-      invalidMethod: req.method
-    })
     return res.status(405).json({ message: '方法不允許' })
   }
 
-  const { code, error } = req.query
-
-  if (error) {
-    logger.error('Google OAuth error', {
-      requestId,
-      oauthError: error,
-      queryParams: req.query
-    })
-    return res.redirect('/signup?error=google_auth_failed')
-  }
+  const { code } = req.query
 
   if (!code || typeof code !== 'string') {
-    logger.warn('Invalid or missing code', {
-      requestId,
-      receivedCode: code
-    })
-    return res.redirect('/signup?error=invalid_code')
+    return res.status(400).json({ message: '無效的授權碼' })
   }
 
   try {
-    logger.info('Processing Google OAuth callback', { requestId })
+    const oauth2Client = new OAuth2Client(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      process.env.GOOGLE_REDIRECT_URI
+    )
 
-    // 獲取 Google 用戶信息
-    const userInfo = await getGoogleUserInfo(code)
-    logger.debug('Received Google user info', {
-      requestId,
-      userEmail: userInfo.email
-    })
+    // 獲取訪問令牌
+    const { tokens } = await oauth2Client.getToken(code)
+    oauth2Client.setCredentials(tokens)
 
-    if (!userInfo.verified_email) {
-      logger.warn('Unverified Google email', {
-        requestId,
-        userEmail: userInfo.email
+    // 獲取用戶信息
+    const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client })
+    const { data } = await oauth2.userinfo.get()
+
+    if (!data.email || !data.verified_email) {
+      return res.status(400).json({ 
+        error: 'email_not_verified',
+        message: '您的 Google 帳號尚未驗證電子郵件'
       })
-      return res.redirect('/signup?error=email_not_verified')
     }
 
-    // TODO: 檢查用戶是否已存在
-    const userExists = false // 這裡應該是實際的資料庫查詢
-
-    if (userExists) {
-      logger.info('User already exists', {
-        requestId,
-        userEmail: userInfo.email
-      })
-      return res.redirect('/login?error=user_exists')
-    }
-
-    // 生成驗證碼和令牌
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString()
-    const verificationToken = uuidv4()
-
-    // 建立新用戶
-    const user = {
-      id: uuidv4(),
-      email: userInfo.email,
-      name: userInfo.name,
-      image: userInfo.picture,
-      googleId: userInfo.id,
-      status: 'pending',
-      role: 'user',
-      verificationCode,
-      verificationToken,
-      createdAt: new Date().toISOString()
-    }
-
-    // 發送驗證郵件
-    logger.info('Sending verification email', {
-      requestId,
-      userEmail: user.email
-    })
-    const emailContent = generateVerificationEmailContent(user.name, verificationCode)
-    const emailResult = await sendEmail({
-      to: user.email,
-      subject: '多元商會員系統 - 電子郵件驗證',
-      html: emailContent
+    // 查找或創建用戶
+    let user = await prisma.user.findUnique({
+      where: { email: data.email }
     })
 
-    if (!emailResult.success) {
-      logger.error('Failed to send verification email', {
-        requestId,
-        userEmail: user.email,
-        error: new Error(emailResult.error)
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email: data.email,
+          name: data.name || '',
+          image: data.picture,
+          role: 'user',
+          emailVerified: new Date()
+        }
       })
-      return res.redirect('/signup?error=verification_email_failed')
     }
 
     // 創建會話
-    await createSession({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      image: user.image,
-      role: user.role,
-      googleId: user.googleId
-    })
-
-    // TODO: 將用戶資料儲存到資料庫
-    logger.info('New Google user created', {
-      requestId,
+    const session = await createSession({
+      id: uuidv4(),
       userId: user.id,
-      userEmail: user.email
+      expiresAt: new Date(Date.now() + SESSION_EXPIRY)
     })
 
-    // 重定向到驗證頁面
-    return res.redirect(`/verify?token=${verificationToken}`)
+    // 設置會話 cookie
+    res.setHeader(
+      'Set-Cookie',
+      cookie.serialize('session', session.sessionToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: SESSION_EXPIRY / 1000 // 轉換為秒
+      })
+    )
 
+    // 重定向到儀表板
+    res.redirect(302, '/dashboard')
   } catch (error) {
-    const err = error instanceof Error ? error : new Error('Unknown error')
-    logger.error('Google signup error', {
-      requestId,
-      error: err,
-      authCode: code
-    })
-    return res.redirect('/signup?error=signup_failed')
+    console.error('Google 認證錯誤:', error)
+    res.redirect(302, '/login?error=google_auth_failed')
   }
 } 
