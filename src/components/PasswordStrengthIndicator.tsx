@@ -1,13 +1,32 @@
 import { useEffect, useState } from 'react'
-import { checkPasswordStrength, getPasswordRequirements } from '@/utils/password'
+import { checkPasswordStrength, getPasswordRequirements } from '../utils/password'
 
 interface PasswordStrengthIndicatorProps {
   password: string
 }
 
+interface PasswordStrength {
+  score: number
+  feedback: {
+    warning: string
+    suggestions: string[]
+  }
+}
+
+interface PasswordRequirement {
+  label: string
+  met: boolean
+}
+
 const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps> = ({ password }) => {
-  const [strength, setStrength] = useState({ score: 0, feedback: { warning: '', suggestions: [] } })
-  const [requirements, setRequirements] = useState<Array<{ label: string; met: boolean }>>([])
+  const [strength, setStrength] = useState<PasswordStrength>({
+    score: 0,
+    feedback: {
+      warning: '',
+      suggestions: []
+    }
+  })
+  const [requirements, setRequirements] = useState<PasswordRequirement[]>([])
 
   useEffect(() => {
     setStrength(checkPasswordStrength(password))
