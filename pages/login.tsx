@@ -59,7 +59,9 @@ const Login: NextPage = () => {
         return
       }
 
-      // 登入成功後的重定向由 useAuth 中的 effect 處理
+      // 登入成功後的重定向
+      const callbackUrl = router.query.callbackUrl as string
+      await router.push(callbackUrl || '/')
     } catch (err) {
       setError('登入時發生錯誤')
     } finally {

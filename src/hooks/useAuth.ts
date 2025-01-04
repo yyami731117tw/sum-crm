@@ -81,6 +81,8 @@ export function useAuth(): UseAuthReturn {
         return { success: false, error: result.error }
       }
 
+      // 登入成功後重新獲取 session
+      await router.push('/')
       return { success: true }
     } catch (error) {
       return { success: false, error: '登入時發生錯誤' }
