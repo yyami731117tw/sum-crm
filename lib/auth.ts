@@ -19,7 +19,7 @@ export function withRole(roles: string | string[]) {
     return async (req: NextApiRequest, res: NextApiResponse) => {
       const session = await getServerSession(req, res, authOptions)
 
-      if (!session) {
+      if (!session?.user?.role) {
         return res.status(401).json({ message: '請先登入' })
       }
 
@@ -38,7 +38,7 @@ export function withStatus(allowedStatuses: string | string[]) {
     return async (req: NextApiRequest, res: NextApiResponse) => {
       const session = await getServerSession(req, res, authOptions)
 
-      if (!session) {
+      if (!session?.user?.status) {
         return res.status(401).json({ message: '請先登入' })
       }
 
