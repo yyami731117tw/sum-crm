@@ -64,10 +64,8 @@ export function useAuth(): UseAuthReturn {
 
   // 自動檢查用戶狀態
   useEffect(() => {
-    if (session?.user) {
-      checkUserStatus()
-    }
-  }, [session])
+    checkUserStatus()
+  }, [checkUserStatus])
 
   const login = async ({ email, password }: LoginCredentials): Promise<LoginResult> => {
     try {

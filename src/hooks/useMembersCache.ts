@@ -48,12 +48,8 @@ export function useMembersCache<T>(key: string) {
 
   // 初始化時讀取快取
   useEffect(() => {
-    const cachedData = loadFromCache()
-    if (cachedData) {
-      setData(cachedData)
-    }
-    setLoading(false)
-  }, [])
+    loadFromCache()
+  }, [loadFromCache])
 
   return {
     data,

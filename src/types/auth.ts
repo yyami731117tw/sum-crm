@@ -50,4 +50,28 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+}
+
+export interface UserSession {
+  id: string
+  email: string
+  name: string
+  role: string
+  expiresAt: Date
+}
+
+export interface AuthResponse {
+  success: boolean
+  message?: string
+  session?: UserSession
+}
+
+export interface LoginCredentials {
+  email: string
+  password: string
+}
+
+export interface RegisterData extends LoginCredentials {
+  name: string
+  confirmPassword: string
 } 

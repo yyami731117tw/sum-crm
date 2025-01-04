@@ -192,6 +192,23 @@ const MembersPage = (): ReactElement => {
     setUsers(mockUsers)
   }, [])
 
+  useEffect(() => {
+    if (data) {
+      membersCache.setData(data)
+    }
+  }, [data, membersCache]) // 添加依賴
+
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', stopResizing)
+    }
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', stopResizing)
+    }
+  }, [isResizing, handleMouseMove, stopResizing]) // 添加依賴
+
   const generateMemberNo = () => {
     const year = new Date().getFullYear().toString().slice(-2);
     // 從 localStorage 獲取當前年份的最大序號
@@ -519,13 +536,6 @@ const MembersPage = (): ReactElement => {
       }
     }
   }
-
-  useEffect(() => {
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', stopResizing)
-    }
-  }, [isResizing])
 
   if (loading) {
   return (
