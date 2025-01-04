@@ -1,31 +1,23 @@
-import NextAuth from 'next-auth'
-import type { NextAuthOptions } from 'next-auth'
+import NextAuth, { type NextAuthOptions, type DefaultSession } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import prisma from '@/lib/prisma'
 import { compare } from 'bcryptjs'
 
-// 擴展 next-auth 的型別
+interface ExtendedUser {
+  role: string
+  status: string
+}
+
 declare module "next-auth" {
-  interface User {
-    readonly id: string
-    readonly email: string
-    readonly role: string
-    readonly status: string
-    readonly name?: string | null
-  }
   interface Session {
-    user: User
+    user: ExtendedUser & DefaultSession["user"]
   }
+
+  interface User extends ExtendedUser {}
 }
 
 declare module "next-auth/jwt" {
-  interface JWT {
-    readonly id: string
-    readonly email: string
-    readonly role: string
-    readonly status: string
-    readonly name?: string | null
-  }
+  interface JWT extends ExtendedUser {}
 }
 
 export const authOptions: NextAuthOptions = {
@@ -37,91 +29,66 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        try {
-          if (!credentials?.email || !credentials?.password) {
-            throw new Error('請輸入信箱和密碼')
-          }
-
-          const user = await prisma.user.findUnique({
-            where: {
-              email: credentials.email
-            }
-          })
-
-          if (!user || !user.password) {
-            throw new Error('信箱或密碼錯誤')
-          }
-
-          const isValid = await compare(credentials.password, user.password)
-          if (!isValid) {
-            throw new Error('信箱或密碼錯誤')
-          }
-
-          if (user.status === 'inactive') {
-            throw new Error('account_disabled')
-          }
-
-          if (user.status === 'pending') {
-            throw new Error('account_pending')
-          }
-
-          return {
-            id: user.id,
-            email: user.email || '',
-            role: user.role,
-            status: user.status,
-            name: user.name
-          }
-        } catch (error) {
-          console.error('認證錯誤:', error)
+        if (!credentials?.email || !credentials?.password) {
           return null
+        }
+
+        const user = await prisma.user.findUnique({
+          where: {
+            email: credentials.email
+          }
+        })
+
+        if (!user || !user?.password) {
+          return null
+        }
+
+        const isPasswordValid = await compare(
+          credentials.password,
+          user.password
+        )
+
+        if (!isPasswordValid) {
+          return null
+        }
+
+        return {
+          id: user.id,
+          email: user.email || '',
+          role: user.role,
+          status: user.status
         }
       }
     })
   ],
-  session: {
-    strategy: 'jwt',
-    maxAge: 24 * 60 * 60 // 24 hours
-  },
-  cookies: {
-    sessionToken: {
-      name: 'session',
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production'
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        return {
+          ...token,
+          role: user.role,
+          status: user.status
+        }
+      }
+      return token
+    },
+    async session({ session, token }) {
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          role: token.role,
+          status: token.status
+        }
       }
     }
   },
   pages: {
     signIn: '/login',
-    error: '/login',
-    signOut: '/login'
   },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id
-        token.email = user.email
-        token.role = user.role
-        token.status = user.status
-        token.name = user.name
-      }
-      return token
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id
-        session.user.email = token.email
-        session.user.role = token.role
-        session.user.status = token.status
-        session.user.name = token.name
-      }
-      return session
-    }
-  },
-  debug: process.env.NODE_ENV === 'development'
+  session: {
+    strategy: 'jwt' as const
+  }
 }
 
 export default NextAuth(authOptions) 
