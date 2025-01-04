@@ -1,27 +1,18 @@
-// 定義所有組件和頁面的路徑
 export const PATHS = {
-  components: {
-    dashboard: {
-      DashboardNav: '@/components/dashboard/DashboardNav',
+  home: '/',
+  login: '/login',
+  signup: '/signup',
+  members: '/members',
+  contracts: '/contracts',
+  settings: '/settings',
+  profile: '/profile',
+  api: {
+    auth: {
+      login: '/api/auth/login',
+      signup: '/api/auth/signup',
+      verify: '/api/auth/verify'
     },
-  },
-  hooks: {
-    useMembersApi: '@/hooks/useMembersApi',
-    useRealtimeMembers: '@/hooks/useRealtimeMembers',
-    useMembersCache: '@/hooks/useMembersCache',
-    useAuth: '@/hooks/useAuth',
-  },
-  utils: {
-    config: '@/utils/config',
-  },
-  pages: {
-    admin: {
-      members: '/admin/members',
-      users: '/admin/users',
-    },
-    dashboard: '/dashboard',
-    profile: '/profile',
-    contracts: '/contracts',
-    projects: '/projects',
-  },
+    members: '/api/members',
+    contracts: '/api/contracts'
+  }
 } 

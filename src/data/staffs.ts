@@ -1,32 +1,35 @@
 export interface Staff {
   id: string
   name: string
-  role: '管理員' | '客服人員'
+  position: string
   email: string
+  phone: string
   status: 'active' | 'inactive'
 }
 
-// 模擬人員資料
 export const mockStaffs: Staff[] = [
   {
-    id: 'staff_001',
-    name: '王主管',
-    role: '管理員',
-    email: 'wang@example.com',
-    status: 'active'
-  },
-  {
-    id: 'staff_002',
-    name: '李小姐',
-    role: '客服人員',
-    email: 'lee@example.com',
-    status: 'active'
-  },
-  {
-    id: 'staff_003',
-    name: '張小姐',
-    role: '客服人員',
+    id: '1',
+    name: '張經理',
+    position: '業務經理',
     email: 'chang@example.com',
+    phone: '0912-345-678',
+    status: 'active'
+  },
+  {
+    id: '2',
+    name: '李專員',
+    position: '業務專員',
+    email: 'lee@example.com',
+    phone: '0923-456-789',
+    status: 'active'
+  },
+  {
+    id: '3',
+    name: '王助理',
+    position: '行政助理',
+    email: 'wang@example.com',
+    phone: '0934-567-890',
     status: 'active'
   }
 ] 

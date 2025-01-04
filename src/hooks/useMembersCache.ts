@@ -1,35 +1,37 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Member } from '@prisma/client'
+import { useState, useEffect } from 'react'
 
-export function useMembersCache() {
-  const [data, setData] = useState<Member[] | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  const loadFromCache = useCallback(() => {
-    const cached = localStorage.getItem('members')
-    if (cached) {
-      try {
-        return JSON.parse(cached) as Member[]
-      } catch (error) {
-        console.error('解析快取資料失敗:', error)
-        return null
-      }
-    }
-    return null
-  }, [])
-
-  const updateCache = useCallback((newData: Member[]) => {
-    setData(newData)
-    localStorage.setItem('members', JSON.stringify(newData))
-  }, [])
+export function useMembersCache<T>(cacheKey: string) {
+  const [cache, setCache] = useState<T | null>(null)
 
   useEffect(() => {
-    const cached = loadFromCache()
-    if (cached) {
-      setData(cached)
+    // 從 localStorage 讀取快取
+    const cachedData = localStorage.getItem(cacheKey)
+    if (cachedData) {
+      try {
+        setCache(JSON.parse(cachedData))
+      } catch (error) {
+        console.error('快取解析錯誤:', error)
+      }
     }
-    setLoading(false)
-  }, [loadFromCache])
+  }, [cacheKey])
 
-  return { data, loading, updateCache, loadFromCache }
+  const updateCache = (data: T) => {
+    try {
+      localStorage.setItem(cacheKey, JSON.stringify(data))
+      setCache(data)
+    } catch (error) {
+      console.error('快取更新錯誤:', error)
+    }
+  }
+
+  const clearCache = () => {
+    localStorage.removeItem(cacheKey)
+    setCache(null)
+  }
+
+  return {
+    cache,
+    updateCache,
+    clearCache
+  }
 } 
