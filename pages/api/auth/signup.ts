@@ -1,5 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { hash } from 'bcryptjs'
+import { v4 as uuidv4 } from 'uuid'
+import { sendEmail, generateVerificationEmailContent } from '../../../utils/email'
+import { logger } from '../../../utils/logger'
 import prisma from '@/lib/prisma'
 
 export default async function handler(
@@ -7,54 +10,63 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: '只允許 POST 請求' })
+    return res.status(405).json({ message: '方法不允許' })
+  }
+
+  const { email, password, name } = req.body
+
+  if (!email || !password || !name) {
+    return res.status(400).json({ message: '缺少必要欄位' })
   }
 
   try {
-    const { name, email, password } = req.body
-
-    // 驗證必要欄位
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: '所有欄位都是必填的' })
-    }
-
-    // 檢查信箱是否已被使用
+    // 檢查郵箱是否已被使用
     const existingUser = await prisma.user.findUnique({
       where: { email }
     })
 
     if (existingUser) {
-      return res.status(400).json({ message: '此信箱已被註冊' })
+      return res.status(400).json({ message: '此郵箱已被註冊' })
     }
 
-    // 密碼加密
-    const hashedPassword = await hash(password, 12)
+    // 生成驗證碼
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString()
 
     // 創建新用戶
     const user = await prisma.user.create({
       data: {
-        name,
         email,
-        password: hashedPassword,
+        name,
+        password: await hash(password, 10),
         role: 'guest',      // 預設角色為訪客
         status: 'pending',  // 預設狀態為待審核
-        joinDate: new Date().toISOString(),
-        lastLogin: null
+        createdAt: new Date()
       }
     })
 
-    // 移除密碼後回傳用戶資料
-    const { password: _, ...userWithoutPassword } = user
+    // 發送驗證郵件
+    const emailContent = generateVerificationEmailContent(name, verificationCode)
+    const emailResult = await sendEmail({
+      to: email,
+      subject: '多元商會員系統 - 電子郵件驗證',
+      html: emailContent
+    })
 
-    // TODO: 發送歡迎郵件
-    // TODO: 通知管理員有新用戶註冊
+    if (!emailResult.success) {
+      // 如果郵件發送失敗，刪除已創建的用戶
+      await prisma.user.delete({
+        where: { id: user.id }
+      })
+      return res.status(500).json({ message: '驗證郵件發送失敗' })
+    }
 
     return res.status(201).json({
-      message: '註冊成功，請等待管理員審核',
-      user: userWithoutPassword
+      message: '註冊成功，請查收驗證郵件',
+      userId: user.id
     })
+
   } catch (error) {
-    console.error('註冊錯誤:', error)
-    return res.status(500).json({ message: '註冊過程發生錯誤' })
+    logger.error('註冊失敗', { error: error instanceof Error ? error : new Error('Unknown error') })
+    return res.status(500).json({ message: '註冊失敗，請稍後再試' })
   }
 } 
