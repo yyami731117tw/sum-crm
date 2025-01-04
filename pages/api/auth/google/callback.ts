@@ -4,6 +4,9 @@ import { v4 as uuidv4 } from 'uuid'
 import { sendEmail, generateVerificationEmailContent } from '../../../../utils/email'
 import { logger } from '../../../../utils/logger'
 import { createSession } from '../../../../utils/auth'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 
 export default async function handler(
   req: NextApiRequest,
@@ -76,7 +79,7 @@ export default async function handler(
       id: uuidv4(),
       email: userInfo.email,
       name: userInfo.name,
-      picture: userInfo.picture,
+      image: userInfo.picture,
       googleId: userInfo.id,
       status: 'pending',
       role: 'user',
@@ -111,7 +114,7 @@ export default async function handler(
       id: user.id,
       email: user.email,
       name: user.name,
-      picture: user.picture,
+      image: user.image,
       role: user.role,
       googleId: user.googleId
     })

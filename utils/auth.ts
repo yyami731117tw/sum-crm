@@ -8,33 +8,22 @@ export interface UserSession {
   id: string
   email: string
   name: string
+  image: string
   role: string
-  status: string
-  nickname?: string | null
-  phone?: string | null
-  lineId?: string | null
-  address?: string | null
-  birthday?: string | null
-  image?: string | null
-  googleId?: string
+  googleId: string
 }
 
 export async function createSession(user: UserSession) {
-  const token = await new SignJWT({ ...user })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime('24h')
-    .sign(JWT_SECRET)
-
-  // 設置 cookie
-  Cookies.set(COOKIE_NAME, token, {
-    expires: 1, // 1天
-    path: '/',
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax'
+  return await prisma.userSession.create({
+    data: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      image: user.image,
+      role: user.role,
+      googleId: user.googleId
+    }
   })
-
-  return token
 }
 
 export async function getSession(): Promise<UserSession | null> {
