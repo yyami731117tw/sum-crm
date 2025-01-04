@@ -2,15 +2,10 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { v4 as uuidv4 } from 'uuid'
 import { createSession } from '@/utils/auth'
 import { PrismaClient } from '@prisma/client'
-import { OAuth2Client } from 'google-auth-library'
+import { getGoogleTokens, verifyGoogleToken } from '@/utils/google-auth'
 import cookie from 'cookie'
 
 const prisma = new PrismaClient()
-const client = new OAuth2Client(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_REDIRECT_URI
-)
 
 export default async function handler(
   req: NextApiRequest,
@@ -27,13 +22,12 @@ export default async function handler(
   }
 
   try {
-    const { tokens } = await client.getToken(code)
-    const ticket = await client.verifyIdToken({
-      idToken: tokens.id_token!,
-      audience: process.env.GOOGLE_CLIENT_ID
-    })
-    const payload = ticket.getPayload()
+    const tokens = await getGoogleTokens(code)
+    if (!tokens || !tokens.id_token) {
+      return res.status(400).json({ message: '無效的 Google 令牌' })
+    }
 
+    const payload = await verifyGoogleToken(tokens.id_token)
     if (!payload) {
       return res.status(400).json({ message: '無效的 Google 令牌' })
     }
@@ -60,12 +54,9 @@ export default async function handler(
     const sessionToken = uuidv4()
     const sessionExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
 
-    await prisma.session.create({
-      data: {
-        sessionToken,
-        userId: user.id,
-        expires: sessionExpiry
-      }
+    await createSession({
+      userId: user.id,
+      expiresAt: sessionExpiry
     })
 
     res.setHeader(
