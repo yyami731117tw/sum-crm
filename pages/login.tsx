@@ -1,12 +1,13 @@
 import type { NextPage } from 'next'
-import { useState } from 'react'
-import { signIn } from 'next-auth/react'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
 import Image from 'next/image'
 
 const Login: NextPage = () => {
   const router = useRouter()
+  const { login, isAuthenticated, loading: authLoading } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
@@ -14,28 +15,59 @@ const Login: NextPage = () => {
     password: ''
   })
 
+  // 如果已經登入，重定向到首頁
+  useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      router.push('/')
+    }
+  }, [isAuthenticated, authLoading, router])
+
+  // 處理 URL 中的錯誤訊息
+  useEffect(() => {
+    const { error } = router.query
+    if (error) {
+      switch (error) {
+        case 'account_disabled':
+          setError('您的帳號已被停用，請聯繫管理員')
+          break
+        case 'account_pending':
+          setError('您的帳號正在審核中，請耐心等待')
+          break
+        default:
+          setError(String(error))
+      }
+    }
+  }, [router.query])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isLoading) return
+
     setIsLoading(true)
     setError('')
 
     try {
-      const result = await signIn('credentials', {
-        redirect: false,
-        email: formData.email,
-        password: formData.password
-      })
+      const result = await login(formData)
 
-      if (result?.error) {
-        setError(result.error)
-      } else {
-        router.push('/')
+      if (!result.success) {
+        setError(result.error || '登入失敗')
+        return
       }
+
+      // 登入成功後的重定向由 useAuth 中的 effect 處理
     } catch (err) {
       setError('登入時發生錯誤')
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    )
   }
 
   return (
@@ -75,6 +107,7 @@ const Login: NextPage = () => {
                   placeholder="電子郵件"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  disabled={isLoading}
                 />
               </div>
               <div>
@@ -91,6 +124,7 @@ const Login: NextPage = () => {
                   placeholder="密碼"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -112,7 +146,7 @@ const Login: NextPage = () => {
                 className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300"
               >
                 {isLoading ? (
-                  <div className="flex items-center">
+                  <div className="flex items-center justify-center">
                     <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
                     登入中...
                   </div>

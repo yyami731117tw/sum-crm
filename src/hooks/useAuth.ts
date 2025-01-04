@@ -1,5 +1,6 @@
 import { useSession, signIn, signOut } from 'next-auth/react'
 import { useRouter } from 'next/router'
+import { useEffect } from 'react'
 
 export interface User {
   id: string
@@ -32,12 +33,41 @@ interface UseAuthReturn {
   login: (credentials: LoginCredentials) => Promise<LoginResult>
   logout: () => Promise<void>
   isAdmin: () => boolean
+  hasRole: (roles: string | string[]) => boolean
+  checkUserStatus: () => boolean
   updateUser: (userData: Partial<User>) => Promise<boolean>
 }
 
 export function useAuth(): UseAuthReturn {
   const { data: session, status } = useSession()
   const router = useRouter()
+
+  // 檢查用戶狀態
+  const checkUserStatus = () => {
+    if (!session?.user) return false
+    
+    switch (session.user.status) {
+      case 'active':
+        return true
+      case 'inactive':
+        signOut({ redirect: false })
+        router.push('/login?error=account_disabled')
+        return false
+      case 'pending':
+        signOut({ redirect: false })
+        router.push('/login?error=account_pending')
+        return false
+      default:
+        return false
+    }
+  }
+
+  // 自動檢查用戶狀態
+  useEffect(() => {
+    if (session?.user) {
+      checkUserStatus()
+    }
+  }, [session])
 
   const login = async ({ email, password }: LoginCredentials): Promise<LoginResult> => {
     try {
@@ -66,6 +96,12 @@ export function useAuth(): UseAuthReturn {
     return session?.user?.role === 'admin'
   }
 
+  const hasRole = (roles: string | string[]) => {
+    if (!session?.user?.role) return false
+    const roleArray = Array.isArray(roles) ? roles : [roles]
+    return roleArray.includes(session.user.role)
+  }
+
   const updateUser = async (userData: Partial<User>): Promise<boolean> => {
     try {
       const response = await fetch('/api/users/profile', {
@@ -90,6 +126,8 @@ export function useAuth(): UseAuthReturn {
     login,
     logout,
     isAdmin,
+    hasRole,
+    checkUserStatus,
     updateUser
   }
 } 
