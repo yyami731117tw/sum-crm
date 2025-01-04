@@ -41,7 +41,9 @@ interface EditUserDialogProps {
 }
 
 const AdminUsersPage: NextPage = () => {
-  const { user, loading } = useAuth()
+  const { session, status } = useAuth()
+  const loading = status === 'loading'
+  const user = session?.user
   const router = useRouter()
   const [users, setUsers] = useState<User[]>([])
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
