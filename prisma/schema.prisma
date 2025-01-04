@@ -52,7 +52,7 @@ model User {
   accounts          Account[]
   sessions          Session[]
   logs              UserLog[]
-  verificationCodes verificationCode[]
+  verificationCodes VerificationCode[]
 
   @@map("users")
 }
