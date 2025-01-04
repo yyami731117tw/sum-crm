@@ -1,14 +1,19 @@
-import { PrismaClient } from '@prisma/client'
-import { UserSession } from '@/types/auth'
+import { PrismaClient, User } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-export async function createSession(user: UserSession) {
+interface SessionInput {
+  id: string
+  userId: string
+  expiresAt: Date
+}
+
+export async function createSession(input: SessionInput) {
   return await prisma.session.create({
     data: {
-      sessionToken: user.id,
-      userId: user.id,
-      expires: user.expiresAt
+      sessionToken: input.id,
+      userId: input.userId,
+      expires: input.expiresAt
     }
   })
 }
