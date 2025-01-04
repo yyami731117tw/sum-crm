@@ -18,29 +18,25 @@ export default async function handler(
 
   try {
     // 查找未使用且未過期的驗證碼
-    const verificationCode = await prisma.verificationCode.findFirst({
-      where: {
-        userId,
-        code,
-        used: false,
-        expiresAt: {
-          gt: new Date()
-        }
-      },
-      include: {
-        user: true
-      }
-    })
-
-    if (!verificationCode) {
+    const verificationCode = await prisma.$queryRaw<{ id: string; code: string; user_id: string; expires_at: Date; created_at: Date; used: boolean }[]>`
+      SELECT * FROM verification_codes
+      WHERE user_id = ${userId}
+      AND code = ${code}
+      AND used = false
+      AND expires_at > NOW()
+      LIMIT 1
+    `
+    
+    if (!verificationCode || verificationCode.length === 0) {
       return res.status(400).json({ message: '驗證碼無效或已過期' })
     }
 
     // 標記驗證碼為已使用
-    await prisma.verificationCode.update({
-      where: { id: verificationCode.id },
-      data: { used: true }
-    })
+    await prisma.$executeRaw`
+      UPDATE verification_codes
+      SET used = true
+      WHERE id = ${verificationCode[0].id}
+    `
 
     // 更新用戶狀態
     await prisma.user.update({
