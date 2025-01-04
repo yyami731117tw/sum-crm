@@ -69,11 +69,14 @@ export default async function handler(
       })
 
       // 創建驗證碼
-      const [verification] = await prisma.$queryRaw<{ id: string; code: string; user_id: string; expires_at: Date; created_at: Date; used: boolean }[]>`
-        INSERT INTO verification_codes (id, code, user_id, expires_at, created_at, used)
-        VALUES (gen_random_uuid(), ${verificationCode}, ${user.id}, ${new Date(Date.now() + 30 * 60 * 1000)}, NOW(), false)
-        RETURNING *
-      `
+      const verification = await prisma.VerificationCode.create({
+        data: {
+          code: verificationCode,
+          userId: user.id,
+          expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+          used: false
+        }
+      })
 
       return { user, verification }
     })

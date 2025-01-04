@@ -48,7 +48,9 @@ interface ContractLog {
 }
 
 const ContractsPage = (): ReactElement => {
-  const { user, loading } = useAuth()
+  const { session, status } = useAuth()
+  const loading = status === 'loading'
+  const user = session?.user
   const router = useRouter()
   const [contracts, setContracts] = useState<Contract[]>([])
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null)

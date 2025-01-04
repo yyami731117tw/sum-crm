@@ -57,7 +57,7 @@ model User {
   @@map("users")
 }
 
-model verificationCode {
+model VerificationCode {
   id        String   @id @default(cuid())
   code      String
   userId    String
