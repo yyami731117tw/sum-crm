@@ -302,9 +302,12 @@ const Signup: NextPage = () => {
               <Image
                 src="/logo.png"
                 alt="Logo"
-                width={64}
-                height={64}
-                className="h-16 w-auto"
+                width={120}
+                height={120}
+                className="w-full h-full object-contain"
+                style={{
+                  filter: 'brightness(0) invert(1)'
+                }}
                 priority
               />
             </div>
