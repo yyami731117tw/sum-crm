@@ -3,7 +3,7 @@ import Head from 'next/head'
 import { useAuth } from '@/hooks/useAuth'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
-import { DashboardNav } from '@/components/dashboard/DashboardNav'
+import { MainNav } from '@/components/layout/MainNav'
 
 interface DashboardStats {
   totalMembers: number
@@ -19,7 +19,9 @@ interface DashboardStats {
 }
 
 const IndexPage: NextPage = () => {
-  const { user, loading } = useAuth()
+  const { session, status } = useAuth()
+  const loading = status === 'loading'
+  const user = session?.user
   const router = useRouter()
   const [stats, setStats] = useState<DashboardStats>({
     totalMembers: 0,
@@ -71,7 +73,7 @@ const IndexPage: NextPage = () => {
         <title>首頁 - MBC管理系統</title>
       </Head>
       <div className="min-h-screen bg-gray-100 pt-16">
-        <DashboardNav />
+        <MainNav />
         
         <div className="py-10">
           <header>
