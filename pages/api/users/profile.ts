@@ -1,59 +1,70 @@
-import { NextApiRequest, NextApiResponse } from 'next'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '../auth/[...nextauth]'
+import type { NextApiRequest, NextApiResponse } from 'next'
+import { getSession } from 'next-auth/react'
 import prisma from '@/lib/prisma'
+import { logger } from '../../../utils/logger'
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const session = await getServerSession(req, res, authOptions)
+  const session = await getSession({ req })
 
   if (!session) {
     return res.status(401).json({ message: '請先登入' })
   }
 
-  const userId = session.user.id
+  const email = session.user.email
+
+  if (!email) {
+    return res.status(400).json({ message: '無效的用戶信息' })
+  }
 
   if (req.method === 'PUT') {
     try {
-      const { name, nickname, phone, lineId, address, birthday, image } = req.body
+      const { name, phone, lineId, address, birthday } = req.body
 
-      // 先檢查使用者是否存在
-      const user = await prisma.user.findUnique({
-        where: { id: userId }
-      })
-
-      if (!user) {
-        return res.status(404).json({ message: '找不到使用者' })
-      }
-
-      // 更新使用者資料
       const updatedUser = await prisma.user.update({
-        where: { id: userId },
+        where: { email },
         data: {
           name: name || null,
-          nickname: nickname || null,
           phone: phone || null,
           lineId: lineId || null,
           address: address || null,
-          birthday: birthday ? new Date(birthday) : null,
-          image: image || null,
-        },
+          birthday: birthday ? new Date(birthday) : null
+        }
       })
 
-      // 轉換日期格式
-      const formattedUser = {
-        ...updatedUser,
-        birthday: updatedUser.birthday ? updatedUser.birthday.toISOString().split('T')[0] : null,
-      }
+      // 移除敏感信息
+      const { password, ...userWithoutPassword } = updatedUser
 
-      return res.json(formattedUser)
+      return res.status(200).json(userWithoutPassword)
+
     } catch (error) {
-      console.error('更新個人資料失敗:', error)
-      return res.status(500).json({ message: '更新個人資料失敗' })
+      logger.error('更新用戶資料失敗', { error: error instanceof Error ? error : new Error('Unknown error') })
+      return res.status(500).json({ message: '更新用戶資料失敗，請稍後再試' })
     }
   }
 
-  return res.status(405).json({ message: '不支援的請求方法' })
+  if (req.method === 'GET') {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { email }
+      })
+
+      if (!user) {
+        return res.status(404).json({ message: '找不到用戶' })
+      }
+
+      // 移除敏感信息
+      const { password, ...userWithoutPassword } = user
+
+      return res.status(200).json(userWithoutPassword)
+
+    } catch (error) {
+      logger.error('獲取用戶資料失敗', { error: error instanceof Error ? error : new Error('Unknown error') })
+      return res.status(500).json({ message: '獲取用戶資料失敗，請稍後再試' })
+    }
+  }
+
+  return res.status(405).json({ message: '方法不允許' })
 } 
