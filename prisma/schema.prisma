@@ -95,6 +95,7 @@ model Member {
   investments         Investment[]
   logs                MemberLog[]
   relatedMembers      RelatedMember[]
+  contracts           Contract[]
 }
 
 model RelatedMember {
@@ -154,4 +155,45 @@ model UserLog {
   user      User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
+}
+
+model Contract {
+  id            String   @id @default(cuid())
+  contractNo    String   @unique
+  projectName   String
+  memberId      String
+  memberName    String
+  memberNo      String
+  amount        Float
+  paymentMethod String?
+  bankAccount   String?
+  signDate      DateTime
+  startDate     DateTime
+  endDate       DateTime
+  status        String   @default("進行中")
+  invoiceInfo   String?
+  notes         String?
+  contractFile  String?
+  attachments   Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  member        Member   @relation(fields: [memberId], references: [id])
+  logs          ContractLog[]
+
+  @@index([memberId])
+  @@map("contracts")
+}
+
+model ContractLog {
+  id         String   @id @default(cuid())
+  contractId String
+  action     String
+  details    String
+  operator   String
+  timestamp  DateTime @default(now())
+  changes    Json?
+  contract   Contract @relation(fields: [contractId], references: [id])
+
+  @@index([contractId])
+  @@map("contract_logs")
 }
