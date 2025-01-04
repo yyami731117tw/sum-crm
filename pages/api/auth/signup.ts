@@ -69,13 +69,11 @@ export default async function handler(
       })
 
       // 創建驗證碼
-      const verification = await prisma.verificationCode.create({
-        data: {
-          code: verificationCode,
-          userId: user.id,
-          expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30分鐘後過期
-        }
-      })
+      const verification = await prisma.$executeRaw`
+        INSERT INTO verification_codes (id, code, user_id, expires_at, created_at, used)
+        VALUES (gen_random_uuid(), ${verificationCode}, ${user.id}, ${new Date(Date.now() + 30 * 60 * 1000)}, NOW(), false)
+        RETURNING *;
+      `
 
       return { user, verification }
     })
