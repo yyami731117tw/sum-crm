@@ -129,7 +129,7 @@ const Signup: NextPage = () => {
       const data = await response.json()
 
       if (response.ok) {
-        router.push('/login?message=signup_success')
+        router.push(`/verify?token=${data.verificationToken}`)
       } else {
         setError(data.message || '註冊失敗')
       }
@@ -145,9 +145,7 @@ const Signup: NextPage = () => {
   }
 
   const handleLogin = () => {
-    const currentQuery = router.query
-    const queryString = new URLSearchParams(currentQuery as Record<string, string>).toString()
-    router.push(`/login${queryString ? `?${queryString}` : ''}`)
+    window.location.href = '/login'
   }
 
   const renderStepContent = () => {
@@ -298,19 +296,20 @@ const Signup: NextPage = () => {
         {/* 左側歡迎區塊 */}
         <div className="hidden lg:flex lg:w-1/2 bg-[#003B6D] text-white">
           <div className="w-full flex flex-col items-center justify-center p-12">
-            <div className="relative w-48 h-48 flex items-center justify-center mb-8">
+            <div className="relative w-32 h-32 flex items-center justify-center mb-8">
               <Image
                 src="/logo.png"
-                alt="Logo"
-                width={160}
-                height={160}
-                className="w-auto h-auto"
+                alt="多元商 Logo"
+                width={120}
+                height={120}
                 style={{
-                  filter: 'brightness(0) invert(1)',
                   maxWidth: '100%',
-                  maxHeight: '100%'
+                  height: 'auto',
+                  objectFit: 'contain',
+                  filter: 'brightness(0) invert(1)'
                 }}
                 priority
+                unoptimized
               />
             </div>
             <h1 className="text-4xl font-bold mb-2">歡迎您</h1>
