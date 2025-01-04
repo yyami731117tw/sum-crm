@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { getToken } from 'next-auth/jwt'
 
 // 不需要登入就能訪問的頁面
 const publicPages = ['/login', '/signup', '/terms', '/privacy']
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // 檢查是否為公開頁面
@@ -13,10 +14,15 @@ export function middleware(request: NextRequest) {
   }
 
   // 檢查是否已登入
-  const token = request.cookies.get('token')
+  const session = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET
+  })
   
-  if (!token) {
-    return NextResponse.redirect(new URL('/login', request.url))
+  if (!session) {
+    const url = new URL('/login', request.url)
+    url.searchParams.set('callbackUrl', encodeURI(request.url))
+    return NextResponse.redirect(url)
   }
 
   return NextResponse.next()
@@ -24,6 +30,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/api/:path*', // 匹配所有 API 路由
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ]
 } 

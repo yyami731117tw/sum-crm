@@ -35,42 +35,58 @@ interface UseAuthReturn {
   updateUser: (userData: Partial<User>) => Promise<boolean>
 }
 
-// 模擬的管理員用戶
-const mockAdminUser: User = {
-  id: '1',
-  name: '系統管理員',
-  email: 'admin@mbc.com',
-  role: 'admin',
-  status: 'active',
-  phone: null,
-  lineId: null,
-  address: null,
-  birthday: null,
-}
-
 export function useAuth(): UseAuthReturn {
+  const { data: session, status } = useSession()
   const router = useRouter()
 
-  const login = async ({ email, password }: LoginCredentials) => {
-    return { success: true }
+  const login = async ({ email, password }: LoginCredentials): Promise<LoginResult> => {
+    try {
+      const result = await signIn('credentials', {
+        redirect: false,
+        email,
+        password
+      })
+
+      if (result?.error) {
+        return { success: false, error: result.error }
+      }
+
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: '登入時發生錯誤' }
+    }
   }
 
   const logout = async () => {
+    await signOut({ redirect: false })
     router.push('/login')
   }
 
   const isAdmin = () => {
-    return true
+    return session?.user?.role === 'admin'
   }
 
   const updateUser = async (userData: Partial<User>): Promise<boolean> => {
-    return true
+    try {
+      const response = await fetch('/api/users/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      })
+
+      return response.ok
+    } catch (error) {
+      console.error('更新用戶資料失敗:', error)
+      return false
+    }
   }
 
   return {
-    user: mockAdminUser,
-    loading: false,
-    isAuthenticated: true,
+    user: session?.user as User | null,
+    loading: status === 'loading',
+    isAuthenticated: status === 'authenticated',
     login,
     logout,
     isAdmin,

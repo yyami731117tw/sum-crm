@@ -3,9 +3,11 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Users, UserPlus, Settings, LogOut } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
 
 export function DashboardNav() {
   const router = useRouter()
+  const { logout } = useAuth()
   const pathname = router.pathname
 
   const navigation = [
@@ -56,10 +58,7 @@ export function DashboardNav() {
           <Button
             variant="ghost"
             className="ml-auto"
-            onClick={() => {
-              // TODO: 處理登出邏輯
-              router.push('/login')
-            }}
+            onClick={logout}
           >
             <LogOut className="mr-2 h-4 w-4" />
             登出
