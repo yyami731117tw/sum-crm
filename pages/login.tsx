@@ -16,21 +16,17 @@ const Login: NextPage = () => {
     password: ''
   })
 
-  // 處理登入成功後的重定向
+  // 如果已經登入，重定向到目標頁面或首頁
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
       const callbackUrl = router.query.callbackUrl as string
-      if (callbackUrl) {
-        router.push(decodeURIComponent(callbackUrl))
-      } else {
-        router.push('/')
-      }
+      router.push(callbackUrl || '/')
     }
   }, [isAuthenticated, authLoading, router])
 
-  // 處理 URL 中的錯誤訊息和成功訊息
+  // 處理 URL 中的錯誤訊息
   useEffect(() => {
-    const { error, message } = router.query
+    const { error } = router.query
     if (error) {
       switch (error) {
         case 'account_disabled':
@@ -45,8 +41,6 @@ const Login: NextPage = () => {
         default:
           setError(String(error))
       }
-    } else if (message === 'signup_success') {
-      setError('註冊成功！請登入您的帳號')
     }
   }, [router.query])
 
@@ -62,19 +56,13 @@ const Login: NextPage = () => {
 
       if (!result.success) {
         setError(result.error || '登入失敗')
+        return
       }
-      // 登入成功後的重定向由 useEffect 處理
     } catch (err) {
       setError('登入時發生錯誤')
     } finally {
       setIsLoading(false)
     }
-  }
-
-  const handleSignup = (e: React.MouseEvent) => {
-    e.preventDefault()
-    const currentUrl = router.asPath
-    router.push(`/signup${currentUrl.includes('?') ? '&' : '?'}from=login`)
   }
 
   if (authLoading) {
@@ -150,12 +138,10 @@ const Login: NextPage = () => {
             </div>
 
             {error && (
-              <div className={`rounded-md ${error.includes('成功') ? 'bg-green-50' : 'bg-red-50'} p-4`}>
+              <div className="rounded-md bg-red-50 p-4">
                 <div className="flex">
                   <div className="ml-3">
-                    <h3 className={`text-sm font-medium ${error.includes('成功') ? 'text-green-800' : 'text-red-800'}`}>
-                      {error}
-                    </h3>
+                    <h3 className="text-sm font-medium text-red-800">{error}</h3>
                   </div>
                 </div>
               </div>
@@ -180,13 +166,12 @@ const Login: NextPage = () => {
             <div className="text-center mt-4">
               <div className="text-sm">
                 <span className="text-gray-500">還沒有帳號？</span>{' '}
-                <button
-                  onClick={handleSignup}
-                  type="button"
+                <Link
+                  href="/signup"
                   className="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200"
                 >
                   立即註冊
-                </button>
+                </Link>
               </div>
             </div>
           </form>
