@@ -1,13 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { getGoogleUserInfo } from '../../../../utils/google-auth'
 import { v4 as uuidv4 } from 'uuid'
-import { sendEmail, generateVerificationEmailContent } from '../../../../utils/email'
-import { logger } from '../../../../utils/logger'
 import { createSession } from '../../../../utils/auth'
 import { PrismaClient } from '@prisma/client'
 import { OAuth2Client } from 'google-auth-library'
 import cookie from 'cookie'
-import google from 'googleapis'
+import { google } from 'googleapis'
 
 const prisma = new PrismaClient()
 
@@ -40,8 +37,8 @@ export default async function handler(
     oauth2Client.setCredentials(tokens)
 
     // 獲取用戶信息
-    const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client })
-    const { data } = await oauth2.userinfo.get()
+    const oauth2 = google.oauth2('v2')
+    const { data } = await oauth2.userinfo.get({ auth: oauth2Client })
 
     if (!data.email || !data.verified_email) {
       return res.status(400).json({ 
