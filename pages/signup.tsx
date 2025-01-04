@@ -298,15 +298,17 @@ const Signup: NextPage = () => {
         {/* 左側歡迎區塊 */}
         <div className="hidden lg:flex lg:w-1/2 bg-[#003B6D] text-white">
           <div className="w-full flex flex-col items-center justify-center p-12">
-            <div className="relative w-32 h-32 flex items-center justify-center mb-8">
+            <div className="relative w-48 h-48 flex items-center justify-center mb-8">
               <Image
                 src="/logo.png"
                 alt="Logo"
-                width={120}
-                height={120}
-                className="w-full h-full object-contain"
+                width={160}
+                height={160}
+                className="w-auto h-auto"
                 style={{
-                  filter: 'brightness(0) invert(1)'
+                  filter: 'brightness(0) invert(1)',
+                  maxWidth: '100%',
+                  maxHeight: '100%'
                 }}
                 priority
               />
