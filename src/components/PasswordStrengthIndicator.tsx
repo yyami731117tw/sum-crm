@@ -1,53 +1,100 @@
 import { useEffect, useState } from 'react'
-import { checkPasswordStrength, getPasswordRequirements } from '../utils/password'
+import { checkPasswordStrength, getPasswordRequirements } from '@/utils/password'
 
 interface PasswordStrengthIndicatorProps {
   password: string
 }
 
-export default function PasswordStrengthIndicator({ password }: PasswordStrengthIndicatorProps) {
-  const [isVisible, setIsVisible] = useState(false)
-  const strength = checkPasswordStrength(password)
-  const requirements = getPasswordRequirements(password)
+const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps> = ({ password }) => {
+  const [strength, setStrength] = useState({ score: 0, feedback: { warning: '', suggestions: [] } })
+  const [requirements, setRequirements] = useState<Array<{ label: string; met: boolean }>>([])
 
   useEffect(() => {
-    if (password) {
-      setIsVisible(true)
-    } else {
-      setIsVisible(false)
-    }
+    setStrength(checkPasswordStrength(password))
+    setRequirements(getPasswordRequirements(password))
   }, [password])
 
-  if (!isVisible) return null
+  const getStrengthColor = (score: number) => {
+    switch (score) {
+      case 0:
+        return 'bg-gray-200'
+      case 1:
+        return 'bg-red-500'
+      case 2:
+        return 'bg-yellow-500'
+      case 3:
+        return 'bg-blue-500'
+      default:
+        return 'bg-green-500'
+    }
+  }
 
   return (
-    <div className="mt-2 space-y-2">
+    <div className="mt-1 space-y-2">
       {/* 強度指示器 */}
-      <div className="space-y-1">
-        <div className="flex items-center justify-between">
-          <div className="h-1 flex-1 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className={`h-full ${strength.color} transition-all duration-300`}
-              style={{ width: `${(strength.score + 1) * 20}%` }}
-            />
-          </div>
-          <span className="ml-2 text-xs text-gray-500">{strength.message}</span>
-        </div>
+      <div className="h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+        <div
+          className={`h-full transition-all duration-300 ${getStrengthColor(strength.score)}`}
+          style={{ width: `${(strength.score / 5) * 100}%` }}
+        />
       </div>
 
       {/* 密碼要求列表 */}
-      <div className="space-y-1">
+      <ul className="space-y-1 text-sm">
         {requirements.map((req, index) => (
-          <div key={index} className="flex items-center text-xs">
-            <span className={`mr-2 ${req.met ? 'text-green-500' : 'text-gray-400'}`}>
-              {req.met ? '✓' : '○'}
-            </span>
-            <span className={req.met ? 'text-gray-700' : 'text-gray-500'}>
-              {req.text}
-            </span>
-          </div>
+          <li
+            key={index}
+            className={`flex items-center space-x-2 ${
+              req.met ? 'text-green-600' : 'text-gray-500'
+            }`}
+          >
+            {req.met ? (
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            ) : (
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            )}
+            <span>{req.label}</span>
+          </li>
         ))}
-      </div>
+      </ul>
+
+      {/* 警告和建議 */}
+      {strength.feedback.warning && (
+        <p className="text-sm text-gray-600">{strength.feedback.warning}</p>
+      )}
+      {strength.feedback.suggestions.length > 0 && (
+        <ul className="text-sm text-gray-600 list-disc list-inside">
+          {strength.feedback.suggestions.map((suggestion, index) => (
+            <li key={index}>{suggestion}</li>
+          ))}
+        </ul>
+      )}
     </div>
   )
-} 
+}
+
+export default PasswordStrengthIndicator 
