@@ -6,6 +6,7 @@ import * as z from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert } from '@/components/ui/alert'
+import { Link } from 'next/link'
 
 const loginSchema = z.object({
   email: z.string().email('請輸入有效的信箱'),
@@ -87,9 +88,9 @@ export default function LoginPage() {
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-600">
             還沒有帳號？{' '}
-            <a href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
               立即註冊
-            </a>
+            </Link>
           </p>
         </div>
       </div>

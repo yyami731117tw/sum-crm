@@ -3,7 +3,7 @@ import type { ReactElement } from 'react'
 import Head from 'next/head'
 import { useAuth } from '@/hooks/useAuth'
 import { DashboardNav } from '@/components/dashboard/DashboardNav'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import type { Staff } from '@/data/staffs'
@@ -94,7 +94,9 @@ interface User {
 }
 
 const MembersPage = (): ReactElement => {
-  const { user, loading } = useAuth()
+  const { session, status } = useAuth()
+  const loading = status === 'loading'
+  const user = session?.user
   const router = useRouter()
   const [members, setMembers] = useState<Member[]>([])
   const [users, setUsers] = useState<User[]>([])
@@ -521,21 +523,18 @@ const MembersPage = (): ReactElement => {
     document.addEventListener('mouseup', stopResizing)
   }
 
-  const stopResizing = () => {
+  const stopResizing = useCallback(() => {
     setIsResizing(false)
     document.removeEventListener('mousemove', handleMouseMove)
     document.removeEventListener('mouseup', stopResizing)
-  }
+  }, [handleMouseMove])
 
-  const handleMouseMove = (e: MouseEvent) => {
+  const handleMouseMove = useCallback((e: MouseEvent) => {
     if (isResizing) {
       const diff = e.clientX - startX
-      const newWidth = sidebarWidth - diff
-      if (newWidth > 400 && newWidth < window.innerWidth - 100) {
-        setSidebarWidth(newWidth)
-      }
+      setSidebarWidth(Math.max(200, Math.min(400, sidebarWidth + diff)))
     }
-  }
+  }, [isResizing, startX, sidebarWidth])
 
   if (loading) {
   return (

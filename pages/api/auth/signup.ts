@@ -69,7 +69,7 @@ export default async function handler(
       })
 
       // 創建驗證碼
-      const verification = await prisma.VerificationCode.create({
+      const verification = await prisma.verificationCode.create({
         data: {
           code: verificationCode,
           userId: user.id,

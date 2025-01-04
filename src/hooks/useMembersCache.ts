@@ -1,60 +1,35 @@
-import { useState, useEffect } from 'react'
-import { config } from '@/utils/config'
+import { useState, useEffect, useCallback } from 'react'
+import { Member } from '@prisma/client'
 
-interface CacheData<T> {
-  data: T
-  timestamp: number
-}
-
-export function useMembersCache<T>(key: string) {
-  const [data, setData] = useState<T | null>(null)
+export function useMembersCache() {
+  const [data, setData] = useState<Member[] | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // 從快取讀取資料
-  const loadFromCache = (): T | null => {
-    try {
-      const cached = localStorage.getItem(key)
-      if (!cached) return null
-
-      const { data, timestamp }: CacheData<T> = JSON.parse(cached)
-      const now = Date.now()
-
-      // 檢查快取是否過期
-      if (now - timestamp > config.cacheTimeout) {
-        localStorage.removeItem(key)
+  const loadFromCache = useCallback(() => {
+    const cached = localStorage.getItem('members')
+    if (cached) {
+      try {
+        return JSON.parse(cached) as Member[]
+      } catch (error) {
+        console.error('解析快取資料失敗:', error)
         return null
       }
-
-      return data
-    } catch (error) {
-      console.error('讀取快取失敗:', error)
-      return null
     }
-  }
+    return null
+  }, [])
 
-  // 更新快取
-  const updateCache = (newData: T) => {
-    try {
-      const cacheData: CacheData<T> = {
-        data: newData,
-        timestamp: Date.now()
-      }
-      localStorage.setItem(key, JSON.stringify(cacheData))
-      setData(newData)
-    } catch (error) {
-      console.error('更新快取失敗:', error)
-    }
-  }
+  const updateCache = useCallback((newData: Member[]) => {
+    setData(newData)
+    localStorage.setItem('members', JSON.stringify(newData))
+  }, [])
 
-  // 初始化時讀取快取
   useEffect(() => {
-    loadFromCache()
+    const cached = loadFromCache()
+    if (cached) {
+      setData(cached)
+    }
+    setLoading(false)
   }, [loadFromCache])
 
-  return {
-    data,
-    loading,
-    updateCache,
-    loadFromCache
-  }
+  return { data, loading, updateCache, loadFromCache }
 } 
