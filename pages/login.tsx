@@ -1,156 +1,87 @@
-import { useState, useEffect } from 'react'
-import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/router'
-import Image from 'next/image'
+import { useState } from 'react'
+import { useAuth } from '@/hooks/useAuth'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Alert } from '@/components/ui/alert'
 
-export default function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
-  const { callbackUrl, error: urlError } = router.query
+const loginSchema = z.object({
+  email: z.string().email('請輸入有效的信箱'),
+  password: z.string().min(6, '密碼至少需要6個字元'),
+})
 
-  // 處理 URL 中的錯誤訊息
-  useEffect(() => {
-    if (urlError) {
-      switch (urlError) {
-        case 'account_disabled':
-          setError('您的帳號已被停用，請聯繫管理員')
-          break
-        case 'account_pending':
-          setError('您的帳號正在審核中，請耐心等待')
-          break
-        default:
-          setError(String(urlError))
-      }
-    }
-  }, [urlError])
+type LoginFormData = z.infer<typeof loginSchema>
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+export default function LoginPage() {
+  const { login, error } = useAuth()
+  const [isLoading, setIsLoading] = useState(false)
+  
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  })
 
+  const onSubmit = async (data: LoginFormData) => {
+    setIsLoading(true)
     try {
-      const result = await signIn('credentials', {
-        redirect: false,
-        email,
-        password
-      })
-
-      if (result?.error) {
-        switch (result.error) {
-          case 'account_disabled':
-            setError('您的帳號已被停用，請聯繫管理員')
-            break
-          case 'account_pending':
-            setError('您的帳號正在審核中，請耐心等待')
-            break
-          case 'CredentialsSignin':
-            setError('信箱或密碼錯誤')
-            break
-          default:
-            setError(result.error)
-        }
-      } else {
-        router.push(callbackUrl as string || '/dashboard')
-      }
-    } catch (error) {
-      setError('登入過程發生錯誤')
+      await login(data.email, data.password)
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow">
         <div>
-          <Image
-            src="/logo.png"
-            alt="Logo"
-            width={200}
-            height={50}
-            className="mx-auto"
-          />
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="text-center text-3xl font-extrabold text-gray-900">
             登入您的帳號
           </h2>
-          {callbackUrl && (
-            <p className="mt-2 text-center text-sm text-gray-600">
-              請先登入以繼續訪問
-            </p>
-          )}
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="sr-only">
-                電子郵件
-              </label>
-              <input
-                id="email"
-                name="email"
+              <Input
+                {...register('email')}
                 type="email"
+                placeholder="信箱"
                 autoComplete="email"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="電子郵件"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
               />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+              )}
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">
-                密碼
-              </label>
-              <input
-                id="password"
-                name="password"
+              <Input
+                {...register('password')}
                 type="password"
-                autoComplete="current-password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="密碼"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
+                autoComplete="current-password"
               />
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+              )}
             </div>
           </div>
 
           {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="flex">
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">{error}</h3>
-                </div>
-              </div>
-            </div>
+            <Alert variant="destructive">
+              <p>{error}</p>
+            </Alert>
           )}
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-                loading
-                  ? 'bg-indigo-400 cursor-not-allowed'
-                  : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
-              }`}
-            >
-              {loading ? (
-                <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
-                  登入中...
-                </div>
-              ) : (
-                '登入'
-              )}
-            </button>
-          </div>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isLoading}
+          >
+            {isLoading ? '登入中...' : '登入'}
+          </Button>
         </form>
       </div>
     </div>

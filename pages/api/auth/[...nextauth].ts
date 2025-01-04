@@ -1,26 +1,16 @@
-import NextAuth, { type NextAuthOptions, type DefaultSession } from 'next-auth'
+import NextAuth, { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import prisma from '@/lib/prisma'
+import GoogleProvider from 'next-auth/providers/google'
+import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { compare } from 'bcryptjs'
-
-interface ExtendedUser {
-  role: string
-  status: string
-}
-
-declare module "next-auth" {
-  interface Session {
-    user: ExtendedUser & DefaultSession["user"]
-  }
-
-  interface User extends ExtendedUser {}
-}
-
-declare module "next-auth/jwt" {
-  interface JWT extends ExtendedUser {}
-}
+import prisma from '@/lib/prisma'
 
 export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma),
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -30,65 +20,63 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          return null
+          throw new Error('請輸入信箱和密碼')
         }
 
         const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email
-          }
+          where: { email: credentials.email }
         })
 
-        if (!user || !user?.password) {
-          return null
+        if (!user || !user.password) {
+          throw new Error('信箱或密碼錯誤')
         }
 
-        const isPasswordValid = await compare(
-          credentials.password,
-          user.password
-        )
+        const isValid = await compare(credentials.password, user.password)
+        if (!isValid) {
+          throw new Error('信箱或密碼錯誤')
+        }
 
-        if (!isPasswordValid) {
-          return null
+        if (user.status === 'inactive') {
+          throw new Error('account_disabled')
+        }
+
+        if (user.status === 'pending') {
+          throw new Error('account_pending')
         }
 
         return {
           id: user.id,
-          email: user.email || '',
+          email: user.email,
+          name: user.name,
           role: user.role,
           status: user.status,
-          image: user.image
         }
       }
-    })
+    }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
   ],
+  pages: {
+    signIn: '/login',
+    error: '/login',
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        return {
-          ...token,
-          role: user.role,
-          status: user.status
-        }
+        token.role = user.role
+        token.status = user.status
       }
       return token
     },
     async session({ session, token }) {
-      return {
-        ...session,
-        user: {
-          ...session.user,
-          role: token.role,
-          status: token.status
-        }
+      if (session.user) {
+        session.user.role = token.role as string
+        session.user.status = token.status as string
       }
+      return session
     }
-  },
-  pages: {
-    signIn: '/login',
-  },
-  session: {
-    strategy: 'jwt' as const
   }
 }
 
