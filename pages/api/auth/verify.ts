@@ -1,9 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-
-interface VerifyData {
-  verificationToken: string
-  verificationCode: string
-}
+import prisma from '@/lib/prisma'
+import { logger } from '@/utils/logger'
 
 export default async function handler(
   req: NextApiRequest,
@@ -13,60 +10,48 @@ export default async function handler(
     return res.status(405).json({ message: '方法不允許' })
   }
 
+  const { userId, code } = req.body
+
+  if (!userId || !code) {
+    return res.status(400).json({ message: '缺少必要參數' })
+  }
+
   try {
-    const { verificationToken, verificationCode } = req.body as VerifyData
-
-    if (!verificationToken || !verificationCode) {
-      return res.status(400).json({
-        success: false,
-        message: '驗證資料不完整'
-      })
-    }
-
-    // TODO: 從資料庫中查找對應的驗證資訊
-    const verificationInfo = {
-      code: '123456', // 這裡應該是從資料庫中獲取的驗證碼
-      expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30分鐘後過期
-      isUsed: false
-    }
-
-    // 檢查驗證碼是否正確
-    if (verificationCode !== verificationInfo.code) {
-      return res.status(400).json({
-        success: false,
-        message: '驗證碼不正確'
-      })
-    }
-
-    // 檢查驗證碼是否過期
-    if (new Date() > verificationInfo.expiresAt) {
-      return res.status(400).json({
-        success: false,
-        message: '驗證碼已過期'
-      })
-    }
-
-    // 檢查驗證碼是否已使用
-    if (verificationInfo.isUsed) {
-      return res.status(400).json({
-        success: false,
-        message: '驗證碼已使用'
-      })
-    }
-
-    // TODO: 更新用戶狀態為已驗證
-    // TODO: 標記驗證碼為已使用
-
-    return res.status(200).json({
-      success: true,
-      message: '驗證成功'
+    // 查找未使用且未過期的驗證碼
+    const verificationCode = await prisma.verificationCode.findFirst({
+      where: {
+        userId,
+        code,
+        used: false,
+        expiresAt: {
+          gt: new Date()
+        }
+      },
+      include: {
+        user: true
+      }
     })
+
+    if (!verificationCode) {
+      return res.status(400).json({ message: '驗證碼無效或已過期' })
+    }
+
+    // 標記驗證碼為已使用
+    await prisma.verificationCode.update({
+      where: { id: verificationCode.id },
+      data: { used: true }
+    })
+
+    // 更新用戶狀態
+    await prisma.user.update({
+      where: { id: userId },
+      data: { status: 'active' }
+    })
+
+    return res.status(200).json({ message: '驗證成功' })
 
   } catch (error) {
-    console.error('Verification error:', error)
-    return res.status(500).json({
-      success: false,
-      message: '驗證過程發生錯誤'
-    })
+    logger.error('驗證失敗', { error: error instanceof Error ? error : new Error('Unknown error') })
+    return res.status(500).json({ message: '驗證失敗，請稍後再試' })
   }
 } 

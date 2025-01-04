@@ -34,26 +34,39 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  phone         String?
-  lineId        String?
-  address       String?
-  birthday      DateTime?
-  nickname      String?
-  role          String    @default("guest")
-  status        String    @default("pending")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  password      String?
-  accounts      Account[]
-  sessions      Session[]
-  logs          UserLog[]
+  id                String             @id @default(cuid())
+  name              String?
+  email             String?            @unique
+  emailVerified     DateTime?
+  image             String?
+  phone             String?            @unique
+  lineId            String?
+  address           String?
+  birthday          DateTime?
+  nickname          String?
+  role              String             @default("guest")
+  status            String             @default("pending")
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  password          String?
+  accounts          Account[]
+  sessions          Session[]
+  logs              UserLog[]
+  verificationCodes VerificationCode[]
 
   @@map("users")
+}
+
+model VerificationCode {
+  id        String   @id @default(cuid())
+  code      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  used      Boolean  @default(false)
+
+  @@index([userId])
 }
 
 model Member {
