@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
+import { Button } from '../ui/button'
 import { Users, UserPlus, Settings, LogOut } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 
