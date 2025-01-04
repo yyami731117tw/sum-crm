@@ -301,17 +301,11 @@ const Signup: NextPage = () => {
             <div className="relative w-32 h-32 flex items-center justify-center mb-8">
               <Image
                 src="/logo.png"
-                alt="多元商 Logo"
-                width={120}
-                height={120}
-                style={{
-                  maxWidth: '100%',
-                  height: 'auto',
-                  objectFit: 'contain',
-                  filter: 'brightness(0) invert(1)'
-                }}
+                alt="Logo"
+                width={64}
+                height={64}
+                className="h-16 w-auto"
                 priority
-                unoptimized
               />
             </div>
             <h1 className="text-4xl font-bold mb-2">歡迎您</h1>
