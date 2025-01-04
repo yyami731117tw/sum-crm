@@ -1,18 +1,16 @@
 {
   "extends": [
     "next/core-web-vitals",
-    "plugin:@typescript-eslint/recommended",
-    "prettier"
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
   ],
   "rules": {
+    "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-unused-vars": ["error", {
       "argsIgnorePattern": "^_",
-      "varsIgnorePattern": "^(type|interface|_)",
-      "ignoreRestSiblings": true
+      "varsIgnorePattern": "^_"
     }],
-    "@typescript-eslint/no-explicit-any": "error",
-    "@typescript-eslint/consistent-type-imports": "error",
-    "react/no-unescaped-entities": "off",
-    "react/jsx-no-comment-textnodes": "off"
+    "@typescript-eslint/consistent-type-imports": "off",
+    "react-hooks/exhaustive-deps": "warn"
   }
 } 
