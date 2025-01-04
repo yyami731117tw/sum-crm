@@ -13,19 +13,39 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // 檢查是否已登入
-  const session = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET
-  })
-  
-  if (!session) {
+  try {
+    // 檢查是否已登入
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+      secureCookie: process.env.NODE_ENV === 'production',
+      cookieName: 'session'
+    })
+
+    console.log('Token:', token)
+
+    if (!token) {
+      const url = new URL('/login', request.url)
+      url.searchParams.set('callbackUrl', encodeURI(request.url))
+      return NextResponse.redirect(url)
+    }
+
+    // 檢查用戶狀態
+    if (token.status === 'inactive') {
+      return NextResponse.redirect(new URL('/login?error=account_disabled', request.url))
+    }
+
+    if (token.status === 'pending') {
+      return NextResponse.redirect(new URL('/login?error=account_pending', request.url))
+    }
+
+    return NextResponse.next()
+  } catch (error) {
+    console.error('Middleware error:', error)
     const url = new URL('/login', request.url)
     url.searchParams.set('callbackUrl', encodeURI(request.url))
     return NextResponse.redirect(url)
   }
-
-  return NextResponse.next()
 }
 
 export const config = {

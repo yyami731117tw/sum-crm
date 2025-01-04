@@ -1,4 +1,4 @@
-import { useSession, signIn, signOut } from 'next-auth/react'
+import { useSession, signIn, signOut, getSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 
@@ -81,10 +81,29 @@ export function useAuth(): UseAuthReturn {
         return { success: false, error: result.error }
       }
 
-      // 登入成功後重新獲取 session
-      await router.push('/')
+      // 登入成功，重新獲取 session
+      const session = await getSession()
+      if (!session) {
+        return { success: false, error: '登入失敗' }
+      }
+
+      // 檢查用戶狀態
+      if (session.user.status === 'inactive') {
+        await signOut({ redirect: false })
+        return { success: false, error: 'account_disabled' }
+      }
+
+      if (session.user.status === 'pending') {
+        await signOut({ redirect: false })
+        return { success: false, error: 'account_pending' }
+      }
+
+      // 登入成功，重定向到首頁或回調 URL
+      const callbackUrl = router.query.callbackUrl as string
+      await router.push(callbackUrl || '/')
       return { success: true }
     } catch (error) {
+      console.error('登入錯誤:', error)
       return { success: false, error: '登入時發生錯誤' }
     }
   }

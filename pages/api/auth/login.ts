@@ -26,13 +26,26 @@ export default async function handler(
       where: { email }
     })
 
-    if (!user) {
+    console.log('找到用戶:', user ? '是' : '否')
+    if (user) {
+      console.log('用戶狀態:', user.status)
+      console.log('密碼是否存在:', !!user.password)
+    }
+
+    if (!user || !user.password) {
       return res.status(401).json({ message: '信箱或密碼錯誤' })
     }
 
-    // 驗證密碼
-    const isValid = await compare(password, user.password)
-    if (!isValid) {
+    try {
+      // 驗證密碼
+      console.log('開始驗證密碼')
+      const isValid = await compare(String(password), String(user.password))
+      console.log('密碼驗證結果:', isValid ? '成功' : '失敗')
+      if (!isValid) {
+        return res.status(401).json({ message: '信箱或密碼錯誤' })
+      }
+    } catch (error) {
+      console.error('密碼比對錯誤:', error)
       return res.status(401).json({ message: '信箱或密碼錯誤' })
     }
 
@@ -44,12 +57,6 @@ export default async function handler(
     if (user.status === 'pending') {
       return res.status(403).json({ message: '您的帳號正在審核中，請耐心等待' })
     }
-
-    // 更新最後登入時間
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { lastLogin: new Date() }
-    })
 
     // 創建 JWT token
     const token = sign(
