@@ -131,7 +131,7 @@ const MembersPage = (): ReactElement => {
     document.removeEventListener('mouseup', stopResizing)
   }, [handleMouseMove])
 
-  const startResizing = useCallback((e: React.MouseEvent) => {
+  const handleStartResizing = useCallback((e: React.MouseEvent) => {
     setIsResizing(true)
     setStartX(e.clientX)
     document.addEventListener('mousemove', handleMouseMove)
@@ -738,7 +738,7 @@ const MembersPage = (): ReactElement => {
             <section className="absolute inset-y-0 right-0 max-w-full flex">
               <div 
                 className="absolute inset-y-0 left-0 w-4 cursor-ew-resize bg-transparent hover:bg-blue-200 hover:bg-opacity-50 transition-colors"
-                onMouseDown={startResizing}
+                onMouseDown={handleStartResizing}
               >
                 <div className="absolute inset-y-0 left-1/2 w-1 bg-gray-300"></div>
               </div>
