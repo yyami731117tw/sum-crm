@@ -1,15 +1,21 @@
 import { useRouter } from 'next/router'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
 import { Users, UserPlus, Settings, LogOut, FileText } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 
-export function MainNav() {
+interface NavigationItem {
+  name: string
+  href: string
+  icon: React.ComponentType<any>
+  current: boolean
+}
+
+export function MainNav(): JSX.Element {
   const router = useRouter()
   const { logout } = useAuth()
   const pathname = router.pathname
 
-  const navigation = [
+  const navigation: NavigationItem[] = [
     {
       name: '會員管理',
       href: '/members',
@@ -48,26 +54,28 @@ export function MainNav() {
           <div className="w-full flex-1 md:w-auto md:flex-none">
             <div className="flex items-center">
               {navigation.map((item) => (
-                <Button
+                <button
                   key={item.name}
-                  variant={item.current ? 'default' : 'ghost'}
-                  className="mr-2"
+                  className={`mr-2 px-4 py-2 rounded-md ${
+                    item.current
+                      ? 'bg-primary text-primary-foreground'
+                      : 'hover:bg-accent hover:text-accent-foreground'
+                  }`}
                   onClick={() => router.push(item.href)}
                 >
-                  <item.icon className="mr-2 h-4 w-4" />
+                  <item.icon className="mr-2 h-4 w-4 inline" />
                   {item.name}
-                </Button>
+                </button>
               ))}
             </div>
           </div>
-          <Button
-            variant="ghost"
-            className="ml-auto"
+          <button
+            className="ml-auto px-4 py-2 rounded-md hover:bg-accent hover:text-accent-foreground"
             onClick={logout}
           >
-            <LogOut className="mr-2 h-4 w-4" />
+            <LogOut className="mr-2 h-4 w-4 inline" />
             登出
-          </Button>
+          </button>
         </div>
       </div>
     </nav>

@@ -2,7 +2,7 @@ import type { NextPage } from 'next'
 import type { ReactElement } from 'react'
 import Head from 'next/head'
 import { useAuth } from '@/hooks/useAuth'
-import { DashboardNav } from '@/components/dashboard/DashboardNav'
+import { MainNav } from '@/components/layout/MainNav'
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
@@ -120,31 +120,9 @@ const MembersPage = (): ReactElement => {
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login')
-      return
     }
+  }, [loading, user, router, membersCache])
 
-    // 從 API 載入會員資料
-    const loadMembers = async () => {
-      try {
-        const response = await fetch('/api/members', {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-        if (!response.ok) {
-          throw new Error('讀取會員資料失敗')
-        }
-        const data = await response.json()
-        setMembers(data)
-      } catch (error) {
-        console.error('讀取會員資料失敗:', error)
-      }
-    }
-
-    loadMembers()
-  }, [loading, user, router])
-
-  // 當會員資料變更時，更新快取
   useEffect(() => {
     if (members.length > 0) {
       membersCache.updateCache(members)
@@ -193,12 +171,6 @@ const MembersPage = (): ReactElement => {
     ]
     setUsers(mockUsers)
   }, [])
-
-  useEffect(() => {
-    if (data) {
-      membersCache.setData(data)
-    }
-  }, [data, membersCache]) // 添加依賴
 
   useEffect(() => {
     if (isResizing) {
@@ -550,7 +522,7 @@ const MembersPage = (): ReactElement => {
         <title>會員管理 - MBC天使俱樂部</title>
       </Head>
       <div className="min-h-screen bg-gray-100 pt-16">
-      <DashboardNav />
+      <MainNav />
 
         <div className="py-10">
           <header>

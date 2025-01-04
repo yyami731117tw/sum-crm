@@ -13,35 +13,42 @@ export default async function handler(
   const { userId, code } = req.body
 
   if (!userId || !code) {
-    return res.status(400).json({ message: '缺少必要參數' })
+    return res.status(400).json({ message: '缺少必要欄位' })
   }
 
   try {
-    // 查找未使用且未過期的驗證碼
-    const [verificationCode] = await prisma.$queryRaw<{ id: string; code: string; user_id: string; expires_at: Date; created_at: Date; used: boolean }[]>`
-      SELECT * FROM verification_codes
-      WHERE user_id = ${userId}
-      AND code = ${code}
-      AND used = false
-      AND expires_at > NOW()
-      LIMIT 1
-    `
-    
-    if (!verificationCode) {
+    // 查找驗證碼
+    const verificationToken = await prisma.verificationToken.findFirst({
+      where: {
+        identifier: userId,
+        token: code,
+        expires: {
+          gt: new Date()
+        }
+      }
+    })
+
+    if (!verificationToken) {
       return res.status(400).json({ message: '驗證碼無效或已過期' })
     }
-
-    // 標記驗證碼為已使用
-    await prisma.$executeRaw`
-      UPDATE verification_codes
-      SET used = true
-      WHERE id = ${verificationCode.id}
-    `
 
     // 更新用戶狀態
     await prisma.user.update({
       where: { id: userId },
-      data: { status: 'active' }
+      data: {
+        emailVerified: new Date(),
+        status: 'active'
+      }
+    })
+
+    // 刪除已使用的驗證碼
+    await prisma.verificationToken.delete({
+      where: {
+        identifier_token: {
+          identifier: userId,
+          token: code
+        }
+      }
     })
 
     return res.status(200).json({ message: '驗證成功' })

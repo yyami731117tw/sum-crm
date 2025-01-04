@@ -6,7 +6,7 @@ import * as z from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert } from '@/components/ui/alert'
-import { Link } from 'next/link'
+import Link from 'next/link'
 
 const loginSchema = z.object({
   email: z.string().email('請輸入有效的信箱'),
