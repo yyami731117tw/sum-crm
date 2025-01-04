@@ -170,12 +170,12 @@ const Login: NextPage = () => {
             <div className="text-center mt-4">
               <div className="text-sm">
                 <span className="text-gray-500">還沒有帳號？</span>{' '}
-                <Link
-                  href="/signup"
+                <button
+                  onClick={() => router.push('/signup')}
                   className="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200"
                 >
                   立即註冊
-                </Link>
+                </button>
               </div>
             </div>
           </form>
