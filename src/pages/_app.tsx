@@ -1,22 +1,29 @@
-import type { AppProps } from 'next/app'
-import Head from 'next/head'
+import { AppProps } from 'next/app'
 import { SessionProvider } from 'next-auth/react'
-import '../styles/globals.css'
+import { ThemeProvider } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+import { theme } from '@/styles/theme'
 
-function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
+export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   return (
-    <SessionProvider 
-      session={session}
-      refetchInterval={0}
-      refetchOnWindowFocus={false}
-    >
-      <Head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>B2B CRM</title>
-      </Head>
-      <Component {...pageProps} />
+    <SessionProvider session={session}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Component {...pageProps} />
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
+      </ThemeProvider>
     </SessionProvider>
   )
-}
-
-export default MyApp 
+} 
