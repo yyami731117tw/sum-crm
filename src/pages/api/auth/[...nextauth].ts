@@ -84,10 +84,33 @@ export const authOptions: NextAuthOptions = {
       return session
     },
     async redirect({ url, baseUrl }) {
-      // 確保重定向到正確的頁面
-      if (url.startsWith(baseUrl)) return url
-      else if (url.startsWith('/')) return `${baseUrl}${url}`
+      // 處理重定向邏輯
+      if (url.startsWith(baseUrl)) {
+        return url
+      }
+      // 如果是相對路徑，加上 baseUrl
+      if (url.startsWith('/')) {
+        // 避免循環重定向
+        if (url === '/login' && url === baseUrl + url) {
+          return baseUrl
+        }
+        return `${baseUrl}${url}`
+      }
+      // 如果是外部 URL，檢查是否在允許的域名列表中
+      const allowedDomains = [new URL(baseUrl).hostname]
+      const urlHostname = new URL(url).hostname
+      if (allowedDomains.includes(urlHostname)) {
+        return url
+      }
       return baseUrl
+    }
+  },
+  events: {
+    async signIn(message) {
+      console.log('Sign in event:', message)
+    },
+    async signOut(message) {
+      console.log('Sign out event:', message)
     }
   }
 }

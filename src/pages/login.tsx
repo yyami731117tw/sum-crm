@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import { useAuth } from '@/hooks/useAuth'
+import { signIn, useSession } from 'next-auth/react'
 import {
   Box,
   Container,
@@ -14,11 +14,11 @@ import {
 
 export default function Login() {
   const router = useRouter()
-  const { login, error, clearError, status } = useAuth()
+  const { data: session, status } = useSession()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [localError, setLocalError] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -29,23 +29,36 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setLocalError('')
-    clearError()
+    setError(null)
 
     if (!email || !password) {
-      setLocalError('請輸入信箱和密碼')
+      setError('請輸入信箱和密碼')
       setLoading(false)
       return
     }
 
     try {
-      const success = await login(email, password)
-      if (success) {
+      const result = await signIn('credentials', {
+        redirect: false,
+        email,
+        password,
+        callbackUrl: '/'
+      })
+
+      if (!result) {
+        throw new Error('登入失敗，請稍後再試')
+      }
+
+      if (result.error) {
+        throw new Error(result.error)
+      }
+
+      if (result.ok) {
         router.push('/')
       }
     } catch (err) {
       console.error('Login error:', err)
-      setLocalError('登入時發生錯誤，請稍後再試')
+      setError(err instanceof Error ? err.message : '登入時發生錯誤，請稍後再試')
     } finally {
       setLoading(false)
     }
@@ -65,9 +78,9 @@ export default function Login() {
           <Typography component="h1" variant="h5" align="center" gutterBottom>
             MBC管理系統
           </Typography>
-          {(error || localError) && (
+          {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
-              {error || localError}
+              {error}
             </Alert>
           )}
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
@@ -83,7 +96,7 @@ export default function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
-              error={!!localError && !email}
+              error={!!error && !email}
             />
             <TextField
               margin="normal"
@@ -97,7 +110,7 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
-              error={!!localError && !password}
+              error={!!error && !password}
             />
             <Button
               type="submit"
