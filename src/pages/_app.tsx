@@ -9,6 +9,10 @@ import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
 import { Alert, Box, Button, Container, Typography } from '@mui/material'
 import React, { useEffect } from 'react'
 
+interface ErrorInfo {
+  componentStack: string;
+}
+
 function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
   useEffect(() => {
     console.error('Caught by ErrorBoundary:', error);
@@ -52,7 +56,7 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
   return (
     <ErrorBoundary
       FallbackComponent={ErrorFallback}
-      onError={(error: Error, info: { componentStack: string }) => {
+      onError={(error: Error, info: ErrorInfo) => {
         console.error('Error caught by ErrorBoundary:', error);
         console.error('Component stack:', info.componentStack);
       }}
