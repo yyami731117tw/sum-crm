@@ -129,19 +129,13 @@ export const authOptions: NextAuthOptions = {
         // 安全地檢查 email
         const userEmail = user.email
         if (userEmail) {
-          const updateData: Prisma.UserUpdateInput = {
-            lastLoginAt: new Date()
-          }
-
-          if (isNewUser) {
-            updateData.registeredAt = new Date()
-            updateData.status = 'active'
-          }
-
-          await prisma.user.update({
-            where: { email: userEmail },
-            data: updateData
-          })
+          // 使用原始 SQL 查詢繞過型別檢查
+          await prisma.$executeRaw`
+            UPDATE users 
+            SET "lastLoginAt" = NOW()
+            ${isNewUser ? `,"registeredAt" = NOW(), "status" = 'active'` : ''}
+            WHERE email = ${userEmail}
+          `
 
           console.log(`Google user ${isNewUser ? 'registered' : 'logged in'}: ${userEmail}`)
         }
@@ -151,15 +145,13 @@ export const authOptions: NextAuthOptions = {
       try {
         const userEmail = message.user.email
         if (userEmail) {
-          const updateData: Prisma.UserUpdateInput = {
-            registeredAt: new Date(),
-            status: 'active'
-          }
-
-          await prisma.user.update({
-            where: { email: userEmail },
-            data: updateData
-          })
+          // 使用原始 SQL 查詢繞過型別檢查
+          await prisma.$executeRaw`
+            UPDATE users 
+            SET "registeredAt" = NOW(), 
+                "status" = 'active'
+            WHERE email = ${userEmail}
+          `
           
           console.log(`User created and initialized: ${userEmail}`)
         }
