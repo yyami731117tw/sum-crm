@@ -76,7 +76,7 @@ export function useAuth(): UseAuthReturn {
       }
 
       if (result.ok) {
-        await router.push('/dashboard')
+        await router.push('/')
         return true
       }
 

@@ -226,10 +226,4 @@ const IndexPage: NextPage = () => {
   )
 }
 
-export default IndexPage
-
-export async function getServerSideProps() {
-  return {
-    props: {},
-  }
-} 
+export default IndexPage 
