@@ -18,11 +18,8 @@ export async function middleware(request: NextRequest) {
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
-      secureCookie: process.env.NODE_ENV === 'production',
-      cookieName: 'session'
+      secureCookie: process.env.NODE_ENV === 'production'
     })
-
-    console.log('Token:', token)
 
     if (!token) {
       const url = new URL('/login', request.url)
@@ -48,8 +45,7 @@ export async function middleware(request: NextRequest) {
   }
 }
 
+// 配置中間件匹配規則
 export const config = {
-  matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
-  ]
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)']
 } 
