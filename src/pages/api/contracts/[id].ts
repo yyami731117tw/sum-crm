@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '@/lib/prisma'
 import { logger } from '@/utils/logger'
-import { Prisma } from '@prisma/client'
+import { Prisma, Contract } from '@prisma/client'
 
 export default async function handler(
   req: NextApiRequest,
@@ -15,7 +15,7 @@ export default async function handler(
 
   if (req.method === 'GET') {
     try {
-      const contract = await prisma.contract.findUnique({
+      const contract = await prisma.safeQuery<Contract>('contract', 'findUnique', {
         where: { id },
         include: {
           member: true,  // 包含關聯的會員信息
@@ -58,10 +58,14 @@ export default async function handler(
         updatedAt: new Date()
       }
 
-      const contract = await prisma.contract.update({
+      const contract = await prisma.safeQuery<Contract>('contract', 'update', {
         where: { id },
         data: updateData
       })
+
+      if (!contract) {
+        return res.status(404).json({ message: '更新合約失敗' })
+      }
 
       return res.status(200).json(contract)
 
@@ -76,9 +80,13 @@ export default async function handler(
 
   if (req.method === 'DELETE') {
     try {
-      await prisma.contract.delete({
+      const result = await prisma.safeQuery<Contract>('contract', 'delete', {
         where: { id }
       })
+
+      if (!result) {
+        return res.status(404).json({ message: '刪除合約失敗' })
+      }
 
       return res.status(204).end()
 
