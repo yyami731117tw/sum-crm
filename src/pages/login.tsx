@@ -18,6 +18,7 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [localError, setLocalError] = useState('')
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -28,13 +29,23 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setLocalError('')
     clearError()
+
+    if (!email || !password) {
+      setLocalError('請輸入信箱和密碼')
+      setLoading(false)
+      return
+    }
 
     try {
       const success = await login(email, password)
       if (success) {
         router.push('/')
       }
+    } catch (err) {
+      console.error('Login error:', err)
+      setLocalError('登入時發生錯誤，請稍後再試')
     } finally {
       setLoading(false)
     }
@@ -54,9 +65,9 @@ export default function Login() {
           <Typography component="h1" variant="h5" align="center" gutterBottom>
             MBC管理系統
           </Typography>
-          {error && (
+          {(error || localError) && (
             <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
+              {error || localError}
             </Alert>
           )}
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
@@ -72,6 +83,7 @@ export default function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
+              error={!!localError && !email}
             />
             <TextField
               margin="normal"
@@ -85,6 +97,7 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
+              error={!!localError && !password}
             />
             <Button
               type="submit"

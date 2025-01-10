@@ -25,33 +25,38 @@ export const authOptions: NextAuthOptions = {
           throw new Error('請輸入信箱和密碼')
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email }
-        })
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email }
+          })
 
-        if (!user || !user.password) {
-          throw new Error('信箱或密碼錯誤')
-        }
+          if (!user || !user.password) {
+            throw new Error('信箱或密碼錯誤')
+          }
 
-        const isValid = await compare(credentials.password, user.password)
-        if (!isValid) {
-          throw new Error('信箱或密碼錯誤')
-        }
+          const isValid = await compare(credentials.password, user.password)
+          if (!isValid) {
+            throw new Error('信箱或密碼錯誤')
+          }
 
-        if (user.status === 'inactive') {
-          throw new Error('帳號已被停用')
-        }
+          if (user.status === 'inactive') {
+            throw new Error('帳號已被停用')
+          }
 
-        if (user.status === 'pending') {
-          throw new Error('帳號正在審核中')
-        }
+          if (user.status === 'pending') {
+            throw new Error('帳號正在審核中')
+          }
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          status: user.status
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            status: user.status
+          }
+        } catch (error) {
+          console.error('Authorization error:', error)
+          throw error
         }
       }
     })
@@ -77,6 +82,12 @@ export const authOptions: NextAuthOptions = {
         session.user.status = token.status as string
       }
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      // 確保重定向到正確的頁面
+      if (url.startsWith(baseUrl)) return url
+      else if (url.startsWith('/')) return `${baseUrl}${url}`
+      return baseUrl
     }
   }
 }

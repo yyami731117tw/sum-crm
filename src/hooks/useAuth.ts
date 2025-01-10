@@ -60,30 +60,29 @@ export function useAuth(): UseAuthReturn {
       const result = await signIn('credentials', {
         redirect: false,
         email,
-        password
+        password,
+        callbackUrl: '/'
       })
 
-      console.log('Login result:', result)
-
       if (!result) {
-        setError('登入失敗，請稍後再試')
-        return false
+        throw new Error('登入失敗，請稍後再試')
       }
 
       if (result.error) {
-        setError(getErrorMessage(result.error))
-        return false
+        throw new Error(getErrorMessage(result.error))
       }
 
+      // 等待 session 更新
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
       if (result.ok) {
-        await router.push('/')
         return true
       }
 
       return false
     } catch (error) {
       console.error('Login error:', error)
-      setError(AUTH_ERRORS.network_error)
+      setError(error instanceof Error ? error.message : AUTH_ERRORS.network_error)
       return false
     } finally {
       setLoading(false)
@@ -92,10 +91,13 @@ export function useAuth(): UseAuthReturn {
 
   const logout = async () => {
     try {
+      setLoading(true)
       await signOut({ redirect: true, callbackUrl: '/login' })
     } catch (error) {
       console.error('Logout error:', error)
       setError(AUTH_ERRORS.network_error)
+    } finally {
+      setLoading(false)
     }
   }
 
