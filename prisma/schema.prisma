@@ -48,6 +48,8 @@ model User {
   status            String             @default("pending")
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
+  registeredAt      DateTime?
+  lastLoginAt       DateTime?
   password          String?
   accounts          Account[]
   sessions          Session[]
