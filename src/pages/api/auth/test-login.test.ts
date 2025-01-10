@@ -1,10 +1,13 @@
 import fetch from 'node-fetch'
 
+const TEST_URL = 'https://sum-nvutq547j-sums-projects-84746e7b.vercel.app/api/auth/test-login'
+
 async function testLogin() {
   try {
     console.log('開始測試登入...')
+    console.log('測試 URL:', TEST_URL)
 
-    const response = await fetch('https://sum-crm.vercel.app/api/auth/test-login', {
+    const response = await fetch(TEST_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -49,4 +52,4 @@ async function runTest() {
   }
 }
 
-runTest() 
+runTest().catch(console.error) 
