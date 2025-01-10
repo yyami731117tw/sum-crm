@@ -1,103 +1,90 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
+import { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '@/lib/prisma'
-import { logger } from '@/utils/logger'
-import { Prisma, Contract } from '@prisma/client'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '../auth/[...nextauth]'
+import { Contract } from '@prisma/client'
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  const { id } = req.query
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const session = await getServerSession(req, res, authOptions)
 
-  if (typeof id !== 'string') {
-    return res.status(400).json({ message: '無效的合約 ID' })
+  if (!session) {
+    return res.status(401).json({ error: '未授權的訪問' })
   }
+
+  const { id } = req.query
 
   if (req.method === 'GET') {
     try {
-      const contract = await prisma.safeQuery<Contract>('contract', 'findUnique', {
-        where: { id },
+      const contract = await prisma.contract.findUnique({
+        where: { id: id as string },
         include: {
           member: true,  // 包含關聯的會員信息
-          logs: true     // 包含合約日誌
+          logs: {
+            orderBy: {
+              timestamp: 'desc'
+            }
+          }
         }
       })
 
       if (!contract) {
-        return res.status(404).json({ message: '找不到合約' })
+        return res.status(404).json({ error: '找不到合約' })
       }
 
       return res.status(200).json(contract)
-
     } catch (error) {
-      logger.error('獲取合約失敗', { 
-        error: error instanceof Error ? error : new Error('Unknown error'),
-        contractId: id
-      })
-      return res.status(500).json({ message: '獲取合約失敗，請稍後再試' })
+      console.error('Error fetching contract:', error)
+      return res.status(500).json({ error: '獲取合約資料時發生錯誤' })
     }
   }
 
   if (req.method === 'PUT') {
     try {
-      const data = req.body
+      const updateData = req.body
 
-      const updateData: Prisma.ContractUpdateInput = {
-        projectName: data.projectName,
-        amount: data.amount,
-        paymentMethod: data.paymentMethod,
-        bankAccount: data.bankAccount,
-        signDate: new Date(data.signDate),
-        startDate: new Date(data.startDate),
-        endDate: new Date(data.endDate),
-        status: data.status,
-        invoiceInfo: data.invoiceInfo,
-        notes: data.notes,
-        contractFile: data.contractFile,
-        attachments: data.attachments,
-        updatedAt: new Date()
-      }
+      // 記錄變更
+      const oldContract = await prisma.contract.findUnique({
+        where: { id: id as string }
+      })
 
-      const contract = await prisma.safeQuery<Contract>('contract', 'update', {
-        where: { id },
+      const updatedContract = await prisma.contract.update({
+        where: { id: id as string },
         data: updateData
       })
 
-      if (!contract) {
-        return res.status(404).json({ message: '更新合約失敗' })
-      }
-
-      return res.status(200).json(contract)
-
-    } catch (error) {
-      logger.error('更新合約失敗', { 
-        error: error instanceof Error ? error : new Error('Unknown error'),
-        contractId: id
+      // 創建日誌
+      await prisma.contractLog.create({
+        data: {
+          contractId: id as string,
+          action: '更新合約',
+          details: '合約資料已更新',
+          operator: session.user?.name || session.user?.email || '未知用戶',
+          changes: {
+            old: oldContract,
+            new: updatedContract
+          }
+        }
       })
-      return res.status(500).json({ message: '更新合約失敗，請稍後再試' })
+
+      return res.status(200).json(updatedContract)
+    } catch (error) {
+      console.error('Error updating contract:', error)
+      return res.status(500).json({ error: '更新合約時發生錯誤' })
     }
   }
 
   if (req.method === 'DELETE') {
     try {
-      const result = await prisma.safeQuery<Contract>('contract', 'delete', {
-        where: { id }
+      await prisma.contract.delete({
+        where: { id: id as string }
       })
 
-      if (!result) {
-        return res.status(404).json({ message: '刪除合約失敗' })
-      }
-
-      return res.status(204).end()
-
+      return res.status(200).json({ message: '合約已刪除' })
     } catch (error) {
-      logger.error('刪除合約失敗', { 
-        error: error instanceof Error ? error : new Error('Unknown error'),
-        contractId: id
-      })
-      return res.status(500).json({ message: '刪除合約失敗，請稍後再試' })
+      console.error('Error deleting contract:', error)
+      return res.status(500).json({ error: '刪除合約時發生錯誤' })
     }
   }
 
-  return res.status(405).json({ message: '方法不允許' })
+  return res.status(405).json({ error: '不支援的請求方法' })
 } 
