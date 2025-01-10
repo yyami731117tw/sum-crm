@@ -61,6 +61,23 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          prompt: 'consent',
+          access_type: 'offline',
+          scope: 'openid profile email'
+        }
+      },
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+          role: 'user', // 預設角色
+          status: 'active'
+        }
+      }
     }),
   ],
   pages: {
@@ -90,7 +107,14 @@ export const authOptions: NextAuthOptions = {
         if (!isEmailVerified) {
           throw new Error('google_email_not_verified')
         }
+        
+        if (isNewUser) {
+          console.log(`New Google user signed up: ${user.email}`)
+        }
       }
+    },
+    async createUser(message) {
+      console.log(`User created: ${message.user.email}`)
     }
   }
 }
