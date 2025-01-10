@@ -44,7 +44,6 @@ interface UseAuthReturn {
   login: (email: string, password: string) => Promise<boolean>
   logout: () => Promise<void>
   clearError: () => void
-  updateUser?: (data: any) => Promise<boolean>
 }
 
 export function useAuth(): UseAuthReturn {
@@ -61,23 +60,27 @@ export function useAuth(): UseAuthReturn {
       const result = await signIn('credentials', {
         redirect: false,
         email,
-        password,
-        callbackUrl: '/dashboard'
+        password
       })
 
-      if (result?.error) {
-        console.error('Login error:', result.error)
-        setError(getErrorMessage(result.error))
-        return false
-      }
+      console.log('Login result:', result)
 
-      if (!result?.ok) {
+      if (!result) {
         setError('登入失敗，請稍後再試')
         return false
       }
 
-      await router.push('/dashboard')
-      return true
+      if (result.error) {
+        setError(getErrorMessage(result.error))
+        return false
+      }
+
+      if (result.ok) {
+        await router.push('/dashboard')
+        return true
+      }
+
+      return false
     } catch (error) {
       console.error('Login error:', error)
       setError(AUTH_ERRORS.network_error)
@@ -100,18 +103,6 @@ export function useAuth(): UseAuthReturn {
     setError(null)
   }
 
-  const updateUser = async (data: any) => {
-    try {
-      // 這裡應該實現實際的用戶更新邏輯
-      // 可能需要調用 API 端點來更新用戶信息
-      console.log('更新用戶信息:', data)
-      return true
-    } catch (error) {
-      console.error('更新用戶信息失敗:', error)
-      return false
-    }
-  }
-
   return {
     session,
     status,
@@ -120,7 +111,6 @@ export function useAuth(): UseAuthReturn {
     loading: loading || status === 'loading',
     login,
     logout,
-    clearError,
-    updateUser
+    clearError
   }
 } 

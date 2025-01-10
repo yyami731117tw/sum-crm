@@ -77,13 +77,10 @@ export const authOptions: NextAuthOptions = {
         session.user.status = token.status as string
       }
       return session
-    },
-    async redirect({ url, baseUrl }) {
-      if (url.startsWith(baseUrl)) return url
-      if (url.startsWith('/')) return `${baseUrl}${url}`
-      return baseUrl
     }
   }
 }
 
-export default NextAuth(authOptions) 
+const handler = NextAuth(authOptions)
+export { handler as GET, handler as POST }
+export default handler 
