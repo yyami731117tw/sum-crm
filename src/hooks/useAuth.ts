@@ -50,30 +50,40 @@ interface UseAuthReturn {
 export function useAuth(): UseAuthReturn {
   const { data: session, status } = useSession()
   const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
 
   const login = async (email: string, password: string) => {
     try {
+      setLoading(true)
+      setError(null)
+
       const result = await signIn('credentials', {
         redirect: false,
         email,
-        password
+        password,
+        callbackUrl: '/dashboard'
       })
 
       if (result?.error) {
+        console.error('Login error:', result.error)
         setError(getErrorMessage(result.error))
         return false
       }
 
-      if (result?.ok) {
-        await router.push('/dashboard')
-        return true
+      if (!result?.ok) {
+        setError('登入失敗，請稍後再試')
+        return false
       }
 
-      return false
+      await router.push('/dashboard')
+      return true
     } catch (error) {
+      console.error('Login error:', error)
       setError(AUTH_ERRORS.network_error)
       return false
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -81,6 +91,7 @@ export function useAuth(): UseAuthReturn {
     try {
       await signOut({ redirect: true, callbackUrl: '/login' })
     } catch (error) {
+      console.error('Logout error:', error)
       setError(AUTH_ERRORS.network_error)
     }
   }
@@ -106,7 +117,7 @@ export function useAuth(): UseAuthReturn {
     status,
     error,
     user: session?.user || null,
-    loading: status === 'loading',
+    loading: loading || status === 'loading',
     login,
     logout,
     clearError,

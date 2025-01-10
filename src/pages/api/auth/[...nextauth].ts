@@ -7,7 +7,7 @@ import prisma from '@/lib/prisma'
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
-  debug: true,
+  debug: process.env.NODE_ENV === 'development',
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -21,42 +21,37 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        try {
-          if (!credentials?.email || !credentials?.password) {
-            throw new Error('請輸入信箱和密碼')
-          }
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error('請輸入信箱和密碼')
+        }
 
-          const user = await prisma.user.findUnique({
-            where: { email: credentials.email }
-          })
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email }
+        })
 
-          if (!user || !user.password) {
-            throw new Error('信箱或密碼錯誤')
-          }
+        if (!user || !user.password) {
+          throw new Error('信箱或密碼錯誤')
+        }
 
-          const isValid = await compare(credentials.password, user.password)
-          if (!isValid) {
-            throw new Error('信箱或密碼錯誤')
-          }
+        const isValid = await compare(credentials.password, user.password)
+        if (!isValid) {
+          throw new Error('信箱或密碼錯誤')
+        }
 
-          if (user.status === 'inactive') {
-            throw new Error('帳號已被停用')
-          }
+        if (user.status === 'inactive') {
+          throw new Error('帳號已被停用')
+        }
 
-          if (user.status === 'pending') {
-            throw new Error('帳號正在審核中')
-          }
+        if (user.status === 'pending') {
+          throw new Error('帳號正在審核中')
+        }
 
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: user.role,
-            status: user.status
-          }
-        } catch (error) {
-          console.error('登入錯誤:', error)
-          throw error
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          status: user.status
         }
       }
     })
@@ -84,16 +79,11 @@ export const authOptions: NextAuthOptions = {
       return session
     },
     async redirect({ url, baseUrl }) {
-      if (url.startsWith('/')) {
-        return `${baseUrl}${url}`
-      } else if (new URL(url).origin === baseUrl) {
-        return url
-      }
+      if (url.startsWith(baseUrl)) return url
+      if (url.startsWith('/')) return `${baseUrl}${url}`
       return baseUrl
     }
   }
 }
 
-const handler = NextAuth(authOptions)
-export { handler as GET, handler as POST }
-export default handler 
+export default NextAuth(authOptions) 
