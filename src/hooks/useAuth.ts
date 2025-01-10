@@ -2,6 +2,7 @@ import { useSession, signIn, signOut } from 'next-auth/react'
 import { useState } from 'react'
 import { AUTH_ERRORS, getErrorMessage } from '@/utils/errorMessages'
 import { Session } from 'next-auth'
+import { useRouter } from 'next/router'
 
 // 擴展 Session 型別
 declare module 'next-auth' {
@@ -49,6 +50,7 @@ interface UseAuthReturn {
 export function useAuth(): UseAuthReturn {
   const { data: session, status } = useSession()
   const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
   const login = async (email: string, password: string) => {
     try {
@@ -59,12 +61,16 @@ export function useAuth(): UseAuthReturn {
       })
 
       if (result?.error) {
-        // 將錯誤代碼轉換為用戶友好的錯誤訊息
         setError(getErrorMessage(result.error))
         return false
       }
 
-      return true
+      if (result?.ok) {
+        await router.push('/dashboard')
+        return true
+      }
+
+      return false
     } catch (error) {
       setError(AUTH_ERRORS.network_error)
       return false

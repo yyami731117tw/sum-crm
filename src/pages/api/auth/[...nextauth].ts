@@ -1,6 +1,5 @@
 import NextAuth, { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import GoogleProvider from 'next-auth/providers/google'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { compare } from 'bcryptjs'
 import prisma from '@/lib/prisma'
@@ -48,12 +47,6 @@ export const authOptions: NextAuthOptions = {
             throw new Error('帳號正在審核中')
           }
 
-          // 更新最後登入時間
-          await prisma.user.update({
-            where: { id: user.id },
-            data: { lastLoginAt: new Date() }
-          })
-
           return {
             id: user.id,
             email: user.email,
@@ -70,7 +63,8 @@ export const authOptions: NextAuthOptions = {
   ],
   pages: {
     signIn: '/login',
-    error: '/login'
+    error: '/login',
+    signOut: '/login'
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -88,8 +82,18 @@ export const authOptions: NextAuthOptions = {
         session.user.status = token.status as string
       }
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith('/')) {
+        return `${baseUrl}${url}`
+      } else if (new URL(url).origin === baseUrl) {
+        return url
+      }
+      return baseUrl
     }
   }
 }
 
-export default NextAuth(authOptions) 
+const handler = NextAuth(authOptions)
+export { handler as GET, handler as POST }
+export default handler 
