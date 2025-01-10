@@ -45,7 +45,9 @@ const Profile: NextPage = () => {
         lineId: user.lineId || '',
         address: user.address || '',
         birthday: user.birthday || '',
-        image: user.image || ''
+        image: user.image || '',
+        role: user.role || 'user',
+        status: user.status || 'active'
       })
       if (user.image) {
         setPreviewImage(user.image)
