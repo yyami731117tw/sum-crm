@@ -15,7 +15,11 @@ export default async function handler(
   if (req.method === 'GET') {
     try {
       const contract = await prisma.contract.findUnique({
-        where: { id }
+        where: { id },
+        include: {
+          member: true,  // 可選：包含關聯的會員信息
+          logs: true     // 可選：包含合約日誌
+        }
       })
 
       if (!contract) {
