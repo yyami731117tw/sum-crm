@@ -5,7 +5,8 @@ import { PATHS } from '@/utils/paths'
 
 export function MainNav() {
   const router = useRouter()
-  const { user, logout } = useAuth()
+  const { session, logout } = useAuth()
+  const user = session?.user
 
   const navigation = [
     { name: '首頁', href: PATHS.home },
