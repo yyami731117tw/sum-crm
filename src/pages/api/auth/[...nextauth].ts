@@ -90,31 +90,11 @@ export const authOptions: NextAuthOptions = {
       }
       // 如果是相對路徑，加上 baseUrl
       if (url.startsWith('/')) {
-        // 避免循環重定向
-        if (url === '/login' && url === baseUrl + url) {
-          return baseUrl
-        }
         return `${baseUrl}${url}`
       }
-      // 如果是外部 URL，檢查是否在允許的域名列表中
-      const allowedDomains = [new URL(baseUrl).hostname]
-      const urlHostname = new URL(url).hostname
-      if (allowedDomains.includes(urlHostname)) {
-        return url
-      }
       return baseUrl
-    }
-  },
-  events: {
-    async signIn(message) {
-      console.log('Sign in event:', message)
-    },
-    async signOut(message) {
-      console.log('Sign out event:', message)
     }
   }
 }
 
-const handler = NextAuth(authOptions)
-export { handler as GET, handler as POST }
-export default handler 
+export default NextAuth(authOptions) 
