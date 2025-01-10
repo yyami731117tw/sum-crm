@@ -39,6 +39,7 @@ model User {
   email             String?            @unique
   emailVerified     DateTime?
   image             String?
+  password          String?
   phone             String?            @unique
   lineId            String?
   address           String?
@@ -48,9 +49,8 @@ model User {
   status            String             @default("pending")
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
-  registeredAt      DateTime?
   lastLoginAt       DateTime?
-  password          String?
+  registeredAt      DateTime?
   accounts          Account[]
   sessions          Session[]
   logs              UserLog[]
@@ -63,10 +63,10 @@ model VerificationCode {
   id        String   @id @default(cuid())
   code      String
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   createdAt DateTime @default(now())
   used      Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("verification_codes")
@@ -161,8 +161,8 @@ model UserLog {
 }
 
 model Contract {
-  id            String   @id @default(cuid())
-  contractNo    String   @unique
+  id            String        @id @default(cuid())
+  contractNo    String        @unique
   projectName   String
   memberId      String
   memberName    String
@@ -173,15 +173,15 @@ model Contract {
   signDate      DateTime
   startDate     DateTime
   endDate       DateTime
-  status        String   @default("進行中")
+  status        String        @default("進行中")
   invoiceInfo   String?
   notes         String?
   contractFile  String?
   attachments   Json?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  member        Member   @relation(fields: [memberId], references: [id])
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   logs          ContractLog[]
+  member        Member        @relation(fields: [memberId], references: [id])
 
   @@index([memberId])
   @@map("contracts")
