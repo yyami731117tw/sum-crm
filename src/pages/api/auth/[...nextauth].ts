@@ -36,7 +36,8 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('invalid_credentials')
+          console.log('Missing credentials')
+          return null
         }
 
         const user = await prisma.user.findUnique({
@@ -44,26 +45,32 @@ export const authOptions: NextAuthOptions = {
         })
 
         if (!user || !user.password) {
-          throw new Error('invalid_credentials')
+          console.log('User not found or no password')
+          return null
         }
 
         const isValid = await compare(credentials.password, user.password)
         if (!isValid) {
-          throw new Error('invalid_credentials')
+          console.log('Invalid password')
+          return null
         }
 
         if (user.status === 'inactive') {
-          throw new Error('account_disabled')
+          console.log('Account disabled')
+          return null
         }
 
         if (user.status === 'pending') {
-          throw new Error('account_pending')
+          console.log('Account pending')
+          return null
         }
 
         if (!user.emailVerified) {
-          throw new Error('email_not_verified')
+          console.log('Email not verified')
+          return null
         }
 
+        console.log('Login successful:', user.email)
         return {
           id: user.id,
           email: user.email,
@@ -121,9 +128,11 @@ export const authOptions: NextAuthOptions = {
         const isEmailVerified = googleProfile.email_verified === true
         
         if (!isEmailVerified) {
-          throw new Error('google_email_not_verified')
+          console.log('Google email not verified')
+          return false
         }
       }
+      console.log('Sign in successful:', user.email)
       return true
     },
     async jwt({ token, user }) {

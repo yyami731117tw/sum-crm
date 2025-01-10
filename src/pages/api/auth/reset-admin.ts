@@ -25,9 +25,12 @@ export default async function handler(
         data: {
           password: hashedPassword,
           status: 'active',
-          role: 'admin'
+          role: 'admin',
+          emailVerified: new Date(),
+          name: 'Admin'
         }
       })
+      console.log('管理員帳號已更新:', admin.email)
     } else {
       // 創建新管理員帳號
       admin = await prisma.user.create({
@@ -36,17 +39,29 @@ export default async function handler(
           name: 'Admin',
           password: hashedPassword,
           status: 'active',
-          role: 'admin'
+          role: 'admin',
+          emailVerified: new Date()
         }
       })
+      console.log('管理員帳號已創建:', admin.email)
     }
 
     return res.status(200).json({
+      success: true,
       message: '管理員帳號已重設',
-      email: admin.email
+      data: {
+        email: admin.email,
+        name: admin.name,
+        role: admin.role,
+        status: admin.status
+      }
     })
   } catch (error) {
     console.error('重設管理員錯誤:', error)
-    return res.status(500).json({ message: '重設管理員過程發生錯誤' })
+    return res.status(500).json({
+      success: false,
+      message: '重設管理員過程發生錯誤',
+      error: error instanceof Error ? error.message : '未知錯誤'
+    })
   }
 } 
