@@ -9,10 +9,6 @@ import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
 import { Alert, Box, Button, Container, Typography } from '@mui/material'
 import React, { useEffect } from 'react'
 
-interface ErrorInfo {
-  componentStack: string;
-}
-
 function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
   useEffect(() => {
     console.error('Caught by ErrorBoundary:', error);
@@ -56,9 +52,9 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
   return (
     <ErrorBoundary
       FallbackComponent={ErrorFallback}
-      onError={(error: Error, info: ErrorInfo) => {
+      onError={(error: Error, info: React.ErrorInfo) => {
         console.error('Error caught by ErrorBoundary:', error);
-        console.error('Component stack:', info.componentStack);
+        console.error('Component stack:', info.componentStack || '未知的組件堆棧');
       }}
       onReset={() => {
         // 重置應用程式狀態
