@@ -4,7 +4,9 @@ const nextConfig = {
   pageExtensions: ['ts', 'tsx'],
   output: 'standalone',
   experimental: {
-    serverActions: true,
+    serverActions: {
+      allowedOrigins: ['sum-crm.vercel.app']
+    }
   }
 }
 
