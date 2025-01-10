@@ -4,6 +4,7 @@ import GoogleProvider from 'next-auth/providers/google'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { compare } from 'bcryptjs'
 import prisma from '@/lib/prisma'
+import { AUTH_ERRORS } from '@/utils/errorMessages'
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -20,7 +21,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('請輸入信箱和密碼')
+          throw new Error('invalid_credentials')
         }
 
         const user = await prisma.user.findUnique({
@@ -28,12 +29,12 @@ export const authOptions: NextAuthOptions = {
         })
 
         if (!user || !user.password) {
-          throw new Error('信箱或密碼錯誤')
+          throw new Error('invalid_credentials')
         }
 
         const isValid = await compare(credentials.password, user.password)
         if (!isValid) {
-          throw new Error('信箱或密碼錯誤')
+          throw new Error('invalid_credentials')
         }
 
         if (user.status === 'inactive') {
@@ -42,6 +43,10 @@ export const authOptions: NextAuthOptions = {
 
         if (user.status === 'pending') {
           throw new Error('account_pending')
+        }
+
+        if (!user.emailVerified) {
+          throw new Error('email_not_verified')
         }
 
         return {
@@ -76,6 +81,13 @@ export const authOptions: NextAuthOptions = {
         session.user.status = token.status as string
       }
       return session
+    }
+  },
+  events: {
+    async signIn({ user, account, profile, isNewUser }) {
+      if (account?.provider === 'google' && !profile?.email_verified) {
+        throw new Error('google_email_not_verified')
+      }
     }
   }
 }

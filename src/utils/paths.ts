@@ -4,6 +4,8 @@ export const PATHS = {
   signup: '/signup',
   members: '/members',
   contracts: '/contracts',
+  projects: '/projects',
+  users: '/users',
   settings: '/settings',
   profile: '/profile',
   api: {
@@ -13,6 +15,8 @@ export const PATHS = {
       verify: '/api/auth/verify'
     },
     members: '/api/members',
-    contracts: '/api/contracts'
+    contracts: '/api/contracts',
+    projects: '/api/projects',
+    users: '/api/users'
   }
 } 

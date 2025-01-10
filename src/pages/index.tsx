@@ -82,7 +82,7 @@ const IndexPage: NextPage = () => {
                 <div className="flex justify-between items-start">
                   <div>
                     <h1 className="text-3xl font-bold leading-tight text-gray-900 mb-2">
-                      歡迎回來，{user.nickname || user.name}
+                      歡迎回來，{user.name}
                     </h1>
                     <p className="text-gray-600 mt-2">
                       祝您有個美好的一天！讓我們一起創造更多價值。
