@@ -5,6 +5,7 @@ import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { compare } from 'bcryptjs'
 import prisma from '@/lib/prisma'
 import { AUTH_ERRORS } from '@/utils/errorMessages'
+import { Prisma } from '@prisma/client'
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -68,14 +69,31 @@ export const authOptions: NextAuthOptions = {
           scope: 'openid profile email'
         }
       },
-      profile(profile) {
+      async profile(profile) {
+        // 檢查並同步 Google 用戶
+        const existingUser = await prisma.user.findUnique({
+          where: { email: profile.email }
+        })
+
+        if (existingUser) {
+          // 更新現有用戶資訊
+          await prisma.user.update({
+            where: { email: profile.email },
+            data: {
+              name: profile.name,
+              image: profile.picture,
+              emailVerified: new Date()
+            }
+          })
+        }
+
         return {
           id: profile.sub,
           name: profile.name,
           email: profile.email,
           image: profile.picture,
-          role: 'user', // 預設角色
-          status: 'active'
+          role: existingUser?.role || 'user', // 保留現有角色或預設
+          status: existingUser?.status || 'active'
         }
       }
     }),
@@ -108,13 +126,46 @@ export const authOptions: NextAuthOptions = {
           throw new Error('google_email_not_verified')
         }
         
-        if (isNewUser) {
-          console.log(`New Google user signed up: ${user.email}`)
+        // 安全地檢查 email
+        const userEmail = user.email
+        if (userEmail) {
+          const updateData: Prisma.UserUpdateInput = {
+            lastLoginAt: new Date()
+          }
+
+          if (isNewUser) {
+            updateData.registeredAt = new Date()
+            updateData.status = 'active'
+          }
+
+          await prisma.user.update({
+            where: { email: userEmail },
+            data: updateData
+          })
+
+          console.log(`Google user ${isNewUser ? 'registered' : 'logged in'}: ${userEmail}`)
         }
       }
     },
     async createUser(message) {
-      console.log(`User created: ${message.user.email}`)
+      try {
+        const userEmail = message.user.email
+        if (userEmail) {
+          const updateData: Prisma.UserUpdateInput = {
+            registeredAt: new Date(),
+            status: 'active'
+          }
+
+          await prisma.user.update({
+            where: { email: userEmail },
+            data: updateData
+          })
+          
+          console.log(`User created and initialized: ${userEmail}`)
+        }
+      } catch (error) {
+        console.error('Error processing new user:', error)
+      }
     }
   }
 }
