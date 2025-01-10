@@ -21,7 +21,7 @@ export default function Login() {
 
   useEffect(() => {
     if (status === 'authenticated') {
-      router.push('/dashboard')
+      router.push('/')
     }
   }, [status, router])
 
@@ -33,7 +33,7 @@ export default function Login() {
     try {
       const success = await login(email, password)
       if (success) {
-        router.push('/dashboard')
+        router.push('/')
       }
     } finally {
       setLoading(false)
