@@ -121,7 +121,10 @@ export const authOptions: NextAuthOptions = {
   events: {
     async signIn({ user, account, profile, isNewUser }) {
       if (account?.provider === 'google') {
-        const isEmailVerified = (profile as any)?.email_verified === true
+        // 使用型別斷言安全地檢查 email_verified
+        const googleProfile = profile as { email_verified?: boolean }
+        const isEmailVerified = googleProfile.email_verified === true
+        
         if (!isEmailVerified) {
           throw new Error('google_email_not_verified')
         }
