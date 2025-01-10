@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '@/lib/prisma'
 import { logger } from '@/utils/logger'
+import { Prisma } from '@prisma/client'
 
 export default async function handler(
   req: NextApiRequest,
@@ -17,8 +18,8 @@ export default async function handler(
       const contract = await prisma.contract.findUnique({
         where: { id },
         include: {
-          member: true,  // 可選：包含關聯的會員信息
-          logs: true     // 可選：包含合約日誌
+          member: true,  // 包含關聯的會員信息
+          logs: true     // 包含合約日誌
         }
       })
 
@@ -29,7 +30,10 @@ export default async function handler(
       return res.status(200).json(contract)
 
     } catch (error) {
-      logger.error('獲取合約失敗', { error: error instanceof Error ? error : new Error('Unknown error') })
+      logger.error('獲取合約失敗', { 
+        error: error instanceof Error ? error : new Error('Unknown error'),
+        contractId: id
+      })
       return res.status(500).json({ message: '獲取合約失敗，請稍後再試' })
     }
   }
@@ -38,29 +42,34 @@ export default async function handler(
     try {
       const data = req.body
 
+      const updateData: Prisma.ContractUpdateInput = {
+        projectName: data.projectName,
+        amount: data.amount,
+        paymentMethod: data.paymentMethod,
+        bankAccount: data.bankAccount,
+        signDate: new Date(data.signDate),
+        startDate: new Date(data.startDate),
+        endDate: new Date(data.endDate),
+        status: data.status,
+        invoiceInfo: data.invoiceInfo,
+        notes: data.notes,
+        contractFile: data.contractFile,
+        attachments: data.attachments,
+        updatedAt: new Date()
+      }
+
       const contract = await prisma.contract.update({
         where: { id },
-        data: {
-          projectName: data.projectName,
-          amount: data.amount,
-          paymentMethod: data.paymentMethod,
-          bankAccount: data.bankAccount,
-          signDate: new Date(data.signDate),
-          startDate: new Date(data.startDate),
-          endDate: new Date(data.endDate),
-          status: data.status,
-          invoiceInfo: data.invoiceInfo,
-          notes: data.notes,
-          contractFile: data.contractFile,
-          attachments: data.attachments,
-          updatedAt: new Date()
-        }
+        data: updateData
       })
 
       return res.status(200).json(contract)
 
     } catch (error) {
-      logger.error('更新合約失敗', { error: error instanceof Error ? error : new Error('Unknown error') })
+      logger.error('更新合約失敗', { 
+        error: error instanceof Error ? error : new Error('Unknown error'),
+        contractId: id
+      })
       return res.status(500).json({ message: '更新合約失敗，請稍後再試' })
     }
   }
@@ -74,7 +83,10 @@ export default async function handler(
       return res.status(204).end()
 
     } catch (error) {
-      logger.error('刪除合約失敗', { error: error instanceof Error ? error : new Error('Unknown error') })
+      logger.error('刪除合約失敗', { 
+        error: error instanceof Error ? error : new Error('Unknown error'),
+        contractId: id
+      })
       return res.status(500).json({ message: '刪除合約失敗，請稍後再試' })
     }
   }
