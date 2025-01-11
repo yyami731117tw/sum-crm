@@ -8,7 +8,7 @@ export default withAuth(
     const isAuth = !!token
     const userRole = token?.role as string
 
-    // 已登入用戶訪問登入或註冊頁面時重定向到首頁
+    // 已登入用戶訪問認證相關頁面時重定向到首頁
     if (isAuth && (path.startsWith('/auth/'))) {
       return NextResponse.redirect(new URL('/', req.url))
     }
@@ -33,7 +33,13 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token }) => {
+      authorized: ({ token, req }) => {
+        const path = req.nextUrl.pathname
+        // 允許訪問認證相關頁面
+        if (path.startsWith('/auth/')) {
+          return true
+        }
+        // 其他頁面需要驗證
         return !!token
       }
     },

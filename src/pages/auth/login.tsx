@@ -51,7 +51,8 @@ export default function Login() {
       }
 
       if (result.error) {
-        throw new Error(result.error)
+        setError(result.error)
+        return
       }
 
       if (result.ok) {

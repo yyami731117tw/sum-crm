@@ -14,10 +14,18 @@ export default function AuthError() {
   const { error } = router.query
 
   useEffect(() => {
-    if (!error) {
-      router.push('/auth/login')
-    }
+    const timer = setTimeout(() => {
+      if (!error) {
+        router.push('/auth/login')
+      }
+    }, 3000) // 3秒後自動重定向
+
+    return () => clearTimeout(timer)
   }, [error, router])
+
+  const handleReturn = () => {
+    router.push('/auth/login')
+  }
 
   return (
     <Container component="main" maxWidth="xs">
@@ -34,14 +42,17 @@ export default function AuthError() {
             登入錯誤
           </Typography>
           <Alert severity="error" sx={{ mb: 3 }}>
-            {error || '發生未知錯誤'}
+            {decodeURIComponent(error as string || '發生未知錯誤')}
           </Alert>
+          <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 2 }}>
+            3 秒後自動返回登入頁面
+          </Typography>
           <Button
             fullWidth
             variant="contained"
-            onClick={() => router.push('/auth/login')}
+            onClick={handleReturn}
           >
-            返回登入
+            立即返回登入
           </Button>
         </Paper>
       </Box>
