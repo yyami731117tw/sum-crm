@@ -20,7 +20,7 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
           console.error('Missing credentials')
           throw new Error('請輸入信箱和密碼')
@@ -62,7 +62,7 @@ export const authOptions: NextAuthOptions = {
           }
         } catch (error) {
           console.error('Authorization error:', error)
-          throw new Error(error instanceof Error ? error.message : '登入失敗')
+          throw error
         }
       }
     })
@@ -90,6 +90,16 @@ export const authOptions: NextAuthOptions = {
         session.user.status = token.status as string
       }
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      console.log('Redirect callback:', { url, baseUrl })
+      if (url.startsWith('/auth/error')) {
+        return `${baseUrl}/auth/error?error=登入失敗，請檢查信箱和密碼`
+      }
+      if (url.startsWith(baseUrl)) {
+        return url
+      }
+      return baseUrl
     }
   }
 }
