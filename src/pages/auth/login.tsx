@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/router'
-import { signIn, useSession } from 'next-auth/react'
+import { signIn } from 'next-auth/react'
 import {
   Box,
   Container,
@@ -14,18 +14,10 @@ import {
 
 export default function Login() {
   const router = useRouter()
-  const { data: session, status } = useSession()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (status === 'authenticated' && session) {
-      const redirect = router.query.callbackUrl as string || '/'
-      router.replace(redirect)
-    }
-  }, [status, session, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,8 +30,7 @@ export default function Login() {
       const result = await signIn('credentials', {
         redirect: false,
         email: email.trim(),
-        password: password.trim(),
-        callbackUrl: '/'
+        password: password.trim()
       })
 
       if (!result) {
@@ -52,6 +43,10 @@ export default function Login() {
         return
       }
 
+      if (result.ok) {
+        // 登入成功後直接重定向到首頁
+        window.location.href = '/'
+      }
     } catch (err) {
       console.error('Login error:', err)
       setError('登入時發生錯誤，請稍後再試')
@@ -68,16 +63,6 @@ export default function Login() {
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value)
     setError(null)
-  }
-
-  if (status === 'loading') {
-    return (
-      <Container component="main" maxWidth="xs">
-        <Box sx={{ mt: 8, display: 'flex', justifyContent: 'center' }}>
-          <CircularProgress />
-        </Box>
-      </Container>
-    )
   }
 
   return (

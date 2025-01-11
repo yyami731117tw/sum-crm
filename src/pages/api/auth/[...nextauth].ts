@@ -7,7 +7,6 @@ import prisma from '@/lib/prisma'
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -81,18 +80,6 @@ export const authOptions: NextAuthOptions = {
         session.user.status = token.status as string
       }
       return session
-    },
-    async redirect({ url, baseUrl }) {
-      // 如果 URL 是相對路徑，添加基本 URL
-      if (url.startsWith('/')) {
-        return `${baseUrl}${url}`
-      }
-      // 如果 URL 已經是完整的 URL 且屬於同一域名，直接返回
-      else if (url.startsWith(baseUrl)) {
-        return url
-      }
-      // 其他情況返回首頁
-      return baseUrl
     }
   }
 }
