@@ -31,18 +31,11 @@ export default function Login() {
       const result = await signIn('credentials', {
         email: email.trim(),
         password: password.trim(),
-        callbackUrl: '/',
-        redirect: false
+        redirect: true,
+        callbackUrl: '/'
       })
-
-      if (result?.error) {
-        setError(result.error)
-      } else {
-        window.location.href = '/'
-      }
     } catch (err) {
       setError('登入時發生錯誤，請稍後再試')
-    } finally {
       setLoading(false)
     }
   }

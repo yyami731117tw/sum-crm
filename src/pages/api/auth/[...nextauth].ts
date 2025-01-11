@@ -85,16 +85,30 @@ export const authOptions: AuthOptions = {
       return session
     },
     async redirect({ url, baseUrl }) {
-      // 處理相對路徑
-      if (url.startsWith('/')) {
-        url = `${baseUrl}${url}`
-      }
-      // 檢查是否為錯誤頁面
+      console.log('Redirect callback:', { url, baseUrl })
+      
+      // 如果是錯誤頁面，直接返回
       if (url.includes('/auth/error')) {
         return url
       }
-      // 確保只重定向到相同域名
-      return url.startsWith(baseUrl) ? url : baseUrl
+      
+      // 如果是登入頁面，重定向到首頁
+      if (url.includes('/login')) {
+        return baseUrl
+      }
+      
+      // 如果是相對路徑，加上 baseUrl
+      if (url.startsWith('/')) {
+        return `${baseUrl}${url}`
+      }
+      
+      // 如果是完整 URL，確保是同一域名
+      if (url.startsWith(baseUrl)) {
+        return url
+      }
+      
+      // 預設重定向到首頁
+      return baseUrl
     }
   },
   debug: process.env.NODE_ENV === 'development'
