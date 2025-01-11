@@ -1,5 +1,6 @@
-import { useState, useEffect, ChangeEvent } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import { signIn, useSession } from 'next-auth/react'
 import {
   Box,
   Container,
@@ -13,10 +14,17 @@ import {
 
 export default function Login() {
   const router = useRouter()
+  const { data: session, status } = useSession()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (status === 'authenticated' && session) {
+      router.replace('/')
+    }
+  }, [status, session, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,41 +32,25 @@ export default function Login() {
     setError(null)
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({ 
-          email: email.trim(), 
-          password: password.trim() 
-        }),
+      const result = await signIn('credentials', {
+        redirect: false,
+        email: email.trim(),
+        password: password.trim()
       })
 
-      let data
-      try {
-        data = await response.json()
-      } catch (e) {
-        console.error('JSON parse error:', e)
-        setError('伺服器回應格式錯誤')
+      if (!result) {
+        setError('登入失敗，請稍後再試')
         return
       }
 
-      if (!response.ok) {
-        setError(data.error || '登入失敗')
+      if (result.error) {
+        setError(result.error)
         return
       }
 
-      // 設置 cookie
-      document.cookie = `auth_token=${data.token}; path=/; max-age=2592000; SameSite=Lax`
-      
-      // 儲存用戶資料
-      localStorage.setItem('user', JSON.stringify(data.user))
-
-      // 重定向到首頁
-      await router.replace('/')
+      if (result.ok) {
+        await router.replace('/')
+      }
     } catch (err) {
       console.error('Login error:', err)
       setError('登入時發生錯誤，請稍後再試')
@@ -67,14 +59,24 @@ export default function Login() {
     }
   }
 
-  const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value)
     setError(null)
   }
 
-  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value)
     setError(null)
+  }
+
+  if (status === 'loading') {
+    return (
+      <Container component="main" maxWidth="xs">
+        <Box sx={{ mt: 8, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    )
   }
 
   return (
