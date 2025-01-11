@@ -50,7 +50,13 @@ export default async function handler(
       { expiresIn: '30d' }
     )
 
+    res.setHeader(
+      'Set-Cookie',
+      `auth_token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000`
+    )
+
     return res.status(200).json({
+      success: true,
       token,
       user: {
         id: user.id,
@@ -62,6 +68,9 @@ export default async function handler(
     })
   } catch (error) {
     console.error('Login error:', error)
-    return res.status(500).json({ error: '登入時發生錯誤，請稍後再試' })
+    return res.status(500).json({ 
+      success: false,
+      error: '登入時發生錯誤，請稍後再試' 
+    })
   }
 } 

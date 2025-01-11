@@ -26,27 +26,39 @@ export default function Login() {
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ 
+          email: email.trim(), 
+          password: password.trim() 
+        }),
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        setError(data.error)
+      let data
+      try {
+        data = await response.json()
+      } catch (e) {
+        console.error('JSON parse error:', e)
+        setError('伺服器回應格式錯誤')
         return
       }
 
-      // 儲存 token 到 localStorage
-      localStorage.setItem('auth_token', data.token)
+      if (!response.ok) {
+        setError(data.error || '登入失敗')
+        return
+      }
+
+      // 設置 cookie
+      document.cookie = `auth_token=${data.token}; path=/; max-age=2592000; SameSite=Lax`
       
       // 儲存用戶資料
       localStorage.setItem('user', JSON.stringify(data.user))
 
       // 重定向到首頁
-      router.replace('/')
+      await router.replace('/')
     } catch (err) {
       console.error('Login error:', err)
       setError('登入時發生錯誤，請稍後再試')
