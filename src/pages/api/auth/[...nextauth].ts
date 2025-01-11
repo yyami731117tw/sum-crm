@@ -86,18 +86,14 @@ export const authOptions: NextAuthOptions = {
     async redirect({ url, baseUrl }) {
       if (url.includes('error')) {
         const errorMsg = url.split('error=')[1]
-        return baseUrl + `/auth/error?error=${encodeURIComponent(errorMsg || '登入失敗')}`
+        return '/auth/error?error=' + encodeURIComponent(errorMsg || '登入失敗')
       }
       
       if (url.includes('/auth/')) {
-        return baseUrl
+        return '/'
       }
       
-      if (url.startsWith('/')) {
-        return baseUrl + url
-      }
-      
-      return baseUrl
+      return url.startsWith('/') ? url : '/'
     }
   }
 }

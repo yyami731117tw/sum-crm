@@ -16,7 +16,7 @@ export default function AuthError() {
 
   useEffect(() => {
     if (!error) {
-      router.replace('/auth/login')
+      router.replace('/auth/login', undefined, { shallow: true })
       return
     }
 
@@ -24,7 +24,7 @@ export default function AuthError() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer)
-          router.replace('/auth/login')
+          router.replace('/auth/login', undefined, { shallow: true })
           return 0
         }
         return prev - 1
@@ -35,7 +35,7 @@ export default function AuthError() {
   }, [error, router])
 
   const handleReturn = () => {
-    router.replace('/auth/login')
+    router.replace('/auth/login', undefined, { shallow: true })
   }
 
   return (
