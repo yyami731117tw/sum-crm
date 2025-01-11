@@ -22,10 +22,13 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          console.error('Missing credentials')
           throw new Error('請輸入信箱和密碼')
         }
 
         try {
+          console.log('Attempting login for:', credentials.email)
+          
           const user = await prisma.user.findUnique({
             where: { email: credentials.email },
             select: {
@@ -39,11 +42,13 @@ export const authOptions: NextAuthOptions = {
           })
 
           if (!user || !user.password) {
+            console.error('User not found:', credentials.email)
             throw new Error('信箱或密碼錯誤')
           }
 
           const isValid = await compare(credentials.password, user.password)
           if (!isValid) {
+            console.error('Invalid password for:', credentials.email)
             throw new Error('信箱或密碼錯誤')
           }
 
@@ -70,6 +75,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        console.log('Setting JWT token for user:', user.email)
         token.id = user.id
         token.role = user.role
         token.status = user.status
@@ -78,6 +84,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
+        console.log('Setting session for user:', session.user.email)
         session.user.id = token.id as string
         session.user.role = token.role as string
         session.user.status = token.status as string

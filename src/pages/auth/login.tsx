@@ -57,7 +57,7 @@ export default function Login() {
       }
 
       if (result.ok) {
-        await router.push('/')
+        await router.replace('/')
       }
     } catch (err) {
       console.error('Login error:', err)
