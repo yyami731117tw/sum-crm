@@ -43,12 +43,12 @@ export default function Login() {
       const result = await signIn('credentials', {
         redirect: false,
         email,
-        password,
-        callbackUrl: '/'
+        password
       })
 
       if (!result) {
-        throw new Error('登入失敗，請稍後再試')
+        setError('登入失敗，請稍後再試')
+        return
       }
 
       if (result.error) {
@@ -57,7 +57,7 @@ export default function Login() {
       }
 
       if (result.ok) {
-        await router.push(result.url || '/')
+        router.replace('/')
       }
     } catch (err) {
       console.error('Login error:', err)

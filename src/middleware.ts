@@ -18,23 +18,20 @@ export default withAuth(
       return NextResponse.next()
     }
 
+    // 未登入用戶只能訪問認證頁面
+    if (!isAuth) {
+      return NextResponse.redirect(new URL('/auth/login', req.url))
+    }
+
     // 管理員權限檢查
-    if (path.startsWith('/admin')) {
-      if (!isAuth || userRole !== 'ADMIN') {
-        return NextResponse.redirect(new URL('/', req.url))
-      }
-      return NextResponse.next()
+    if (path.startsWith('/admin') && userRole !== 'ADMIN') {
+      return NextResponse.redirect(new URL('/', req.url))
     }
 
     // 一般用戶權限檢查
-    if (path.startsWith('/members') || path.startsWith('/contracts') || path.startsWith('/projects')) {
-      if (!isAuth) {
-        return NextResponse.redirect(new URL('/auth/login', req.url))
-      }
-      
-      if (userRole !== 'ADMIN' && userRole !== 'USER') {
-        return NextResponse.redirect(new URL('/', req.url))
-      }
+    if ((path.startsWith('/members') || path.startsWith('/contracts') || path.startsWith('/projects')) 
+        && userRole !== 'ADMIN' && userRole !== 'USER') {
+      return NextResponse.redirect(new URL('/', req.url))
     }
 
     return NextResponse.next()
