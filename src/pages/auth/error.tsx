@@ -16,7 +16,7 @@ export default function AuthError() {
 
   useEffect(() => {
     if (!error) {
-      router.replace('/auth/login')
+      window.location.href = '/auth/login'
       return
     }
 
@@ -24,7 +24,7 @@ export default function AuthError() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer)
-          router.replace('/auth/login')
+          window.location.href = '/auth/login'
           return 0
         }
         return prev - 1
@@ -32,10 +32,10 @@ export default function AuthError() {
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [error, router])
+  }, [error])
 
   const handleReturn = () => {
-    router.replace('/auth/login')
+    window.location.href = '/auth/login'
   }
 
   return (

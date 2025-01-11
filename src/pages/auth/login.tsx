@@ -43,7 +43,8 @@ export default function Login() {
       const result = await signIn('credentials', {
         redirect: false,
         email,
-        password
+        password,
+        callbackUrl: '/'
       })
 
       if (!result) {
@@ -57,7 +58,8 @@ export default function Login() {
       }
 
       if (result.ok) {
-        router.replace('/')
+        // 使用 window.location 進行頁面重定向
+        window.location.href = '/'
       }
     } catch (err) {
       console.error('Login error:', err)
