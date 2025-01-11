@@ -8,14 +8,22 @@ export default withAuth(
     const isAuth = !!token
     const userRole = token?.role as string
 
-    // 已登入用戶訪問認證相關頁面時重定向到首頁
-    if (isAuth && (path.startsWith('/auth/'))) {
-      return NextResponse.redirect(new URL('/', req.url))
+    // 處理認證相關頁面
+    if (path.startsWith('/auth/')) {
+      // 已登入用戶訪問認證頁面時重定向到首頁
+      if (isAuth && !path.includes('/auth/error')) {
+        return NextResponse.redirect(new URL('/', req.url))
+      }
+      // 未登入用戶可以訪問認證頁面
+      return NextResponse.next()
     }
 
     // 管理員權限檢查
-    if (path.startsWith('/admin') && userRole !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/', req.url))
+    if (path.startsWith('/admin')) {
+      if (!isAuth || userRole !== 'ADMIN') {
+        return NextResponse.redirect(new URL('/', req.url))
+      }
+      return NextResponse.next()
     }
 
     // 一般用戶權限檢查

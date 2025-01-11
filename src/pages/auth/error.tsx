@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import {
   Box,
@@ -12,19 +12,30 @@ import {
 export default function AuthError() {
   const router = useRouter()
   const { error } = router.query
+  const [countdown, setCountdown] = useState(3)
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!error) {
-        router.push('/auth/login')
-      }
-    }, 3000) // 3秒後自動重定向
+    if (!error) {
+      router.replace('/auth/login')
+      return
+    }
 
-    return () => clearTimeout(timer)
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer)
+          router.replace('/auth/login')
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(timer)
   }, [error, router])
 
   const handleReturn = () => {
-    router.push('/auth/login')
+    router.replace('/auth/login')
   }
 
   return (
@@ -45,7 +56,7 @@ export default function AuthError() {
             {decodeURIComponent(error as string || '發生未知錯誤')}
           </Alert>
           <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 2 }}>
-            3 秒後自動返回登入頁面
+            {countdown} 秒後自動返回登入頁面
           </Typography>
           <Button
             fullWidth

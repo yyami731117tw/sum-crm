@@ -43,7 +43,8 @@ export default function Login() {
       const result = await signIn('credentials', {
         redirect: false,
         email,
-        password
+        password,
+        callbackUrl: '/'
       })
 
       if (!result) {
@@ -56,7 +57,7 @@ export default function Login() {
       }
 
       if (result.ok) {
-        router.push('/')
+        await router.push(result.url || '/')
       }
     } catch (err) {
       console.error('Login error:', err)
