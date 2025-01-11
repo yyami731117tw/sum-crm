@@ -39,14 +39,6 @@ export const authOptions: NextAuthOptions = {
             throw new Error('信箱或密碼錯誤')
           }
 
-          if (user.status === 'inactive') {
-            throw new Error('帳號已被停用')
-          }
-
-          if (user.status === 'pending') {
-            throw new Error('帳號正在審核中')
-          }
-
           return {
             id: user.id,
             email: user.email,
@@ -82,23 +74,19 @@ export const authOptions: NextAuthOptions = {
         session.user.status = token.status as string
       }
       return session
-    },
-    async redirect({ url, baseUrl }) {
-      if (url.startsWith('/api/auth/signin')) {
-        return `${baseUrl}/login`
-      }
-      if (url.startsWith(baseUrl)) {
-        return url
-      }
-      if (url.startsWith('/')) {
-        return `${baseUrl}${url}`
-      }
-      return baseUrl
     }
   }
 }
 
 const handler = NextAuth(authOptions)
 
-export { handler as GET, handler as POST }
+// 確保正確處理 API 路由
+export function GET(req: Request) {
+  return handler(req)
+}
+
+export function POST(req: Request) {
+  return handler(req)
+}
+
 export default handler 

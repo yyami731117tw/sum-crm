@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, ChangeEvent } from 'react'
 import { useRouter } from 'next/router'
 import { signIn, useSession } from 'next-auth/react'
 import {
@@ -21,28 +21,21 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (status === 'authenticated') {
+    if (status === 'authenticated' && session) {
       router.push('/')
     }
-  }, [status, router])
+  }, [status, session, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
 
-    if (!email || !password) {
-      setError('請輸入信箱和密碼')
-      setLoading(false)
-      return
-    }
-
     try {
       const result = await signIn('credentials', {
         redirect: false,
         email,
-        password,
-        callbackUrl: '/'
+        password
       })
 
       if (!result) {
@@ -62,6 +55,16 @@ export default function Login() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value)
+    setError(null)
+  }
+
+  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value)
+    setError(null)
   }
 
   return (
@@ -85,7 +88,7 @@ export default function Login() {
           )}
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
             <TextField
-              margin="normal"
+              variant="outlined"
               required
               fullWidth
               id="email"
@@ -94,12 +97,13 @@ export default function Login() {
               autoComplete="email"
               autoFocus
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={handleEmailChange}
               disabled={loading}
-              error={!!error && !email}
+              error={!!error}
+              sx={{ mb: 2 }}
             />
             <TextField
-              margin="normal"
+              variant="outlined"
               required
               fullWidth
               name="password"
@@ -108,16 +112,17 @@ export default function Login() {
               id="password"
               autoComplete="current-password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={handlePasswordChange}
               disabled={loading}
-              error={!!error && !password}
+              error={!!error}
+              sx={{ mb: 2 }}
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2 }}
               disabled={loading}
+              sx={{ mt: 2 }}
             >
               {loading ? <CircularProgress size={24} /> : '登入'}
             </Button>
