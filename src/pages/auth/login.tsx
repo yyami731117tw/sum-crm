@@ -35,22 +35,32 @@ export default function Login() {
 
       if (!result) {
         setError('登入失敗，請稍後再試')
+        setLoading(false)
         return
       }
 
       if (result.error) {
         setError(result.error)
+        setLoading(false)
         return
       }
 
       if (result.ok) {
-        // 登入成功後直接重定向到首頁
-        window.location.href = '/'
+        try {
+          // 使用 router.push 而不是 window.location
+          await router.push('/')
+        } catch (err) {
+          console.error('Navigation error:', err)
+          // 如果 router.push 失敗，使用 window.location 作為備選方案
+          window.location.href = '/'
+        }
+      } else {
+        setError('登入失敗，請稍後再試')
+        setLoading(false)
       }
     } catch (err) {
       console.error('Login error:', err)
       setError('登入時發生錯誤，請稍後再試')
-    } finally {
       setLoading(false)
     }
   }
@@ -84,7 +94,7 @@ export default function Login() {
               {error}
             </Alert>
           )}
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
             <TextField
               variant="outlined"
               margin="normal"
@@ -99,6 +109,9 @@ export default function Login() {
               onChange={handleEmailChange}
               disabled={loading}
               error={!!error}
+              inputProps={{
+                maxLength: 50
+              }}
             />
             <TextField
               variant="outlined"
@@ -114,6 +127,9 @@ export default function Login() {
               onChange={handlePasswordChange}
               disabled={loading}
               error={!!error}
+              inputProps={{
+                maxLength: 50
+              }}
             />
             <Button
               type="submit"
