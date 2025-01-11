@@ -85,10 +85,12 @@ export const authOptions: NextAuthOptions = {
     },
     async redirect({ url, baseUrl }) {
       // 處理重定向邏輯
+      if (url.startsWith('/api/auth/signin')) {
+        return '/login'
+      }
       if (url.startsWith(baseUrl)) {
         return url
       }
-      // 如果是相對路徑，加上 baseUrl
       if (url.startsWith('/')) {
         return `${baseUrl}${url}`
       }
@@ -97,4 +99,6 @@ export const authOptions: NextAuthOptions = {
   }
 }
 
-export default NextAuth(authOptions) 
+export const handler = NextAuth(authOptions)
+export { handler as GET, handler as POST }
+export default handler 
