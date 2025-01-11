@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
-import { signIn } from 'next-auth/react'
 import {
   Box,
   Container,
@@ -17,7 +16,7 @@ export default function AuthError() {
 
   useEffect(() => {
     if (!error) {
-      signIn('credentials', { callbackUrl: '/auth/login' })
+      window.location.href = '/auth/login'
       return
     }
 
@@ -25,7 +24,7 @@ export default function AuthError() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer)
-          signIn('credentials', { callbackUrl: '/auth/login' })
+          window.location.href = '/auth/login'
           return 0
         }
         return prev - 1
@@ -36,7 +35,7 @@ export default function AuthError() {
   }, [error])
 
   const handleReturn = () => {
-    signIn('credentials', { callbackUrl: '/auth/login' })
+    window.location.href = '/auth/login'
   }
 
   return (

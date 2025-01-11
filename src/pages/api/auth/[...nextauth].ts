@@ -7,7 +7,7 @@ import prisma from '@/lib/prisma'
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
+  debug: true,
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -82,6 +82,28 @@ export const authOptions: NextAuthOptions = {
         session.user.status = token.status as string
       }
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      // 處理錯誤重定向
+      if (url.includes('error')) {
+        return baseUrl + '/auth/error'
+      }
+      
+      // 處理登入成功
+      if (url === '/auth/login') {
+        return baseUrl
+      }
+      
+      // 處理其他頁面
+      return url.startsWith('/') ? baseUrl + url : baseUrl
+    }
+  },
+  events: {
+    async signIn({ user, account, profile, isNewUser }) {
+      console.log('Sign in attempt:', { user, account, isNewUser })
+    },
+    async error(error) {
+      console.error('Auth error:', error)
     }
   }
 }
