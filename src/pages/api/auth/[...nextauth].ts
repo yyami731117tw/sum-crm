@@ -68,7 +68,6 @@ export const authOptions: AuthOptions = {
         token.id = user.id
         token.role = user.role
         token.status = user.status
-        console.log('JWT token created:', { id: token.id, role: token.role })
       }
       return token
     },
@@ -77,41 +76,10 @@ export const authOptions: AuthOptions = {
         session.user.id = token.id as string
         session.user.role = token.role as string
         session.user.status = token.status as string
-        console.log('Session updated:', { 
-          id: session.user.id, 
-          role: session.user.role 
-        })
       }
       return session
-    },
-    async redirect({ url, baseUrl }) {
-      console.log('Redirect callback:', { url, baseUrl })
-      
-      // 如果是錯誤頁面，直接返回
-      if (url.includes('/auth/error')) {
-        return url
-      }
-      
-      // 如果是登入頁面，重定向到首頁
-      if (url.includes('/login')) {
-        return baseUrl
-      }
-      
-      // 如果是相對路徑，加上 baseUrl
-      if (url.startsWith('/')) {
-        return `${baseUrl}${url}`
-      }
-      
-      // 如果是完整 URL，確保是同一域名
-      if (url.startsWith(baseUrl)) {
-        return url
-      }
-      
-      // 預設重定向到首頁
-      return baseUrl
     }
-  },
-  debug: process.env.NODE_ENV === 'development'
+  }
 }
 
 export default NextAuth(authOptions) 

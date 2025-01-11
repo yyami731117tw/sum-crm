@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { signIn } from 'next-auth/react'
+import { signIn, getSession } from 'next-auth/react'
+import { GetServerSideProps } from 'next'
 import {
   Box,
   Container,
@@ -10,6 +11,23 @@ import {
   CircularProgress,
   Alert
 } from '@mui/material'
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session = await getSession(context)
+  
+  if (session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    }
+  }
+
+  return {
+    props: {}
+  }
+}
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -31,11 +49,17 @@ export default function Login() {
       const result = await signIn('credentials', {
         email: email.trim(),
         password: password.trim(),
-        redirect: true,
-        callbackUrl: '/'
+        redirect: false
       })
+
+      if (result?.error) {
+        setError(result.error)
+      } else {
+        window.location.href = '/'
+      }
     } catch (err) {
       setError('登入時發生錯誤，請稍後再試')
+    } finally {
       setLoading(false)
     }
   }
