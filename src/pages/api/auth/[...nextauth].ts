@@ -99,11 +99,8 @@ export const authOptions: NextAuthOptions = {
     }
   },
   events: {
-    async signIn({ user, account, profile, isNewUser }) {
-      console.log('Sign in attempt:', { user, account, isNewUser })
-    },
-    async error(error) {
-      console.error('Auth error:', error)
+    async signIn(message) {
+      console.log('Sign in attempt:', message)
     }
   }
 }
