@@ -1,9 +1,9 @@
-import NextAuth from 'next-auth'
+import NextAuth, { AuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { compare } from 'bcryptjs'
 import prisma from '@/lib/prisma'
 
-export default NextAuth({
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -79,4 +79,6 @@ export default NextAuth({
       return url.startsWith(baseUrl) ? url : baseUrl
     }
   }
-}) 
+}
+
+export default NextAuth(authOptions) 
