@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
+import { signIn } from 'next-auth/react'
 import {
   Box,
   Container,
@@ -16,7 +17,7 @@ export default function AuthError() {
 
   useEffect(() => {
     if (!error) {
-      router.replace('/auth/login', undefined, { shallow: true })
+      signIn('credentials', { callbackUrl: '/auth/login' })
       return
     }
 
@@ -24,7 +25,7 @@ export default function AuthError() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer)
-          router.replace('/auth/login', undefined, { shallow: true })
+          signIn('credentials', { callbackUrl: '/auth/login' })
           return 0
         }
         return prev - 1
@@ -32,10 +33,10 @@ export default function AuthError() {
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [error, router])
+  }, [error])
 
   const handleReturn = () => {
-    router.replace('/auth/login', undefined, { shallow: true })
+    signIn('credentials', { callbackUrl: '/auth/login' })
   }
 
   return (

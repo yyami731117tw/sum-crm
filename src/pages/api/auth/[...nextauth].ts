@@ -82,18 +82,6 @@ export const authOptions: NextAuthOptions = {
         session.user.status = token.status as string
       }
       return session
-    },
-    async redirect({ url, baseUrl }) {
-      if (url.includes('error')) {
-        const errorMsg = url.split('error=')[1]
-        return '/auth/error?error=' + encodeURIComponent(errorMsg || '登入失敗')
-      }
-      
-      if (url.includes('/auth/')) {
-        return '/'
-      }
-      
-      return url.startsWith('/') ? url : '/'
     }
   }
 }

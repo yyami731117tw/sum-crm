@@ -41,29 +41,14 @@ export default function Login() {
 
     try {
       const result = await signIn('credentials', {
-        redirect: false,
+        redirect: true,
         email,
-        password
+        password,
+        callbackUrl: '/'
       })
-
-      if (!result) {
-        setError('登入失敗，請稍後再試')
-        return
-      }
-
-      if (result.error) {
-        setError(result.error)
-        return
-      }
-
-      if (result.ok) {
-        // 使用 replace 而不是 push 來避免瀏覽器歷史堆疊
-        await router.replace('/')
-      }
     } catch (err) {
       console.error('Login error:', err)
       setError(err instanceof Error ? err.message : '登入時發生錯誤，請稍後再試')
-    } finally {
       setLoading(false)
     }
   }
