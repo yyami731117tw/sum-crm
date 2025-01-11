@@ -55,7 +55,7 @@ export const authOptions: AuthOptions = {
     secret: process.env.NEXTAUTH_SECRET
   },
   pages: {
-    signIn: '/auth/login',
+    signIn: '/login',
     error: '/auth/error'
   },
   callbacks: {
@@ -76,6 +76,9 @@ export const authOptions: AuthOptions = {
       return session
     },
     async redirect({ url, baseUrl }) {
+      if (url.startsWith('/')) {
+        url = `${baseUrl}${url}`
+      }
       return url.startsWith(baseUrl) ? url : baseUrl
     }
   }

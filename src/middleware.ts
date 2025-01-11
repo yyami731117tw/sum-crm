@@ -7,7 +7,7 @@ export default withAuth(
     const path = req.nextUrl.pathname
 
     // 已登入用戶訪問登入頁面時重定向到首頁
-    if (token && path === '/auth/login') {
+    if (token && (path === '/login' || path === '/auth/login')) {
       return NextResponse.redirect(new URL('/', req.url))
     }
 
@@ -32,8 +32,9 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ token, req }) => {
-        // 允許訪問登入頁面
-        if (req.nextUrl.pathname.startsWith('/auth/')) {
+        const path = req.nextUrl.pathname
+        // 允許訪問登入相關頁面
+        if (path === '/login' || path.startsWith('/auth/')) {
           return true
         }
         // 其他頁面需要驗證
@@ -46,6 +47,7 @@ export default withAuth(
 export const config = {
   matcher: [
     '/',
+    '/login',
     '/auth/:path*',
     '/admin/:path*',
     '/members/:path*',
