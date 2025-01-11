@@ -41,30 +41,17 @@ export default function Login() {
 
     try {
       const result = await signIn('credentials', {
-        redirect: false,
+        redirect: true,
         email,
         password,
         callbackUrl: '/'
       })
 
-      if (!result) {
-        setError('登入失敗，請稍後再試')
-        return
-      }
-
-      if (result.error) {
-        setError(result.error)
-        return
-      }
-
-      if (result.ok) {
-        // 使用 window.location 進行頁面重定向
-        window.location.href = '/'
-      }
+      // 由於設置了 redirect: true，以下代碼不會執行
+      // NextAuth 會自動處理重定向
     } catch (err) {
       console.error('Login error:', err)
       setError(err instanceof Error ? err.message : '登入時發生錯誤，請稍後再試')
-    } finally {
       setLoading(false)
     }
   }
