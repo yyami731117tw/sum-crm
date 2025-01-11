@@ -41,14 +41,28 @@ export default function Login() {
 
     try {
       const result = await signIn('credentials', {
-        redirect: true,
+        redirect: false,
         email,
-        password,
-        callbackUrl: '/'
+        password
       })
+
+      if (!result) {
+        setError('登入失敗，請稍後再試')
+        return
+      }
+
+      if (result.error) {
+        setError(result.error)
+        return
+      }
+
+      if (result.ok) {
+        await router.push('/')
+      }
     } catch (err) {
       console.error('Login error:', err)
       setError(err instanceof Error ? err.message : '登入時發生錯誤，請稍後再試')
+    } finally {
       setLoading(false)
     }
   }

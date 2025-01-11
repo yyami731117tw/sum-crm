@@ -7,6 +7,7 @@ import prisma from '@/lib/prisma'
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
+  debug: true,
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -46,6 +47,7 @@ export const authOptions: NextAuthOptions = {
             throw new Error('信箱或密碼錯誤')
           }
 
+          console.log('Login successful for user:', user.email)
           return {
             id: user.id,
             email: user.email,
