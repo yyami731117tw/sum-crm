@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:seed": "ts-node prisma/createAdmin.ts"
+    "db:seed": "ts-node prisma/createAdmin.ts",
+    "deploy": "git add . && git commit -m \"Auto deploy: $(date)\" && git push"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

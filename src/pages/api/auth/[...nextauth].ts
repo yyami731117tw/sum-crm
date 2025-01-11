@@ -27,7 +27,15 @@ export const authOptions: NextAuthOptions = {
 
         try {
           const user = await prisma.user.findUnique({
-            where: { email: credentials.email }
+            where: { email: credentials.email },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              password: true,
+              role: true,
+              status: true
+            }
           })
 
           if (!user || !user.password) {
@@ -48,7 +56,7 @@ export const authOptions: NextAuthOptions = {
           }
         } catch (error) {
           console.error('Authorization error:', error)
-          throw error
+          throw new Error(error instanceof Error ? error.message : '登入失敗')
         }
       }
     })
@@ -76,7 +84,7 @@ export const authOptions: NextAuthOptions = {
       return session
     },
     async redirect({ url, baseUrl }) {
-      if (url.startsWith('/api/auth')) {
+      if (url.includes('/error')) {
         return `${baseUrl}/login`
       }
       if (url.startsWith(baseUrl)) {
@@ -90,6 +98,4 @@ export const authOptions: NextAuthOptions = {
   }
 }
 
-// 使用 Pages Router 的方式處理 API 路由
-const handler = NextAuth(authOptions)
-export default handler 
+export default NextAuth(authOptions) 
