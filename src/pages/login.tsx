@@ -26,6 +26,14 @@ export default function Login() {
     }
   }, [status, session, router])
 
+  useEffect(() => {
+    // 從 URL 中獲取錯誤訊息
+    const errorMessage = router.query.error
+    if (errorMessage) {
+      setError(Array.isArray(errorMessage) ? errorMessage[0] : errorMessage)
+    }
+  }, [router.query])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -35,7 +43,8 @@ export default function Login() {
       const result = await signIn('credentials', {
         redirect: false,
         email,
-        password
+        password,
+        callbackUrl: '/'
       })
 
       if (!result) {
@@ -47,7 +56,7 @@ export default function Login() {
       }
 
       if (result.ok) {
-        router.push('/')
+        await router.push('/')
       }
     } catch (err) {
       console.error('Login error:', err)
@@ -65,6 +74,16 @@ export default function Login() {
   const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value)
     setError(null)
+  }
+
+  if (status === 'loading') {
+    return (
+      <Container component="main" maxWidth="xs">
+        <Box sx={{ mt: 8, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    )
   }
 
   return (

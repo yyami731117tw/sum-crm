@@ -74,19 +74,22 @@ export const authOptions: NextAuthOptions = {
         session.user.status = token.status as string
       }
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith('/api/auth')) {
+        return `${baseUrl}/login`
+      }
+      if (url.startsWith(baseUrl)) {
+        return url
+      }
+      if (url.startsWith('/')) {
+        return `${baseUrl}${url}`
+      }
+      return baseUrl
     }
   }
 }
 
+// 使用 Pages Router 的方式處理 API 路由
 const handler = NextAuth(authOptions)
-
-// 確保正確處理 API 路由
-export function GET(req: Request) {
-  return handler(req)
-}
-
-export function POST(req: Request) {
-  return handler(req)
-}
-
 export default handler 
