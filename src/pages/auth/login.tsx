@@ -22,12 +22,15 @@ export default function Login() {
 
   useEffect(() => {
     if (status === 'authenticated' && session) {
-      router.replace('/')
+      const redirect = router.query.callbackUrl as string || '/'
+      router.replace(redirect)
     }
   }, [status, session, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (loading) return
+    
     setLoading(true)
     setError(null)
 
@@ -35,7 +38,8 @@ export default function Login() {
       const result = await signIn('credentials', {
         redirect: false,
         email: email.trim(),
-        password: password.trim()
+        password: password.trim(),
+        callbackUrl: '/'
       })
 
       if (!result) {
@@ -48,9 +52,6 @@ export default function Login() {
         return
       }
 
-      if (result.ok) {
-        await router.replace('/')
-      }
     } catch (err) {
       console.error('Login error:', err)
       setError('登入時發生錯誤，請稍後再試')
@@ -101,6 +102,7 @@ export default function Login() {
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
             <TextField
               variant="outlined"
+              margin="normal"
               required
               fullWidth
               id="email"
@@ -112,10 +114,10 @@ export default function Login() {
               onChange={handleEmailChange}
               disabled={loading}
               error={!!error}
-              sx={{ mb: 2 }}
             />
             <TextField
               variant="outlined"
+              margin="normal"
               required
               fullWidth
               name="password"
@@ -127,14 +129,13 @@ export default function Login() {
               onChange={handlePasswordChange}
               disabled={loading}
               error={!!error}
-              sx={{ mb: 2 }}
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
               disabled={loading}
-              sx={{ mt: 2 }}
+              sx={{ mt: 3, mb: 2 }}
             >
               {loading ? <CircularProgress size={24} /> : '登入'}
             </Button>
