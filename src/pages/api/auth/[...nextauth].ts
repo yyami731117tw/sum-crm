@@ -7,7 +7,6 @@ import prisma from '@/lib/prisma'
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
-  debug: true,
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -20,7 +19,7 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           throw new Error('請輸入信箱和密碼')
         }
@@ -82,25 +81,6 @@ export const authOptions: NextAuthOptions = {
         session.user.status = token.status as string
       }
       return session
-    },
-    async redirect({ url, baseUrl }) {
-      // 處理錯誤重定向
-      if (url.includes('error')) {
-        return baseUrl + '/auth/error'
-      }
-      
-      // 處理登入成功
-      if (url === '/auth/login') {
-        return baseUrl
-      }
-      
-      // 處理其他頁面
-      return url.startsWith('/') ? baseUrl + url : baseUrl
-    }
-  },
-  events: {
-    async signIn(message) {
-      console.log('Sign in attempt:', message)
     }
   }
 }
