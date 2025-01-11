@@ -84,9 +84,8 @@ export const authOptions: NextAuthOptions = {
       return session
     },
     async redirect({ url, baseUrl }) {
-      // 處理重定向邏輯
       if (url.startsWith('/api/auth/signin')) {
-        return '/login'
+        return `${baseUrl}/login`
       }
       if (url.startsWith(baseUrl)) {
         return url
@@ -99,6 +98,7 @@ export const authOptions: NextAuthOptions = {
   }
 }
 
-export const handler = NextAuth(authOptions)
+const handler = NextAuth(authOptions)
+
 export { handler as GET, handler as POST }
 export default handler 

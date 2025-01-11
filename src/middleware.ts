@@ -1,13 +1,13 @@
 import { withAuth } from 'next-auth/middleware'
 import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
 
 export default withAuth(
   function middleware(req) {
     const path = req.nextUrl.pathname
+    const isAuth = !!req.nextauth?.token
 
-    // 如果用戶已登入且嘗試訪問登入頁面，重定向到首頁
-    if (path === '/login' || path === '/signup') {
+    // 已登入用戶訪問登入或註冊頁面時重定向到首頁
+    if (isAuth && (path === '/login' || path === '/signup')) {
       return NextResponse.redirect(new URL('/', req.url))
     }
 
@@ -15,7 +15,9 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token }) => !!token
+      authorized: ({ token }) => {
+        return !!token
+      }
     },
     pages: {
       signIn: '/login'
