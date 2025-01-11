@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useRouter } from 'next/router'
 import { signIn } from 'next-auth/react'
 import {
   Box,
@@ -13,47 +12,40 @@ import {
 } from '@mui/material'
 
 export default function Login() {
-  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (loading || !email || !password) return
-    
+    if (!email || !password) {
+      setError('請輸入信箱和密碼')
+      return
+    }
+
     setLoading(true)
-    setError(null)
+    setError('')
 
     try {
-      // 直接使用 signIn 並允許重定向
       const result = await signIn('credentials', {
         email: email.trim(),
         password: password.trim(),
-        redirect: true,
-        callbackUrl: '/'
+        callbackUrl: '/',
+        redirect: false
       })
+
+      if (result?.error) {
+        setError(result.error)
+      } else {
+        window.location.href = '/'
+      }
     } catch (err) {
-      console.error('Login error:', err)
       setError('登入時發生錯誤，請稍後再試')
+    } finally {
       setLoading(false)
     }
   }
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value)
-    setError(null)
-  }
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value)
-    setError(null)
-  }
-
-  // 如果 URL 中有錯誤訊息，顯示它
-  const errorMessage = router.query.error as string
-  const displayError = error || errorMessage
 
   return (
     <Container component="main" maxWidth="xs">
@@ -69,14 +61,13 @@ export default function Login() {
           <Typography component="h1" variant="h5" align="center" gutterBottom>
             MBC管理系統
           </Typography>
-          {displayError && (
+          {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
-              {displayError}
+              {error}
             </Alert>
           )}
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          <Box component="form" onSubmit={handleSubmit} noValidate>
             <TextField
-              variant="outlined"
               margin="normal"
               required
               fullWidth
@@ -84,17 +75,13 @@ export default function Login() {
               label="電子郵件"
               name="email"
               autoComplete="email"
-              autoFocus
               value={email}
-              onChange={handleEmailChange}
+              onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
-              error={!!displayError}
-              inputProps={{
-                maxLength: 50
-              }}
+              error={!!error}
+              autoFocus
             />
             <TextField
-              variant="outlined"
               margin="normal"
               required
               fullWidth
@@ -104,12 +91,9 @@ export default function Login() {
               id="password"
               autoComplete="current-password"
               value={password}
-              onChange={handlePasswordChange}
+              onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
-              error={!!displayError}
-              inputProps={{
-                maxLength: 50
-              }}
+              error={!!error}
             />
             <Button
               type="submit"

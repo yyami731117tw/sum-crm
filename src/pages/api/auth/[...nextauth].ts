@@ -1,19 +1,11 @@
-import NextAuth, { NextAuthOptions } from 'next-auth'
+import NextAuth from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { compare } from 'bcryptjs'
 import prisma from '@/lib/prisma'
 
-export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
-  secret: process.env.NEXTAUTH_SECRET,
-  session: {
-    strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
+export default NextAuth({
   providers: [
     CredentialsProvider({
-      id: 'credentials',
       name: 'Credentials',
       credentials: {
         email: { label: "Email", type: "email" },
@@ -24,42 +16,44 @@ export const authOptions: NextAuthOptions = {
           throw new Error('請輸入信箱和密碼')
         }
 
-        try {
-          const user = await prisma.user.findUnique({
-            where: { email: credentials.email },
-            select: {
-              id: true,
-              email: true,
-              name: true,
-              password: true,
-              role: true,
-              status: true
-            }
-          })
-
-          if (!user || !user.password) {
-            throw new Error('信箱或密碼錯誤')
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            password: true,
+            role: true,
+            status: true
           }
+        })
 
-          const isValid = await compare(credentials.password, user.password)
-          if (!isValid) {
-            throw new Error('信箱或密碼錯誤')
-          }
+        if (!user || !user.password) {
+          throw new Error('信箱或密碼錯誤')
+        }
 
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: user.role,
-            status: user.status
-          }
-        } catch (error) {
-          console.error('Authorization error:', error)
-          throw error
+        const isValid = await compare(credentials.password, user.password)
+        if (!isValid) {
+          throw new Error('信箱或密碼錯誤')
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          status: user.status
         }
       }
     })
   ],
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60 // 30 days
+  },
+  jwt: {
+    secret: process.env.NEXTAUTH_SECRET
+  },
   pages: {
     signIn: '/auth/login',
     error: '/auth/error'
@@ -80,8 +74,9 @@ export const authOptions: NextAuthOptions = {
         session.user.status = token.status as string
       }
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      return url.startsWith(baseUrl) ? url : baseUrl
     }
   }
-}
-
-export default NextAuth(authOptions) 
+}) 
