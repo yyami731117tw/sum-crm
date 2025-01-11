@@ -1,68 +1,48 @@
-import { withAuth } from 'next-auth/middleware'
 import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { verify } from 'jsonwebtoken'
 
-export default withAuth(
-  function middleware(req) {
-    const path = req.nextUrl.pathname
-    const token = req.nextauth?.token
-    const isAuth = !!token
-    const userRole = token?.role as string
+export async function middleware(request: NextRequest) {
+  const token = request.cookies.get('auth_token')?.value
+  const { pathname } = request.nextUrl
 
-    // 處理認證相關頁面
-    if (path.startsWith('/auth/')) {
-      // 已登入用戶訪問認證頁面時重定向到首頁
-      if (isAuth && !path.includes('/auth/error')) {
-        return NextResponse.redirect(new URL('/', req.url))
-      }
-      // 未登入用戶可以訪問認證頁面
-      return NextResponse.next()
-    }
-
-    // 未登入用戶只能訪問認證頁面
-    if (!isAuth) {
-      return NextResponse.redirect(new URL('/auth/login', req.url))
-    }
-
-    // 管理員權限檢查
-    if (path.startsWith('/admin') && userRole !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/', req.url))
-    }
-
-    // 一般用戶權限檢查
-    if ((path.startsWith('/members') || path.startsWith('/contracts') || path.startsWith('/projects')) 
-        && userRole !== 'ADMIN' && userRole !== 'USER') {
-      return NextResponse.redirect(new URL('/', req.url))
-    }
-
+  // 允許訪問的公開路徑
+  const publicPaths = ['/auth/login', '/api/auth/login']
+  if (publicPaths.includes(pathname)) {
     return NextResponse.next()
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        const path = req.nextUrl.pathname
-        // 允許訪問認證相關頁面
-        if (path.startsWith('/auth/')) {
-          return true
-        }
-        // 其他頁面需要驗證
-        return !!token
-      }
-    },
-    pages: {
-      signIn: '/auth/login'
-    }
   }
-)
+
+  // API 路由的驗證
+  if (pathname.startsWith('/api/')) {
+    if (!token) {
+      return NextResponse.json(
+        { error: '未授權的訪問' },
+        { status: 401 }
+      )
+    }
+    return NextResponse.next()
+  }
+
+  // 頁面路由的驗證
+  if (!token) {
+    const url = new URL('/auth/login', request.url)
+    url.searchParams.set('callbackUrl', pathname)
+    return NextResponse.redirect(url)
+  }
+
+  try {
+    verify(token, process.env.NEXTAUTH_SECRET || '')
+    return NextResponse.next()
+  } catch (error) {
+    const url = new URL('/auth/login', request.url)
+    url.searchParams.set('error', '登入已過期，請重新登入')
+    return NextResponse.redirect(url)
+  }
+}
 
 export const config = {
   matcher: [
-    '/',
-    '/auth/:path*',
-    '/profile',
-    '/settings',
-    '/members/:path*',
-    '/contracts/:path*',
-    '/projects/:path*',
-    '/admin/:path*'
+    '/((?!_next/static|favicon.ico|.*\\.).*)',
+    '/api/:path*'
   ]
 } 
