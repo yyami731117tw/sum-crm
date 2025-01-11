@@ -80,26 +80,6 @@ export const authOptions: NextAuthOptions = {
         session.user.status = token.status as string
       }
       return session
-    },
-    async redirect({ url, baseUrl }) {
-      // 如果是錯誤頁面，保持原樣
-      if (url.includes('/auth/error')) {
-        return url
-      }
-      // 如果是登入頁面，且已經登入，重定向到首頁
-      if (url.includes('/auth/login')) {
-        return baseUrl
-      }
-      // 如果是相對路徑，添加基本 URL
-      if (url.startsWith('/')) {
-        return `${baseUrl}${url}`
-      }
-      // 如果是完整 URL 且屬於同一域名，直接返回
-      if (url.startsWith(baseUrl)) {
-        return url
-      }
-      // 其他情況返回首頁
-      return baseUrl
     }
   }
 }

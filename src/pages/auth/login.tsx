@@ -21,43 +21,19 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (loading) return
+    if (loading || !email || !password) return
     
     setLoading(true)
     setError(null)
 
     try {
+      // 直接使用 signIn 並允許重定向
       const result = await signIn('credentials', {
-        redirect: false,
         email: email.trim(),
-        password: password.trim()
+        password: password.trim(),
+        redirect: true,
+        callbackUrl: '/'
       })
-
-      if (!result) {
-        setError('登入失敗，請稍後再試')
-        setLoading(false)
-        return
-      }
-
-      if (result.error) {
-        setError(result.error)
-        setLoading(false)
-        return
-      }
-
-      if (result.ok) {
-        try {
-          // 使用 router.push 而不是 window.location
-          await router.push('/')
-        } catch (err) {
-          console.error('Navigation error:', err)
-          // 如果 router.push 失敗，使用 window.location 作為備選方案
-          window.location.href = '/'
-        }
-      } else {
-        setError('登入失敗，請稍後再試')
-        setLoading(false)
-      }
     } catch (err) {
       console.error('Login error:', err)
       setError('登入時發生錯誤，請稍後再試')
@@ -75,6 +51,10 @@ export default function Login() {
     setError(null)
   }
 
+  // 如果 URL 中有錯誤訊息，顯示它
+  const errorMessage = router.query.error as string
+  const displayError = error || errorMessage
+
   return (
     <Container component="main" maxWidth="xs">
       <Box
@@ -89,9 +69,9 @@ export default function Login() {
           <Typography component="h1" variant="h5" align="center" gutterBottom>
             MBC管理系統
           </Typography>
-          {error && (
+          {displayError && (
             <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
+              {displayError}
             </Alert>
           )}
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
@@ -108,7 +88,7 @@ export default function Login() {
               value={email}
               onChange={handleEmailChange}
               disabled={loading}
-              error={!!error}
+              error={!!displayError}
               inputProps={{
                 maxLength: 50
               }}
@@ -126,7 +106,7 @@ export default function Login() {
               value={password}
               onChange={handlePasswordChange}
               disabled={loading}
-              error={!!error}
+              error={!!displayError}
               inputProps={{
                 maxLength: 50
               }}
@@ -135,7 +115,7 @@ export default function Login() {
               type="submit"
               fullWidth
               variant="contained"
-              disabled={loading}
+              disabled={loading || !email || !password}
               sx={{ mt: 3, mb: 2 }}
             >
               {loading ? <CircularProgress size={24} /> : '登入'}
