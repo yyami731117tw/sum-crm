@@ -14,29 +14,34 @@ export const authOptions: AuthOptions = {
         email: { label: 'Email', type: 'text' },
         password: { label: 'Password', type: 'password' }
       },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null
-        }
+      async authorize(credentials, req) {
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            throw new Error('請輸入電子郵件和密碼')
+          }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email }
-        })
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email }
+          })
 
-        if (!user || !user.password) {
-          return null
-        }
+          if (!user || !user.password) {
+            throw new Error('找不到使用者')
+          }
 
-        const isValid = await compare(credentials.password, user.password)
-        if (!isValid) {
-          return null
-        }
+          const isValid = await compare(credentials.password, user.password)
+          if (!isValid) {
+            throw new Error('密碼錯誤')
+          }
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role
+          }
+        } catch (error) {
+          console.error('Authorization Error:', error)
+          throw error
         }
       }
     })
@@ -45,7 +50,8 @@ export const authOptions: AuthOptions = {
     signIn: '/login',
     error: '/auth/error'
   },
-  debug: true,
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development',
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60 // 30 days
@@ -54,12 +60,14 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.role = user.role
+        token.id = user.id
       }
       return token
     },
     async session({ session, token }) {
-      if (token) {
-        session.user.role = token.role
+      if (session.user) {
+        session.user.role = token.role as string
+        session.user.id = token.id as string
       }
       return session
     }
@@ -67,19 +75,20 @@ export const authOptions: AuthOptions = {
 }
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // 設置 CORS 標頭
-  res.setHeader('Access-Control-Allow-Credentials', 'true')
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version')
-
-  // 處理 OPTIONS 請求
   if (req.method === 'OPTIONS') {
-    res.status(200).end()
-    return
+    res.setHeader('Access-Control-Allow-Credentials', 'true')
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || 'http://localhost:3000')
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    return res.status(200).end()
   }
 
-  return await NextAuth(authOptions)(req, res)
+  try {
+    await NextAuth(req, res, authOptions)
+  } catch (error) {
+    console.error('NextAuth Error:', error)
+    return res.status(500).json({ error: '登入過程發生錯誤' })
+  }
 }
 
 export default handler 
