@@ -2,23 +2,6 @@ import NextAuth, { AuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { compare } from 'bcryptjs'
 import prisma from '@/lib/prisma'
-import { NextApiRequest, NextApiResponse } from 'next'
-
-const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  // 設置 CORS 標頭
-  res.setHeader('Access-Control-Allow-Credentials', 'true')
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version')
-
-  // 處理 OPTIONS 請求
-  if (req.method === 'OPTIONS') {
-    res.status(200).end()
-    return
-  }
-
-  return await NextAuth(req, res, authOptions)
-}
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -96,11 +79,6 @@ export const authOptions: AuthOptions = {
         session.user.status = token.status as string
       }
       return session
-    },
-    async redirect({ url, baseUrl }) {
-      if (url.startsWith(baseUrl)) return url
-      if (url.startsWith('/')) return `${baseUrl}${url}`
-      return baseUrl
     }
   },
   pages: {
@@ -111,4 +89,4 @@ export const authOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET
 }
 
-export default handler 
+export default NextAuth(authOptions) 
