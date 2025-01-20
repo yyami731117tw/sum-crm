@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { signIn, useSession } from 'next-auth/react'
+import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import {
   Box,
@@ -12,29 +12,9 @@ import {
   Alert
 } from '@mui/material'
 import Head from 'next/head'
-import { GetServerSideProps } from 'next'
-import { getSession } from 'next-auth/react'
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getSession(context)
-  
-  if (session) {
-    return {
-      redirect: {
-        destination: '/',
-        permanent: false,
-      },
-    }
-  }
-
-  return {
-    props: {}
-  }
-}
 
 export default function Login() {
   const router = useRouter()
-  const { data: session } = useSession()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -42,8 +22,6 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (loading) return
-    
     if (!email || !password) {
       setError('請輸入信箱和密碼')
       return
@@ -54,21 +32,18 @@ export default function Login() {
 
     try {
       const result = await signIn('credentials', {
-        email: email.trim(),
-        password: password.trim(),
+        email,
+        password,
         redirect: false
       })
 
-      if (result?.error) {
-        setError(result.error)
+      if (!result?.ok) {
+        setError('信箱或密碼錯誤')
         return
       }
 
-      if (result?.ok) {
-        await router.replace('/')
-      }
+      router.push('/')
     } catch (err) {
-      console.error('Login error:', err)
       setError('登入時發生錯誤，請稍後再試')
     } finally {
       setLoading(false)
@@ -78,71 +53,80 @@ export default function Login() {
   return (
     <>
       <Head>
-        <title>登入 - MBC管理系統</title>
+        <title>登入 | MBC管理系統</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
-      <Container component="main" maxWidth="xs">
-        <Box
-          sx={{
-            minHeight: '100vh',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            py: 4
-          }}
-        >
-          <Paper 
-            elevation={3} 
-            sx={{ 
-              p: 4, 
-              width: '100%',
-              maxWidth: 400,
-              borderRadius: 2
+      
+      <Box
+        sx={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: '#f5f5f5'
+        }}
+      >
+        <Container maxWidth="sm">
+          <Paper
+            elevation={3}
+            sx={{
+              p: 4,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center'
             }}
           >
-            <Typography 
-              component="h1" 
-              variant="h5" 
-              align="center" 
-              gutterBottom
-              sx={{ fontWeight: 'bold', mb: 3 }}
+            <Typography
+              component="h1"
+              variant="h4"
+              sx={{
+                mb: 4,
+                fontWeight: 'bold',
+                color: '#1976d2'
+              }}
             >
               MBC管理系統
             </Typography>
+
             {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
+              <Alert 
+                severity="error" 
+                sx={{ 
+                  width: '100%',
+                  mb: 2 
+                }}
+              >
                 {error}
               </Alert>
             )}
-            {router.query.error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {router.query.error}
-              </Alert>
-            )}
-            <Box component="form" onSubmit={handleSubmit} noValidate>
+
+            <Box 
+              component="form" 
+              onSubmit={handleSubmit}
+              sx={{ width: '100%' }}
+            >
               <TextField
                 margin="normal"
                 required
                 fullWidth
-                id="email"
                 label="電子郵件"
                 name="email"
+                type="email"
                 autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
                 error={!!error}
-                autoFocus
                 sx={{ mb: 2 }}
               />
+
               <TextField
                 margin="normal"
                 required
                 fullWidth
-                name="password"
                 label="密碼"
+                name="password"
                 type="password"
-                id="password"
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -150,23 +134,33 @@ export default function Login() {
                 error={!!error}
                 sx={{ mb: 3 }}
               />
+
               <Button
                 type="submit"
                 fullWidth
                 variant="contained"
                 disabled={loading || !email || !password}
-                sx={{ 
+                sx={{
                   py: 1.5,
                   fontSize: '1rem',
-                  fontWeight: 'bold'
+                  fontWeight: 500,
+                  textTransform: 'none',
+                  bgcolor: '#1976d2',
+                  '&:hover': {
+                    bgcolor: '#1565c0'
+                  }
                 }}
               >
-                {loading ? <CircularProgress size={24} /> : '登入'}
+                {loading ? (
+                  <CircularProgress size={24} sx={{ color: 'white' }} />
+                ) : (
+                  '登入'
+                )}
               </Button>
             </Box>
           </Paper>
-        </Box>
-      </Container>
+        </Container>
+      </Box>
     </>
   )
 } 
