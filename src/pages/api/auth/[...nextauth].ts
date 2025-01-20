@@ -14,12 +14,15 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('請輸入信箱和密碼')
+          return null
         }
 
         try {
           const user = await prisma.user.findUnique({
-            where: { email: credentials.email },
+            where: { 
+              email: credentials.email,
+              status: 'ACTIVE'
+            },
             select: {
               id: true,
               email: true,
@@ -31,12 +34,12 @@ export const authOptions: AuthOptions = {
           })
 
           if (!user || !user.password) {
-            throw new Error('信箱或密碼錯誤')
+            return null
           }
 
           const isValid = await compare(credentials.password, user.password)
           if (!isValid) {
-            throw new Error('信箱或密碼錯誤')
+            return null
           }
 
           return {
@@ -48,7 +51,7 @@ export const authOptions: AuthOptions = {
           }
         } catch (error) {
           console.error('Authorization error:', error)
-          throw error
+          return null
         }
       }
     })
@@ -79,7 +82,6 @@ export const authOptions: AuthOptions = {
       return session
     }
   },
-  debug: process.env.NODE_ENV === 'development',
   secret: process.env.NEXTAUTH_SECRET
 }
 

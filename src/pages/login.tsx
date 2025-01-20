@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { signIn } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import {
   Box,
@@ -19,6 +19,7 @@ import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material'
 
 export default function Login() {
   const router = useRouter()
+  const { data: session, status } = useSession()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -28,7 +29,10 @@ export default function Login() {
 
   useEffect(() => {
     setMounted(true)
-  }, [])
+    if (status === 'authenticated') {
+      router.replace('/')
+    }
+  }, [status, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,7 +48,8 @@ export default function Login() {
       const result = await signIn('credentials', {
         email: email.trim(),
         password: password.trim(),
-        redirect: false
+        redirect: false,
+        callbackUrl: '/'
       })
 
       if (!result?.ok) {
@@ -52,8 +57,9 @@ export default function Login() {
         return
       }
 
-      router.push('/')
+      router.replace('/')
     } catch (err) {
+      console.error('Login error:', err)
       setError('登入時發生錯誤，請稍後再試')
     } finally {
       setLoading(false)
@@ -66,7 +72,23 @@ export default function Login() {
     }
   }
 
-  if (!mounted) {
+  if (status === 'loading' || !mounted) {
+    return (
+      <Box
+        sx={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(45deg, #1976d2 30%, #21CBF3 90%)'
+        }}
+      >
+        <CircularProgress sx={{ color: 'white' }} />
+      </Box>
+    )
+  }
+
+  if (status === 'authenticated') {
     return null
   }
 
