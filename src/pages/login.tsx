@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import {
@@ -9,9 +9,13 @@ import {
   Typography,
   Paper,
   CircularProgress,
-  Alert
+  Alert,
+  Fade,
+  InputAdornment,
+  IconButton
 } from '@mui/material'
 import Head from 'next/head'
+import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material'
 
 export default function Login() {
   const router = useRouter()
@@ -19,6 +23,12 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,8 +42,8 @@ export default function Login() {
 
     try {
       const result = await signIn('credentials', {
-        email,
-        password,
+        email: email.trim(),
+        password: password.trim(),
         redirect: false
       })
 
@@ -50,6 +60,16 @@ export default function Login() {
     }
   }
 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !loading && email && password) {
+      handleSubmit(e)
+    }
+  }
+
+  if (!mounted) {
+    return null
+  }
+
   return (
     <>
       <Head>
@@ -63,103 +83,161 @@ export default function Login() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          bgcolor: '#f5f5f5'
+          background: 'linear-gradient(45deg, #1976d2 30%, #21CBF3 90%)',
+          p: 2
         }}
       >
-        <Container maxWidth="sm">
-          <Paper
-            elevation={3}
-            sx={{
-              p: 4,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center'
-            }}
-          >
-            <Typography
-              component="h1"
-              variant="h4"
+        <Fade in={mounted}>
+          <Container maxWidth="sm">
+            <Paper
+              elevation={6}
               sx={{
-                mb: 4,
-                fontWeight: 'bold',
-                color: '#1976d2'
+                p: { xs: 3, sm: 4 },
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                borderRadius: 2,
+                bgcolor: 'rgba(255, 255, 255, 0.95)'
               }}
             >
-              MBC管理系統
-            </Typography>
+              <Typography
+                component="h1"
+                variant="h4"
+                sx={{
+                  mb: 4,
+                  fontWeight: 700,
+                  color: '#1976d2',
+                  textAlign: 'center'
+                }}
+              >
+                MBC管理系統
+              </Typography>
 
-            {error && (
-              <Alert 
-                severity="error" 
+              {error && (
+                <Fade in={!!error}>
+                  <Alert 
+                    severity="error" 
+                    sx={{ 
+                      width: '100%',
+                      mb: 2,
+                      '& .MuiAlert-message': {
+                        width: '100%'
+                      }
+                    }}
+                    onClose={() => setError('')}
+                  >
+                    {error}
+                  </Alert>
+                </Fade>
+              )}
+
+              <Box 
+                component="form" 
+                onSubmit={handleSubmit}
                 sx={{ 
                   width: '100%',
-                  mb: 2 
+                  mt: 1
                 }}
               >
-                {error}
-              </Alert>
-            )}
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  label="電子郵件"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  disabled={loading}
+                  error={!!error}
+                  autoFocus
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Email color="action" />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    mb: 2,
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': {
+                        borderColor: '#1976d2',
+                      },
+                    },
+                  }}
+                />
 
-            <Box 
-              component="form" 
-              onSubmit={handleSubmit}
-              sx={{ width: '100%' }}
-            >
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                label="電子郵件"
-                name="email"
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
-                error={!!error}
-                sx={{ mb: 2 }}
-              />
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  label="密碼"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  disabled={loading}
+                  error={!!error}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Lock color="action" />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
+                  sx={{
+                    mb: 3,
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': {
+                        borderColor: '#1976d2',
+                      },
+                    },
+                  }}
+                />
 
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                label="密碼"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
-                error={!!error}
-                sx={{ mb: 3 }}
-              />
-
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                disabled={loading || !email || !password}
-                sx={{
-                  py: 1.5,
-                  fontSize: '1rem',
-                  fontWeight: 500,
-                  textTransform: 'none',
-                  bgcolor: '#1976d2',
-                  '&:hover': {
-                    bgcolor: '#1565c0'
-                  }
-                }}
-              >
-                {loading ? (
-                  <CircularProgress size={24} sx={{ color: 'white' }} />
-                ) : (
-                  '登入'
-                )}
-              </Button>
-            </Box>
-          </Paper>
-        </Container>
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  disabled={loading || !email || !password}
+                  sx={{
+                    py: 1.5,
+                    fontSize: '1.1rem',
+                    fontWeight: 500,
+                    textTransform: 'none',
+                    background: 'linear-gradient(45deg, #1976d2 30%, #21CBF3 90%)',
+                    boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
+                    '&:hover': {
+                      background: 'linear-gradient(45deg, #1565c0 30%, #1976d2 90%)',
+                    }
+                  }}
+                >
+                  {loading ? (
+                    <CircularProgress size={24} sx={{ color: 'white' }} />
+                  ) : (
+                    '登入'
+                  )}
+                </Button>
+              </Box>
+            </Paper>
+          </Container>
+        </Fade>
       </Box>
     </>
   )
