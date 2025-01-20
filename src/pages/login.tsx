@@ -56,12 +56,21 @@ export default function Login() {
       const result = await signIn('credentials', {
         email: email.trim(),
         password: password.trim(),
-        redirect: true,
-        callbackUrl: '/'
+        redirect: false
       })
+
+      if (result?.error) {
+        setError(result.error)
+        return
+      }
+
+      if (result?.ok) {
+        await router.replace('/')
+      }
     } catch (err) {
       console.error('Login error:', err)
       setError('登入時發生錯誤，請稍後再試')
+    } finally {
       setLoading(false)
     }
   }
