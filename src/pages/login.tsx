@@ -21,6 +21,8 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (loading) return
+    
     if (!email || !password) {
       setError('請輸入信箱和密碼')
       return
@@ -33,13 +35,14 @@ export default function Login() {
       const result = await signIn('credentials', {
         email: email.trim(),
         password: password.trim(),
-        redirect: false
+        redirect: false,
+        callbackUrl: '/'
       })
 
       if (result?.error) {
-        setError('信箱或密碼錯誤')
-      } else if (result?.ok) {
-        router.push('/')
+        setError(result.error)
+      } else if (result?.url) {
+        await router.replace(result.url)
       }
     } catch (err) {
       console.error('Login error:', err)

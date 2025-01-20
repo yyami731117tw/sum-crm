@@ -12,9 +12,9 @@ export const authOptions: AuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
-          return null
+          throw new Error('請輸入信箱和密碼')
         }
 
         try {
@@ -31,12 +31,12 @@ export const authOptions: AuthOptions = {
           })
 
           if (!user || !user.password) {
-            return null
+            throw new Error('信箱或密碼錯誤')
           }
 
           const isValid = await compare(credentials.password, user.password)
           if (!isValid) {
-            return null
+            throw new Error('信箱或密碼錯誤')
           }
 
           return {
@@ -48,7 +48,7 @@ export const authOptions: AuthOptions = {
           }
         } catch (error) {
           console.error('Authorization error:', error)
-          return null
+          throw error
         }
       }
     })
@@ -79,6 +79,7 @@ export const authOptions: AuthOptions = {
       return session
     }
   },
+  debug: false,
   secret: process.env.NEXTAUTH_SECRET
 }
 
