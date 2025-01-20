@@ -41,7 +41,7 @@ export const authOptions: AuthOptions = {
           }
         } catch (error) {
           console.error('Authorization Error:', error)
-          throw error
+          return null
         }
       }
     })
@@ -74,21 +74,26 @@ export const authOptions: AuthOptions = {
   }
 }
 
+const corsHeaders = {
+  'Access-Control-Allow-Credentials': 'true',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+}
+
 async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Set CORS headers for all requests
+  Object.entries(corsHeaders).forEach(([key, value]) => {
+    res.setHeader(key, value)
+  })
+
+  // Handle preflight request
   if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Credentials', 'true')
-    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || 'http://localhost:3000')
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
     return res.status(200).end()
   }
 
-  try {
-    await NextAuth(req, res, authOptions)
-  } catch (error) {
-    console.error('NextAuth Error:', error)
-    return res.status(500).json({ error: '登入過程發生錯誤' })
-  }
+  // Handle NextAuth request
+  return NextAuth(req, res, authOptions)
 }
 
 export default handler 
