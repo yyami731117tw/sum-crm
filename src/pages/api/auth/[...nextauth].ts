@@ -2,7 +2,6 @@ import NextAuth, { AuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { PrismaClient } from '@prisma/client'
 import { compare } from 'bcryptjs'
-import { NextApiRequest, NextApiResponse } from 'next'
 
 const prisma = new PrismaClient()
 
@@ -45,7 +44,7 @@ export const authOptions: AuthOptions = {
     signIn: '/login',
     error: '/auth/error'
   },
-  debug: true,
+  debug: false,
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60 // 30 days
@@ -66,23 +65,4 @@ export const authOptions: AuthOptions = {
   }
 }
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', 'true')
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  )
-
-  // Handle preflight request
-  if (req.method === 'OPTIONS') {
-    res.status(200).end()
-    return
-  }
-
-  return NextAuth(authOptions)(req, res)
-}
-
-export default handler 
+export default NextAuth(authOptions) 
