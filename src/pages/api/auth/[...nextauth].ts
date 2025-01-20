@@ -7,6 +7,11 @@ import { NextApiRequest, NextApiResponse } from 'next'
 // 初始化 Prisma 客戶端
 const prisma = new PrismaClient({
   log: ['query', 'info', 'warn', 'error'],
+  datasources: {
+    db: {
+      url: process.env.DIRECT_URL
+    }
+  }
 })
 
 // 測試資料庫連接的函數
@@ -19,6 +24,10 @@ async function testDatabaseConnection() {
     return true
   } catch (error) {
     console.error('Database connection test failed:', error)
+    if (error instanceof Error) {
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
+    }
     return false
   }
 }
@@ -43,12 +52,15 @@ export const authOptions: AuthOptions = {
           // 測試資料庫連接
           const isConnected = await testDatabaseConnection()
           if (!isConnected) {
+            console.error('Database connection failed during authorization')
             throw new Error('資料庫連接失敗')
           }
 
           // 查找用戶
           const user = await prisma.user.findUnique({
-            where: { email: credentials.email },
+            where: { 
+              email: credentials.email.toLowerCase().trim()
+            },
             select: {
               id: true,
               email: true,
@@ -62,10 +74,12 @@ export const authOptions: AuthOptions = {
           console.log('User lookup result:', user ? 'Found' : 'Not found')
 
           if (!user) {
+            console.log('User not found:', credentials.email)
             throw new Error('找不到使用者')
           }
 
           if (!user.password) {
+            console.log('User has no password set:', credentials.email)
             throw new Error('使用者密碼未設置')
           }
 
@@ -74,10 +88,12 @@ export const authOptions: AuthOptions = {
           console.log('Password validation:', isValid ? 'Success' : 'Failed')
 
           if (!isValid) {
+            console.log('Invalid password for user:', credentials.email)
             throw new Error('密碼錯誤')
           }
 
           if (user.status !== 'active') {
+            console.log('Inactive user attempted login:', credentials.email)
             throw new Error('帳號尚未啟用')
           }
 
@@ -100,7 +116,13 @@ export const authOptions: AuthOptions = {
           }
         } catch (error) {
           console.error('Authorization error:', error)
+          if (error instanceof Error) {
+            console.error('Error message:', error.message)
+            console.error('Error stack:', error.stack)
+          }
           throw error
+        } finally {
+          await prisma.$disconnect()
         }
       }
     })
@@ -155,6 +177,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // 測試資料庫連接
     const isConnected = await testDatabaseConnection()
     if (!isConnected) {
+      console.error('Database connection test failed in handler')
       return res.status(500).json({ error: '資料庫連接失敗' })
     }
 
@@ -165,6 +188,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return await NextAuth(req, res, authOptions)
   } catch (error) {
     console.error('NextAuth Error:', error)
+    if (error instanceof Error) {
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
+    }
     return res.status(500).json({ 
       error: '登入過程發生錯誤',
       details: error instanceof Error ? error.message : '未知錯誤'
