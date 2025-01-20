@@ -19,23 +19,34 @@ export default function Login() {
       setLoading(true)
       setError('')
 
+      console.log('Attempting to sign in with:', { email })
+
       const result = await signIn('credentials', {
         email: email.trim(),
         password: password.trim(),
-        redirect: false
+        redirect: false,
+        callbackUrl: '/'
       })
 
       console.log('Sign in result:', result)
 
-      if (result?.error) {
+      if (!result) {
+        throw new Error('登入失敗：未收到回應')
+      }
+
+      if (result.error) {
         setError(result.error)
         return
       }
 
-      await router.replace('/')
+      if (result.ok) {
+        await router.replace('/')
+      } else {
+        setError('登入失敗，請檢查您的帳號密碼')
+      }
     } catch (error) {
       console.error('Login error:', error)
-      setError('登入時發生錯誤，請稍後再試')
+      setError(error instanceof Error ? error.message : '登入時發生錯誤，請稍後再試')
     } finally {
       setLoading(false)
     }
@@ -60,9 +71,9 @@ export default function Login() {
           <Typography component="h1" variant="h5">
             登入
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
             {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
+              <Alert severity="error" sx={{ mb: 2, width: '100%' }}>
                 {error}
               </Alert>
             )}
@@ -78,6 +89,7 @@ export default function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
+              error={!!error}
             />
             <TextField
               margin="normal"
@@ -91,13 +103,14 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
+              error={!!error}
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2, position: 'relative' }}
-              disabled={loading}
+              sx={{ mt: 3, mb: 2, position: 'relative', height: 48 }}
+              disabled={loading || !email || !password}
             >
               {loading ? (
                 <>
