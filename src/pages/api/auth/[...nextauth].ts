@@ -15,7 +15,7 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          return null
+          throw new Error('請輸入信箱和密碼')
         }
 
         try {
@@ -32,12 +32,12 @@ export const authOptions: AuthOptions = {
           })
 
           if (!user || !user.password) {
-            return null
+            throw new Error('信箱或密碼錯誤')
           }
 
           const isValid = await compare(credentials.password, user.password)
           if (!isValid) {
-            return null
+            throw new Error('信箱或密碼錯誤')
           }
 
           return {
@@ -49,7 +49,7 @@ export const authOptions: AuthOptions = {
           }
         } catch (error) {
           console.error('Authorization error:', error)
-          return null
+          throw error
         }
       }
     })
@@ -84,22 +84,22 @@ export const authOptions: AuthOptions = {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // 設置 CORS 標頭
-  res.setHeader('Access-Control-Allow-Credentials', 'true')
-  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-
-  // 處理 OPTIONS 請求
   if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Credentials', 'true')
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*')
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
     res.status(200).end()
     return
   }
 
   try {
-    await NextAuth(req, res, authOptions)
+    return await NextAuth(req, res, authOptions)
   } catch (error) {
     console.error('NextAuth error:', error)
-    res.status(500).json({ error: '認證服務發生錯誤' })
+    return res.status(500).json({ 
+      error: '認證服務發生錯誤',
+      details: error instanceof Error ? error.message : '未知錯誤'
+    })
   }
 } 

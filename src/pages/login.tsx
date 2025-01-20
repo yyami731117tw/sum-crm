@@ -11,6 +11,7 @@ import {
   CircularProgress,
   Alert
 } from '@mui/material'
+import Head from 'next/head'
 
 export default function Login() {
   const router = useRouter()
@@ -35,14 +36,16 @@ export default function Login() {
       const result = await signIn('credentials', {
         email: email.trim(),
         password: password.trim(),
-        redirect: false,
-        callbackUrl: '/'
+        redirect: false
       })
 
       if (result?.error) {
         setError('信箱或密碼錯誤')
-      } else if (result?.ok) {
-        router.push('/')
+        return
+      }
+      
+      if (result?.ok) {
+        await router.replace('/')
       }
     } catch (err) {
       console.error('Login error:', err)
@@ -53,65 +56,92 @@ export default function Login() {
   }
 
   return (
-    <Container component="main" maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
-          <Typography component="h1" variant="h5" align="center" gutterBottom>
-            MBC管理系統
-          </Typography>
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-          <Box component="form" onSubmit={handleSubmit} noValidate>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="電子郵件"
-              name="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={loading}
-              error={!!error}
-              autoFocus
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="密碼"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
-              error={!!error}
-            />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              disabled={loading || !email || !password}
-              sx={{ mt: 3, mb: 2 }}
+    <>
+      <Head>
+        <title>登入 - MBC管理系統</title>
+      </Head>
+      <Container component="main" maxWidth="xs">
+        <Box
+          sx={{
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            py: 4
+          }}
+        >
+          <Paper 
+            elevation={3} 
+            sx={{ 
+              p: 4, 
+              width: '100%',
+              maxWidth: 400,
+              borderRadius: 2
+            }}
+          >
+            <Typography 
+              component="h1" 
+              variant="h5" 
+              align="center" 
+              gutterBottom
+              sx={{ fontWeight: 'bold', mb: 3 }}
             >
-              {loading ? <CircularProgress size={24} /> : '登入'}
-            </Button>
-          </Box>
-        </Paper>
-      </Box>
-    </Container>
+              MBC管理系統
+            </Typography>
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error}
+              </Alert>
+            )}
+            <Box component="form" onSubmit={handleSubmit} noValidate>
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                id="email"
+                label="電子郵件"
+                name="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+                error={!!error}
+                autoFocus
+                sx={{ mb: 2 }}
+              />
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                name="password"
+                label="密碼"
+                type="password"
+                id="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                error={!!error}
+                sx={{ mb: 3 }}
+              />
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                disabled={loading || !email || !password}
+                sx={{ 
+                  py: 1.5,
+                  fontSize: '1rem',
+                  fontWeight: 'bold'
+                }}
+              >
+                {loading ? <CircularProgress size={24} /> : '登入'}
+              </Button>
+            </Box>
+          </Paper>
+        </Box>
+      </Container>
+    </>
   )
 } 
