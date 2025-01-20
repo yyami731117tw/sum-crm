@@ -6,6 +6,7 @@ import prisma from '@/lib/prisma'
 export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
+      id: 'credentials',
       name: 'Credentials',
       credentials: {
         email: { label: "Email", type: "email" },
@@ -13,54 +14,52 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('請輸入信箱和密碼')
+          return null
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            password: true,
-            role: true,
-            status: true
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              password: true,
+              role: true,
+              status: true
+            }
+          })
+
+          if (!user || !user.password) {
+            return null
           }
-        })
 
-        if (!user || !user.password) {
-          console.log(`Login failed: User not found - ${credentials.email}`)
-          throw new Error('信箱或密碼錯誤')
-        }
+          const isValid = await compare(credentials.password, user.password)
+          if (!isValid) {
+            return null
+          }
 
-        const isValid = await compare(credentials.password, user.password)
-        if (!isValid) {
-          console.log(`Login failed: Invalid password - ${credentials.email}`)
-          throw new Error('信箱或密碼錯誤')
-        }
-
-        console.log(`Login successful: ${user.email} (${user.role})`)
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          status: user.status
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            status: user.status
+          }
+        } catch (error) {
+          console.error('Authorization error:', error)
+          return null
         }
       }
     })
   ],
-  session: {
-    strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60 // 30 days
-  },
-  jwt: {
-    secret: process.env.NEXTAUTH_SECRET,
-    maxAge: 30 * 24 * 60 * 60 // 30 days
-  },
   pages: {
     signIn: '/login',
     error: '/auth/error'
+  },
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60 // 30 days
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -79,7 +78,8 @@ export const authOptions: AuthOptions = {
       }
       return session
     }
-  }
+  },
+  secret: process.env.NEXTAUTH_SECRET
 }
 
 export default NextAuth(authOptions) 

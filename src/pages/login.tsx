@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { signIn, getSession } from 'next-auth/react'
-import { GetServerSideProps } from 'next'
+import { signIn } from 'next-auth/react'
+import { useRouter } from 'next/router'
 import {
   Box,
   Container,
@@ -12,24 +12,8 @@ import {
   Alert
 } from '@mui/material'
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getSession(context)
-  
-  if (session) {
-    return {
-      redirect: {
-        destination: '/',
-        permanent: false,
-      },
-    }
-  }
-
-  return {
-    props: {}
-  }
-}
-
 export default function Login() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -53,11 +37,12 @@ export default function Login() {
       })
 
       if (result?.error) {
-        setError(result.error)
-      } else {
-        window.location.href = '/'
+        setError('信箱或密碼錯誤')
+      } else if (result?.ok) {
+        router.push('/')
       }
     } catch (err) {
+      console.error('Login error:', err)
       setError('登入時發生錯誤，請稍後再試')
     } finally {
       setLoading(false)
