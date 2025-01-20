@@ -4,7 +4,24 @@ import { PrismaClient } from '@prisma/client'
 import { compare } from 'bcryptjs'
 import { NextApiRequest, NextApiResponse } from 'next'
 
-const prisma = new PrismaClient()
+// 初始化 Prisma 客戶端
+const prisma = new PrismaClient({
+  log: ['query', 'info', 'warn', 'error'],
+})
+
+// 測試資料庫連接的函數
+async function testDatabaseConnection() {
+  try {
+    await prisma.$connect()
+    // 測試查詢
+    const userCount = await prisma.user.count()
+    console.log('Database connection successful, user count:', userCount)
+    return true
+  } catch (error) {
+    console.error('Database connection test failed:', error)
+    return false
+  }
+}
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -15,27 +32,46 @@ export const authOptions: AuthOptions = {
         password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials, req) {
-        console.log('Authorize function called with credentials:', credentials?.email)
+        console.log('Starting authorization process for:', credentials?.email)
+
+        if (!credentials?.email || !credentials?.password) {
+          console.log('Missing credentials')
+          throw new Error('請輸入電子郵件和密碼')
+        }
 
         try {
-          if (!credentials?.email || !credentials?.password) {
-            console.log('Missing credentials')
-            throw new Error('請輸入電子郵件和密碼')
+          // 測試資料庫連接
+          const isConnected = await testDatabaseConnection()
+          if (!isConnected) {
+            throw new Error('資料庫連接失敗')
           }
 
+          // 查找用戶
           const user = await prisma.user.findUnique({
-            where: { email: credentials.email }
+            where: { email: credentials.email },
+            select: {
+              id: true,
+              email: true,
+              password: true,
+              name: true,
+              role: true,
+              status: true
+            }
           })
 
-          console.log('User found:', user ? 'Yes' : 'No')
+          console.log('User lookup result:', user ? 'Found' : 'Not found')
 
-          if (!user || !user.password) {
-            console.log('User not found or no password')
+          if (!user) {
             throw new Error('找不到使用者')
           }
 
+          if (!user.password) {
+            throw new Error('使用者密碼未設置')
+          }
+
+          // 驗證密碼
           const isValid = await compare(credentials.password, user.password)
-          console.log('Password valid:', isValid)
+          console.log('Password validation:', isValid ? 'Success' : 'Failed')
 
           if (!isValid) {
             throw new Error('密碼錯誤')
@@ -48,8 +84,13 @@ export const authOptions: AuthOptions = {
           // 更新最後登入時間
           await prisma.user.update({
             where: { id: user.id },
-            data: { lastLoginAt: new Date() }
+            data: { 
+              lastLoginAt: new Date(),
+              updatedAt: new Date()
+            }
           })
+
+          console.log('Login successful for user:', user.email)
 
           return {
             id: user.id,
@@ -73,7 +114,7 @@ export const authOptions: AuthOptions = {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60 // 30 days
   },
-  debug: process.env.NODE_ENV === 'development',
+  debug: true,
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -90,11 +131,6 @@ export const authOptions: AuthOptions = {
       return session
     }
   }
-}
-
-// 創建一個包裝函數來處理 NextAuth
-const handleNextAuth = async (req: NextApiRequest, res: NextApiResponse) => {
-  return await NextAuth(req, res, authOptions)
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -117,11 +153,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     // 測試資料庫連接
-    try {
-      await prisma.$connect()
-      console.log('Database connection successful')
-    } catch (dbError) {
-      console.error('Database connection error:', dbError)
+    const isConnected = await testDatabaseConnection()
+    if (!isConnected) {
       return res.status(500).json({ error: '資料庫連接失敗' })
     }
 
@@ -129,7 +162,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.setHeader('Content-Type', 'application/json')
     
     // 處理 NextAuth
-    return handleNextAuth(req, res)
+    return await NextAuth(req, res, authOptions)
   } catch (error) {
     console.error('NextAuth Error:', error)
     return res.status(500).json({ 
