@@ -79,25 +79,28 @@ export const authOptions: AuthOptions = {
       return session
     }
   },
-  debug: false,
+  debug: process.env.NODE_ENV === 'development',
   secret: process.env.NEXTAUTH_SECRET
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // 設置 CORS 標頭
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+
+  // 處理 OPTIONS 請求
   if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Credentials', 'true')
-    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*')
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
     res.status(200).end()
     return
   }
 
   try {
-    return await NextAuth(req, res, authOptions)
+    await NextAuth(req, res, authOptions)
   } catch (error) {
     console.error('NextAuth error:', error)
-    return res.status(500).json({ 
+    res.status(500).json({ 
       error: '認證服務發生錯誤',
       details: error instanceof Error ? error.message : '未知錯誤'
     })
