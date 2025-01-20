@@ -15,8 +15,11 @@ export const authOptions: AuthOptions = {
         password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials, req) {
+        console.log('Authorize function called with credentials:', credentials?.email)
+
         try {
           if (!credentials?.email || !credentials?.password) {
+            console.log('Missing credentials')
             throw new Error('請輸入電子郵件和密碼')
           }
 
@@ -24,14 +27,29 @@ export const authOptions: AuthOptions = {
             where: { email: credentials.email }
           })
 
+          console.log('User found:', user ? 'Yes' : 'No')
+
           if (!user || !user.password) {
+            console.log('User not found or no password')
             throw new Error('找不到使用者')
           }
 
           const isValid = await compare(credentials.password, user.password)
+          console.log('Password valid:', isValid)
+
           if (!isValid) {
             throw new Error('密碼錯誤')
           }
+
+          if (user.status !== 'active') {
+            throw new Error('帳號尚未啟用')
+          }
+
+          // 更新最後登入時間
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { lastLoginAt: new Date() }
+          })
 
           return {
             id: user.id,
@@ -40,7 +58,7 @@ export const authOptions: AuthOptions = {
             role: user.role
           }
         } catch (error) {
-          console.error('Authorization Error:', error)
+          console.error('Authorization error:', error)
           throw error
         }
       }
@@ -51,11 +69,11 @@ export const authOptions: AuthOptions = {
     error: '/auth/error'
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60 // 30 days
   },
+  debug: process.env.NODE_ENV === 'development',
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -75,6 +93,8 @@ export const authOptions: AuthOptions = {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  console.log('Auth API called:', req.method, req.url)
+
   // 設置 CORS 標頭
   res.setHeader('Access-Control-Allow-Credentials', 'true')
   res.setHeader('Access-Control-Allow-Origin', req.headers.origin || 'https://sum-crm.vercel.app')
@@ -92,10 +112,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'POST') {
       res.setHeader('Content-Type', 'application/json')
     }
+
+    // 測試資料庫連接
+    try {
+      await prisma.$connect()
+      console.log('Database connection successful')
+    } catch (dbError) {
+      console.error('Database connection error:', dbError)
+      return res.status(500).json({ error: '資料庫連接失敗' })
+    }
     
-    await NextAuth(req, res, authOptions)
+    const response = await NextAuth(req, res, authOptions)
+    return response
   } catch (error) {
     console.error('NextAuth Error:', error)
-    res.status(500).json({ error: '登入過程發生錯誤' })
+    return res.status(500).json({ error: '登入過程發生錯誤' })
+  } finally {
+    await prisma.$disconnect()
   }
 } 
