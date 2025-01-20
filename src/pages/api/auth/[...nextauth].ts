@@ -13,9 +13,9 @@ export const authOptions: AuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('請輸入信箱和密碼')
+          return null
         }
 
         try {
@@ -32,12 +32,12 @@ export const authOptions: AuthOptions = {
           })
 
           if (!user || !user.password) {
-            throw new Error('信箱或密碼錯誤')
+            return null
           }
 
           const isValid = await compare(credentials.password, user.password)
           if (!isValid) {
-            throw new Error('信箱或密碼錯誤')
+            return null
           }
 
           return {
@@ -49,14 +49,13 @@ export const authOptions: AuthOptions = {
           }
         } catch (error) {
           console.error('Authorization error:', error)
-          throw error
+          return null
         }
       }
     })
   ],
   pages: {
-    signIn: '/login',
-    error: '/auth/error'
+    signIn: '/login'
   },
   session: {
     strategy: 'jwt',
@@ -84,12 +83,12 @@ export const authOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET
 }
 
-async function auth(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // 設置 CORS 標頭
   res.setHeader('Access-Control-Allow-Credentials', 'true')
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version')
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
 
   // 處理 OPTIONS 請求
   if (req.method === 'OPTIONS') {
@@ -98,12 +97,9 @@ async function auth(req: NextApiRequest, res: NextApiResponse) {
   }
 
   try {
-    // 處理 NextAuth 請求
-    return await NextAuth(req, res, authOptions)
+    await NextAuth(req, res, authOptions)
   } catch (error) {
     console.error('NextAuth error:', error)
-    return res.status(500).json({ error: '認證服務發生錯誤' })
+    res.status(500).json({ error: '認證服務發生錯誤' })
   }
-}
-
-export default auth 
+} 
