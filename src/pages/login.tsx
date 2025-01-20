@@ -29,13 +29,22 @@ export default function Login() {
 
   useEffect(() => {
     setMounted(true)
-    if (status === 'authenticated') {
+    const { error } = router.query
+    if (error) {
+      setError(Array.isArray(error) ? error[0] : error)
+    }
+  }, [router.query])
+
+  useEffect(() => {
+    if (status === 'authenticated' && mounted) {
       router.replace('/')
     }
-  }, [status, router])
+  }, [status, router, mounted])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (loading) return
+    
     if (!email || !password) {
       setError('請輸入信箱和密碼')
       return
@@ -48,16 +57,17 @@ export default function Login() {
       const result = await signIn('credentials', {
         email: email.trim(),
         password: password.trim(),
-        redirect: false,
-        callbackUrl: '/'
+        redirect: false
       })
 
-      if (!result?.ok) {
-        setError('信箱或密碼錯誤')
+      if (result?.error) {
+        setError(result.error)
         return
       }
 
-      router.replace('/')
+      if (result?.url) {
+        router.replace('/')
+      }
     } catch (err) {
       console.error('Login error:', err)
       setError('登入時發生錯誤，請稍後再試')
@@ -72,7 +82,7 @@ export default function Login() {
     }
   }
 
-  if (status === 'loading' || !mounted) {
+  if (!mounted || status === 'loading') {
     return (
       <Box
         sx={{
