@@ -35,13 +35,13 @@ export const authOptions: AuthOptions = {
 
           if (!user || !user.password) {
             console.log('User not found:', credentials.email)
-            return null
+            throw new Error('信箱或密碼錯誤')
           }
 
           const isValid = await compare(credentials.password, user.password)
           if (!isValid) {
             console.log('Invalid password for user:', credentials.email)
-            return null
+            throw new Error('信箱或密碼錯誤')
           }
 
           console.log('Login successful for user:', credentials.email)
@@ -54,14 +54,13 @@ export const authOptions: AuthOptions = {
           }
         } catch (error) {
           console.error('Authorization error:', error)
-          return null
+          throw error
         }
       }
     })
   ],
   pages: {
-    signIn: '/login',
-    error: '/login'
+    signIn: '/login'
   },
   session: {
     strategy: 'jwt',
@@ -85,6 +84,7 @@ export const authOptions: AuthOptions = {
       return session
     }
   },
+  debug: process.env.NODE_ENV === 'development',
   secret: process.env.NEXTAUTH_SECRET
 }
 
