@@ -15,7 +15,7 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('請輸入信箱和密碼')
+          return null
         }
 
         try {
@@ -36,13 +36,13 @@ export const authOptions: AuthOptions = {
 
           if (!user || !user.password) {
             console.log('User not found:', credentials.email)
-            throw new Error('信箱或密碼錯誤')
+            return null
           }
 
           const isValid = await compare(credentials.password, user.password)
           if (!isValid) {
             console.log('Invalid password for user:', credentials.email)
-            throw new Error('信箱或密碼錯誤')
+            return null
           }
 
           console.log('Login successful for user:', credentials.email)
@@ -55,7 +55,7 @@ export const authOptions: AuthOptions = {
           }
         } catch (error) {
           console.error('Authorization error:', error)
-          throw error
+          return null
         }
       }
     })
@@ -86,36 +86,8 @@ export const authOptions: AuthOptions = {
     signIn: '/login',
     error: '/login'
   },
-  debug: process.env.NODE_ENV === 'development',
+  debug: false,
   secret: process.env.NEXTAUTH_SECRET
 }
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', 'true')
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  )
-
-  // Handle preflight request
-  if (req.method === 'OPTIONS') {
-    res.status(200).end()
-    return
-  }
-
-  try {
-    // Forward the request to NextAuth
-    return await NextAuth(req, res, authOptions)
-  } catch (error) {
-    console.error('NextAuth error:', error)
-    return res.status(500).json({ 
-      error: 'Internal server error',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    })
-  }
-}
-
-export default handler 
+export default NextAuth(authOptions) 
