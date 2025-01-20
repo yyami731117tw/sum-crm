@@ -86,24 +86,35 @@ export const authOptions: AuthOptions = {
     signIn: '/login',
     error: '/login'
   },
+  debug: process.env.NODE_ENV === 'development',
   secret: process.env.NEXTAUTH_SECRET
 }
 
-const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Allow', ['POST'])
-    return res.status(200).end()
-  }
+async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  )
 
-  if (req.method !== 'POST' && req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' })
+  // Handle preflight request
+  if (req.method === 'OPTIONS') {
+    res.status(200).end()
+    return
   }
 
   try {
+    // Forward the request to NextAuth
     return await NextAuth(req, res, authOptions)
   } catch (error) {
     console.error('NextAuth error:', error)
-    return res.status(500).json({ error: 'Internal server error' })
+    return res.status(500).json({ 
+      error: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    })
   }
 }
 
