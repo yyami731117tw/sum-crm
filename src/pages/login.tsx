@@ -57,16 +57,14 @@ export default function Login() {
       const result = await signIn('credentials', {
         email: email.trim(),
         password: password.trim(),
-        redirect: false
+        redirect: false,
+        callbackUrl: '/'
       })
 
       if (result?.error) {
         setError(result.error)
-        return
-      }
-
-      if (result?.url) {
-        router.replace('/')
+      } else if (result?.ok) {
+        await router.replace('/')
       }
     } catch (err) {
       console.error('Login error:', err)
@@ -82,7 +80,7 @@ export default function Login() {
     }
   }
 
-  if (!mounted || status === 'loading') {
+  if (!mounted) {
     return (
       <Box
         sx={{
@@ -99,6 +97,7 @@ export default function Login() {
   }
 
   if (status === 'authenticated') {
+    router.replace('/')
     return null
   }
 

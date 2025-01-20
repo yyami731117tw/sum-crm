@@ -12,7 +12,7 @@ export const authOptions: AuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
           throw new Error('請輸入信箱和密碼')
         }
@@ -60,13 +60,11 @@ export const authOptions: AuthOptions = {
     })
   ],
   pages: {
-    signIn: '/login',
-    error: '/login'
+    signIn: '/login'
   },
-  debug: process.env.NODE_ENV === 'development',
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60 // 30 days
+    maxAge: 30 * 24 * 60 * 60
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -84,6 +82,11 @@ export const authOptions: AuthOptions = {
         session.user.status = token.status as string
       }
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith(baseUrl)) return url
+      if (url.startsWith('/')) return baseUrl + url
+      return baseUrl
     }
   },
   secret: process.env.NEXTAUTH_SECRET
