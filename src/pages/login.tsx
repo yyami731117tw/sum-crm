@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/router'
-import { Alert, Box, Button, Container, TextField, Typography } from '@mui/material'
-import { LoadingButton } from '@mui/lab'
+import { Alert, Box, Button, Container, TextField, Typography, CircularProgress } from '@mui/material'
 import Head from 'next/head'
 
 export default function Login() {
@@ -93,15 +92,31 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
             />
-            <LoadingButton
+            <Button
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-              loading={loading}
+              sx={{ mt: 3, mb: 2, position: 'relative' }}
+              disabled={loading}
             >
-              登入
-            </LoadingButton>
+              {loading ? (
+                <>
+                  <CircularProgress
+                    size={24}
+                    sx={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      marginTop: '-12px',
+                      marginLeft: '-12px',
+                    }}
+                  />
+                  處理中...
+                </>
+              ) : (
+                '登入'
+              )}
+            </Button>
           </Box>
         </Box>
       </Container>
