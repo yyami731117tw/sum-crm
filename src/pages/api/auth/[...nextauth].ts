@@ -92,14 +92,22 @@ export const authOptions: AuthOptions = {
   }
 }
 
+// 創建一個包裝函數來處理 NextAuth
+const handleNextAuth = async (req: NextApiRequest, res: NextApiResponse) => {
+  return await NextAuth(req, res, authOptions)
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.log('Auth API called:', req.method, req.url)
 
   // 設置 CORS 標頭
   res.setHeader('Access-Control-Allow-Credentials', 'true')
-  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || 'https://sum-crm.vercel.app')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS')
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
+  )
 
   // 處理 OPTIONS 請求
   if (req.method === 'OPTIONS') {
@@ -108,11 +116,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // 確保請求內容類型正確
-    if (req.method === 'POST') {
-      res.setHeader('Content-Type', 'application/json')
-    }
-
     // 測試資料庫連接
     try {
       await prisma.$connect()
@@ -121,12 +124,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.error('Database connection error:', dbError)
       return res.status(500).json({ error: '資料庫連接失敗' })
     }
+
+    // 設置響應頭
+    res.setHeader('Content-Type', 'application/json')
     
-    const response = await NextAuth(req, res, authOptions)
-    return response
+    // 處理 NextAuth
+    return handleNextAuth(req, res)
   } catch (error) {
     console.error('NextAuth Error:', error)
-    return res.status(500).json({ error: '登入過程發生錯誤' })
+    return res.status(500).json({ 
+      error: '登入過程發生錯誤',
+      details: error instanceof Error ? error.message : '未知錯誤'
+    })
   } finally {
     await prisma.$disconnect()
   }
