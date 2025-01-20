@@ -14,7 +14,7 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          return null
+          throw new Error('請輸入信箱和密碼')
         }
 
         try {
@@ -35,13 +35,13 @@ export const authOptions: AuthOptions = {
 
           if (!user || !user.password) {
             console.log('User not found:', credentials.email)
-            return null
+            throw new Error('信箱或密碼錯誤')
           }
 
           const isValid = await compare(credentials.password, user.password)
           if (!isValid) {
             console.log('Invalid password for user:', credentials.email)
-            return null
+            throw new Error('信箱或密碼錯誤')
           }
 
           console.log('Login successful for user:', credentials.email)
@@ -54,15 +54,11 @@ export const authOptions: AuthOptions = {
           }
         } catch (error) {
           console.error('Authorization error:', error)
-          return null
+          throw error
         }
       }
     })
   ],
-  pages: {
-    signIn: '/login',
-    error: '/login'
-  },
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60
@@ -83,9 +79,16 @@ export const authOptions: AuthOptions = {
         session.user.status = token.status as string
       }
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith(baseUrl)) return url
+      if (url.startsWith('/')) return `${baseUrl}${url}`
+      return baseUrl
     }
   },
-  debug: process.env.NODE_ENV === 'development',
+  pages: {
+    signIn: '/login'
+  },
   secret: process.env.NEXTAUTH_SECRET
 }
 
