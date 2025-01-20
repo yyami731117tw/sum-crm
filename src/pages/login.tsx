@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { signIn } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import {
   Box,
@@ -12,9 +12,29 @@ import {
   Alert
 } from '@mui/material'
 import Head from 'next/head'
+import { GetServerSideProps } from 'next'
+import { getSession } from 'next-auth/react'
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session = await getSession(context)
+  
+  if (session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    }
+  }
+
+  return {
+    props: {}
+  }
+}
 
 export default function Login() {
   const router = useRouter()
+  const { data: session } = useSession()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -36,18 +56,12 @@ export default function Login() {
       const result = await signIn('credentials', {
         email: email.trim(),
         password: password.trim(),
-        redirect: false
+        redirect: true,
+        callbackUrl: '/'
       })
-
-      if (result?.error) {
-        setError(result.error)
-      } else if (result?.ok) {
-        await router.replace('/')
-      }
     } catch (err) {
       console.error('Login error:', err)
       setError('登入時發生錯誤，請稍後再試')
-    } finally {
       setLoading(false)
     }
   }
@@ -89,6 +103,11 @@ export default function Login() {
             {error && (
               <Alert severity="error" sx={{ mb: 2 }}>
                 {error}
+              </Alert>
+            )}
+            {router.query.error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {router.query.error}
               </Alert>
             )}
             <Box component="form" onSubmit={handleSubmit} noValidate>
