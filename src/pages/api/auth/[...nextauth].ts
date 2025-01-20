@@ -41,7 +41,7 @@ export const authOptions: AuthOptions = {
           }
         } catch (error) {
           console.error('Authorization Error:', error)
-          return null
+          throw error
         }
       }
     })
@@ -74,26 +74,28 @@ export const authOptions: AuthOptions = {
   }
 }
 
-const corsHeaders = {
-  'Access-Control-Allow-Credentials': 'true',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-}
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // 設置 CORS 標頭
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || 'https://sum-crm.vercel.app')
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Set CORS headers for all requests
-  Object.entries(corsHeaders).forEach(([key, value]) => {
-    res.setHeader(key, value)
-  })
-
-  // Handle preflight request
+  // 處理 OPTIONS 請求
   if (req.method === 'OPTIONS') {
-    return res.status(200).end()
+    res.status(200).end()
+    return
   }
 
-  // Handle NextAuth request
-  return NextAuth(req, res, authOptions)
-}
-
-export default handler 
+  try {
+    // 確保請求內容類型正確
+    if (req.method === 'POST') {
+      res.setHeader('Content-Type', 'application/json')
+    }
+    
+    await NextAuth(req, res, authOptions)
+  } catch (error) {
+    console.error('NextAuth Error:', error)
+    res.status(500).json({ error: '登入過程發生錯誤' })
+  }
+} 
