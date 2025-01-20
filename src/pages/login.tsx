@@ -40,11 +40,8 @@ export default function Login() {
       })
 
       if (result?.error) {
-        setError('信箱或密碼錯誤')
-        return
-      }
-      
-      if (result?.ok) {
+        setError(result.error)
+      } else if (result?.ok) {
         await router.replace('/')
       }
     } catch (err) {

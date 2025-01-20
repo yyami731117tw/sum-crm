@@ -15,7 +15,7 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          console.log('Missing credentials:', { email: !!credentials?.email, password: !!credentials?.password })
+          console.error('Missing credentials:', { email: !!credentials?.email, password: !!credentials?.password })
           throw new Error('請輸入信箱和密碼')
         }
 
@@ -34,13 +34,13 @@ export const authOptions: AuthOptions = {
           })
 
           if (!user || !user.password) {
-            console.log('User not found or no password')
+            console.error('User not found or no password:', { email: credentials.email })
             throw new Error('信箱或密碼錯誤')
           }
 
           const isValid = await compare(credentials.password, user.password)
           if (!isValid) {
-            console.log('Invalid password')
+            console.error('Invalid password for user:', { email: credentials.email })
             throw new Error('信箱或密碼錯誤')
           }
 
