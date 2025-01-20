@@ -1,10 +1,11 @@
-import type { NextPage } from 'next'
+import type { NextPage, GetServerSideProps } from 'next'
 import Head from 'next/head'
 import { useAuth } from '@/hooks/useAuth'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { MainNav } from '@/components/layout/MainNav'
 import { Alert, CircularProgress } from '@mui/material'
+import { getSession } from 'next-auth/react'
 
 interface DashboardStats {
   totalMembers: number
@@ -17,6 +18,23 @@ interface DashboardStats {
     target: string
     date: string
   }[]
+}
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session = await getSession(context)
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    }
+  }
+
+  return {
+    props: { session }
+  }
 }
 
 const IndexPage: NextPage = () => {
