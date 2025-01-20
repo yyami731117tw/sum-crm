@@ -12,9 +12,9 @@ export const authOptions: AuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('請輸入信箱和密碼')
+          return null
         }
 
         try {
@@ -35,13 +35,13 @@ export const authOptions: AuthOptions = {
 
           if (!user || !user.password) {
             console.log('User not found:', credentials.email)
-            throw new Error('信箱或密碼錯誤')
+            return null
           }
 
           const isValid = await compare(credentials.password, user.password)
           if (!isValid) {
             console.log('Invalid password for user:', credentials.email)
-            throw new Error('信箱或密碼錯誤')
+            return null
           }
 
           console.log('Login successful for user:', credentials.email)
@@ -54,13 +54,14 @@ export const authOptions: AuthOptions = {
           }
         } catch (error) {
           console.error('Authorization error:', error)
-          throw error
+          return null
         }
       }
     })
   ],
   pages: {
-    signIn: '/login'
+    signIn: '/login',
+    error: '/login'
   },
   session: {
     strategy: 'jwt',

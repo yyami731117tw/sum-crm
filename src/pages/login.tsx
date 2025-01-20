@@ -60,14 +60,14 @@ export default function Login() {
         redirect: false
       })
 
-      if (result?.error) {
-        setError(result.error)
+      console.log('Sign in result:', result)
+
+      if (!result?.ok) {
+        setError('信箱或密碼錯誤')
         return
       }
 
-      if (result?.ok) {
-        await router.replace('/')
-      }
+      await router.replace('/')
     } catch (err) {
       console.error('Login error:', err)
       setError('登入時發生錯誤，請稍後再試')
