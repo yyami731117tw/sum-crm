@@ -87,8 +87,10 @@ export const authOptions: AuthOptions = {
     }
   },
   pages: {
-    signIn: '/login'
+    signIn: '/login',
+    error: '/login'
   },
+  debug: true,
   secret: process.env.NEXTAUTH_SECRET
 }
 
