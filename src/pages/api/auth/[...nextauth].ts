@@ -1,14 +1,11 @@
-import NextAuth, { NextAuthOptions } from 'next-auth'
+import NextAuth from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { PrismaClient } from '@prisma/client'
 import { compare } from 'bcryptjs'
-import { JWT } from 'next-auth/jwt'
-import { Session } from 'next-auth'
-import { NextApiRequest, NextApiResponse } from 'next'
 
 const prisma = new PrismaClient()
 
-export const authOptions: NextAuthOptions = {
+export default NextAuth({
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -56,17 +53,17 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user: any }) {
+    async jwt({ token, user }) {
       if (user) {
         token.role = user.role
         token.id = user.id
       }
       return token
     },
-    async session({ session, token }: { session: Session; token: JWT }) {
+    async session({ session, token }) {
       if (session.user) {
-        session.user.role = token.role as string
-        session.user.id = token.id as string
+        session.user.role = token.role
+        session.user.id = token.id
       }
       return session
     }
@@ -76,29 +73,4 @@ export const authOptions: NextAuthOptions = {
     error: '/auth/error'
   },
   secret: process.env.NEXTAUTH_SECRET
-}
-
-async function auth(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Credentials', 'true')
-    res.setHeader('Access-Control-Allow-Origin', '*')
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-    res.setHeader(
-      'Access-Control-Allow-Headers',
-      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    )
-    return res.status(200).end()
-  }
-
-  try {
-    return await NextAuth(req, res, authOptions)
-  } catch (error) {
-    console.error('NextAuth Error:', error)
-    return res.status(500).json({
-      error: 'Authentication failed',
-      message: error instanceof Error ? error.message : '登入過程發生錯誤'
-    })
-  }
-}
-
-export default auth 
+}) 
