@@ -22,7 +22,8 @@ export default function Login() {
       const result = await signIn('credentials', {
         email: email.trim(),
         password: password.trim(),
-        redirect: false
+        redirect: false,
+        callbackUrl: '/'
       })
 
       if (result?.error) {
@@ -31,9 +32,10 @@ export default function Login() {
       }
 
       if (result?.ok) {
-        router.push('/')
+        window.location.href = result.url || '/'
       }
     } catch (error) {
+      console.error('Login error:', error)
       setError('登入時發生錯誤，請稍後再試')
     } finally {
       setLoading(false)
