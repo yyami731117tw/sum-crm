@@ -1,18 +1,10 @@
-import NextAuth, { NextAuthOptions, DefaultSession } from 'next-auth'
+import NextAuth, { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import { PrismaClient, User } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 import { compare } from 'bcryptjs'
 import { JWT } from 'next-auth/jwt'
 
 const prisma = new PrismaClient()
-
-type UserSession = Omit<User, 'password' | 'createdAt' | 'updatedAt'>
-
-declare module 'next-auth' {
-  interface Session {
-    user: UserSession
-  }
-}
 
 declare module 'next-auth/jwt' {
   interface JWT {
@@ -88,7 +80,8 @@ export const authOptions: NextAuthOptions = {
     signIn: '/login',
     error: '/auth/error'
   },
-  secret: process.env.NEXTAUTH_SECRET
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development'
 }
 
 export default NextAuth(authOptions) 
