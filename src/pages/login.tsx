@@ -22,8 +22,7 @@ export default function Login() {
       const result = await signIn('credentials', {
         email: email.trim(),
         password: password.trim(),
-        redirect: false,
-        callbackUrl: '/'
+        redirect: false
       })
 
       if (!result) {
@@ -31,12 +30,16 @@ export default function Login() {
       }
 
       if (result.error) {
-        setError(result.error)
+        if (typeof result.error === 'string') {
+          setError(result.error)
+        } else {
+          setError('登入失敗，請稍後再試')
+        }
         return
       }
 
       if (result.ok) {
-        await router.replace('/')
+        window.location.href = '/'
       } else {
         setError('登入失敗，請檢查您的帳號密碼')
       }

@@ -24,10 +24,6 @@ async function testDatabaseConnection() {
     return true
   } catch (error) {
     console.error('Database connection test failed:', error)
-    if (error instanceof Error) {
-      console.error('Error message:', error.message)
-      console.error('Error stack:', error.stack)
-    }
     return false
   }
 }
@@ -35,61 +31,57 @@ async function testDatabaseConnection() {
 export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
+      id: 'credentials',
       name: 'Credentials',
       credentials: {
         email: { label: 'Email', type: 'text' },
         password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials) {
-        try {
-          if (!credentials?.email || !credentials?.password) {
-            throw new Error('請輸入電子郵件和密碼')
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error('請輸入電子郵件和密碼')
+        }
+
+        const isConnected = await testDatabaseConnection()
+        if (!isConnected) {
+          throw new Error('資料庫連接失敗')
+        }
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email.toLowerCase().trim() },
+          select: {
+            id: true,
+            email: true,
+            password: true,
+            name: true,
+            role: true,
+            status: true
           }
+        })
 
-          const isConnected = await testDatabaseConnection()
-          if (!isConnected) {
-            throw new Error('資料庫連接失敗')
-          }
+        if (!user || !user.password) {
+          throw new Error('找不到使用者')
+        }
 
-          const user = await prisma.user.findUnique({
-            where: { email: credentials.email.toLowerCase().trim() },
-            select: {
-              id: true,
-              email: true,
-              password: true,
-              name: true,
-              role: true,
-              status: true
-            }
-          })
+        const isValid = await compare(credentials.password, user.password)
+        if (!isValid) {
+          throw new Error('密碼錯誤')
+        }
 
-          if (!user || !user.password) {
-            throw new Error('找不到使用者')
-          }
+        if (user.status !== 'active') {
+          throw new Error('帳號尚未啟用')
+        }
 
-          const isValid = await compare(credentials.password, user.password)
-          if (!isValid) {
-            throw new Error('密碼錯誤')
-          }
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { lastLoginAt: new Date() }
+        })
 
-          if (user.status !== 'active') {
-            throw new Error('帳號尚未啟用')
-          }
-
-          await prisma.user.update({
-            where: { id: user.id },
-            data: { lastLoginAt: new Date() }
-          })
-
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: user.role
-          }
-        } catch (error) {
-          console.error('Authorization error:', error)
-          throw error
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role
         }
       }
     })
@@ -103,11 +95,8 @@ export const authOptions: AuthOptions = {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60 // 30 days
   },
-  debug: true,
   callbacks: {
     async jwt({ token, user }) {
-      console.log('JWT Callback - Token:', token)
-      console.log('JWT Callback - User:', user)
       if (user) {
         token.role = user.role
         token.id = user.id
@@ -115,8 +104,6 @@ export const authOptions: AuthOptions = {
       return token
     },
     async session({ session, token }) {
-      console.log('Session Callback - Session:', session)
-      console.log('Session Callback - Token:', token)
       if (session.user) {
         session.user.role = token.role as string
         session.user.id = token.id as string
@@ -126,41 +113,55 @@ export const authOptions: AuthOptions = {
   }
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  console.log('Auth API called:', req.method, req.url)
-  console.log('Request headers:', req.headers)
-  console.log('Request body:', req.body)
+// 處理 CORS 請求
+function setCorsHeaders(req: NextApiRequest, res: NextApiResponse) {
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  )
+}
 
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // 處理 CORS
+  setCorsHeaders(req, res)
+
+  // 處理 OPTIONS 請求
   if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Credentials', 'true')
-    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*')
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-    res.setHeader(
-      'Access-Control-Allow-Headers',
-      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    )
     return res.status(200).end()
   }
 
   try {
     // 確保請求方法是 POST 或 GET
     if (!['POST', 'GET'].includes(req.method || '')) {
-      return res.status(405).json({ error: 'Method not allowed' })
+      return res.status(405).json({ 
+        error: 'Method not allowed',
+        message: '不支援的請求方法'
+      })
     }
 
     // 測試資料庫連接
     const isConnected = await testDatabaseConnection()
     if (!isConnected) {
-      return res.status(500).json({ error: '資料庫連接失敗' })
+      return res.status(500).json({ 
+        error: 'Database connection failed',
+        message: '資料庫連接失敗'
+      })
     }
 
+    // 設置回應標頭
     res.setHeader('Content-Type', 'application/json')
-    return await NextAuth(req, res, authOptions)
+
+    // 處理 NextAuth
+    const nextAuthResponse = await NextAuth(req, res, authOptions)
+    return nextAuthResponse
   } catch (error) {
     console.error('NextAuth Error:', error)
     return res.status(500).json({ 
-      error: '登入過程發生錯誤',
-      details: error instanceof Error ? error.message : '未知錯誤'
+      error: 'Authentication failed',
+      message: error instanceof Error ? error.message : '登入過程發生錯誤'
     })
   } finally {
     await prisma.$disconnect()
