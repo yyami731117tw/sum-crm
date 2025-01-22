@@ -40,7 +40,7 @@ export const authOptions: AuthOptions = {
         email: { label: 'Email', type: 'text' },
         password: { label: 'Password', type: 'password' }
       },
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         try {
           if (!credentials?.email || !credentials?.password) {
             throw new Error('請輸入電子郵件和密碼')
@@ -51,9 +51,8 @@ export const authOptions: AuthOptions = {
             throw new Error('資料庫連接失敗')
           }
 
-          const email = credentials.email.toLowerCase().trim()
           const user = await prisma.user.findUnique({
-            where: { email },
+            where: { email: credentials.email.toLowerCase().trim() },
             select: {
               id: true,
               email: true,
@@ -79,10 +78,7 @@ export const authOptions: AuthOptions = {
 
           await prisma.user.update({
             where: { id: user.id },
-            data: { 
-              lastLoginAt: new Date(),
-              updatedAt: new Date()
-            }
+            data: { lastLoginAt: new Date() }
           })
 
           return {
@@ -135,19 +131,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   console.log('Request headers:', req.headers)
   console.log('Request body:', req.body)
 
-  // 設置 CORS 標頭
-  res.setHeader('Access-Control-Allow-Credentials', 'true')
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS')
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
-  )
-
-  // 處理 OPTIONS 請求
   if (req.method === 'OPTIONS') {
-    res.status(200).end()
-    return
+    res.setHeader('Access-Control-Allow-Credentials', 'true')
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*')
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    )
+    return res.status(200).end()
   }
 
   try {
@@ -162,6 +154,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: '資料庫連接失敗' })
     }
 
+    res.setHeader('Content-Type', 'application/json')
     return await NextAuth(req, res, authOptions)
   } catch (error) {
     console.error('NextAuth Error:', error)
