@@ -19,19 +19,14 @@ export default function Login() {
       setLoading(true)
       setError('')
 
-      console.log('Attempting to sign in with:', { email })
-
       const result = await signIn('credentials', {
         email: email.trim(),
         password: password.trim(),
-        redirect: false,
-        callbackUrl: '/'
+        redirect: false
       })
 
-      console.log('Sign in result:', result)
-
       if (!result) {
-        throw new Error('登入失敗：未收到回應')
+        throw new Error('登入失敗：伺服器無回應')
       }
 
       if (result.error) {
@@ -40,7 +35,7 @@ export default function Login() {
       }
 
       if (result.ok) {
-        await router.replace('/')
+        router.push('/')
       } else {
         setError('登入失敗，請檢查您的帳號密碼')
       }
