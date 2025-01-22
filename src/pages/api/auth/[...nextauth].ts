@@ -6,20 +6,11 @@ import { JWT } from 'next-auth/jwt'
 
 const prisma = new PrismaClient()
 
+type UserSession = Omit<User, 'password' | 'createdAt' | 'updatedAt'>
+
 declare module 'next-auth' {
   interface Session {
-    user: {
-      id: string
-      name?: string | null
-      email?: string | null
-      image?: string | null
-      role?: string
-      status?: string
-      phone?: string | null
-      lineId?: string | null
-      address?: string | null
-      birthday?: string | null
-    }
+    user: UserSession
   }
 }
 
