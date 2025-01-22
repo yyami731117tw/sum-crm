@@ -1,6 +1,6 @@
 import NextAuth, { NextAuthOptions, DefaultSession } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, User } from '@prisma/client'
 import { compare } from 'bcryptjs'
 import { JWT } from 'next-auth/jwt'
 
@@ -8,9 +8,17 @@ const prisma = new PrismaClient()
 
 declare module 'next-auth' {
   interface Session {
-    user: DefaultSession['user'] & {
+    user: {
       id: string
-      role: string
+      name?: string | null
+      email?: string | null
+      image?: string | null
+      role?: string
+      status?: string
+      phone?: string | null
+      lineId?: string | null
+      address?: string | null
+      birthday?: string | null
     }
   }
 }
