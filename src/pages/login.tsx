@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { signIn } from 'next-auth/react'
+import { signIn, SignInResponse } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import { Alert, Box, Button, Container, TextField, Typography, CircularProgress } from '@mui/material'
 import Head from 'next/head'
@@ -19,27 +19,24 @@ export default function Login() {
       setLoading(true)
       setError('')
 
-      const result = await signIn('credentials', {
+      const response = await signIn('credentials', {
         email: email.trim(),
         password: password.trim(),
         redirect: false
-      })
+      }) as SignInResponse
 
-      if (!result) {
+      if (!response) {
         throw new Error('登入失敗：伺服器無回應')
       }
 
-      if (result.error) {
-        if (typeof result.error === 'string') {
-          setError(result.error)
-        } else {
-          setError('登入失敗，請稍後再試')
-        }
+      if (response.error) {
+        setError(response.error)
         return
       }
 
-      if (result.ok) {
-        window.location.href = '/'
+      if (response.ok) {
+        const returnUrl = router.query.callbackUrl as string || '/'
+        window.location.href = returnUrl
       } else {
         setError('登入失敗，請檢查您的帳號密碼')
       }
@@ -70,7 +67,12 @@ export default function Login() {
           <Typography component="h1" variant="h5">
             登入
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+          <Box 
+            component="form" 
+            onSubmit={handleSubmit} 
+            sx={{ mt: 1, width: '100%' }}
+            noValidate
+          >
             {error && (
               <Alert severity="error" sx={{ mb: 2, width: '100%' }}>
                 {error}
@@ -83,12 +85,16 @@ export default function Login() {
               id="email"
               label="信箱"
               name="email"
+              type="email"
               autoComplete="email"
               autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
               error={!!error}
+              inputProps={{
+                maxLength: 255
+              }}
             />
             <TextField
               margin="normal"
@@ -103,6 +109,9 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
               error={!!error}
+              inputProps={{
+                maxLength: 255
+              }}
             />
             <Button
               type="submit"

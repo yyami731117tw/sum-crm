@@ -1,4 +1,4 @@
-import NextAuth, { AuthOptions } from 'next-auth'
+import NextAuth, { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { PrismaClient } from '@prisma/client'
 import { compare } from 'bcryptjs'
@@ -28,7 +28,7 @@ async function testDatabaseConnection() {
   }
 }
 
-export const authOptions: AuthOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       id: 'credentials',
@@ -42,13 +42,10 @@ export const authOptions: AuthOptions = {
           throw new Error('請輸入電子郵件和密碼')
         }
 
-        const isConnected = await testDatabaseConnection()
-        if (!isConnected) {
-          throw new Error('資料庫連接失敗')
-        }
-
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email.toLowerCase().trim() },
+          where: { 
+            email: credentials.email.toLowerCase().trim() 
+          },
           select: {
             id: true,
             email: true,
@@ -86,14 +83,9 @@ export const authOptions: AuthOptions = {
       }
     })
   ],
-  pages: {
-    signIn: '/login',
-    error: '/auth/error'
-  },
-  secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60 // 30 days
+    maxAge: 30 * 24 * 60 * 60
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -110,7 +102,13 @@ export const authOptions: AuthOptions = {
       }
       return session
     }
-  }
+  },
+  pages: {
+    signIn: '/login',
+    error: '/auth/error'
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development'
 }
 
 // 處理 CORS 請求
