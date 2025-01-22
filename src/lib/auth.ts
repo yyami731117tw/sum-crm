@@ -7,7 +7,7 @@ export function withAuth(handler: any) {
     const session = await getServerSession(req, res, authOptions)
 
     if (!session) {
-      return res.status(401).json({ message: '未授權訪問' })
+      return res.status(401).json({ error: '請先登入' })
     }
 
     return handler(req, res, session)
