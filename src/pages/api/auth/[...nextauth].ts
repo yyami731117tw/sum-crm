@@ -1,14 +1,11 @@
-import NextAuth, { NextAuthOptions } from 'next-auth'
+import NextAuth from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { PrismaClient } from '@prisma/client'
 import { compare } from 'bcryptjs'
-import { JWT } from 'next-auth/jwt'
-import { Session } from 'next-auth'
-import { NextApiRequest, NextApiResponse } from 'next'
 
 const prisma = new PrismaClient()
 
-export const authOptions: NextAuthOptions = {
+const options = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -55,65 +52,27 @@ export const authOptions: NextAuthOptions = {
       }
     })
   ],
-  pages: {
-    signIn: '/login',
-    error: '/auth/error'
-  },
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user: any }) {
+    async jwt({ token, user }) {
       if (user) {
         token.role = user.role
         token.id = user.id
       }
       return token
     },
-    async session({ session, token }: { session: Session; token: JWT }) {
+    async session({ session, token }) {
       if (session.user) {
-        session.user.role = token.role as string
-        session.user.id = token.id as string
+        session.user.role = token.role
+        session.user.id = token.id
       }
       return session
     }
-  }
+  },
+  pages: {
+    signIn: '/login',
+    error: '/auth/error'
+  },
+  secret: process.env.NEXTAUTH_SECRET
 }
 
-// 處理 CORS 請求
-function setCorsHeaders(req: NextApiRequest, res: NextApiResponse) {
-  res.setHeader('Access-Control-Allow-Credentials', 'true')
-  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  )
-}
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // 處理 CORS
-  setCorsHeaders(req, res)
-
-  // 處理 OPTIONS 請求
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end()
-  }
-
-  try {
-    // 確保請求方法是 POST 或 GET
-    if (!['POST', 'GET'].includes(req.method || '')) {
-      return res.status(405).json({ 
-        error: 'Method not allowed',
-        message: '不支援的請求方法'
-      })
-    }
-
-    // 處理 NextAuth
-    const nextAuthResponse = await NextAuth(req, res, authOptions)
-    return nextAuthResponse
-  } catch (error) {
-    console.error('NextAuth Error:', error)
-    return res.status(500).json({ 
-      error: 'Authentication failed',
-      message: error instanceof Error ? error.message : '登入過程發生錯誤'
-    })
-  }
-} 
+export default NextAuth(options) 
