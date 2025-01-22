@@ -2,36 +2,15 @@ import NextAuth, { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { PrismaClient } from '@prisma/client'
 import { compare } from 'bcryptjs'
+import { JWT } from 'next-auth/jwt'
+import { Session } from 'next-auth'
 import { NextApiRequest, NextApiResponse } from 'next'
 
-// 初始化 Prisma 客戶端
-const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error'],
-  datasources: {
-    db: {
-      url: process.env.DIRECT_URL
-    }
-  }
-})
+const prisma = new PrismaClient()
 
-// 測試資料庫連接的函數
-async function testDatabaseConnection() {
-  try {
-    await prisma.$connect()
-    // 測試查詢
-    const userCount = await prisma.user.count()
-    console.log('Database connection successful, user count:', userCount)
-    return true
-  } catch (error) {
-    console.error('Database connection test failed:', error)
-    return false
-  }
-}
-
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
-      id: 'credentials',
       name: 'Credentials',
       credentials: {
         email: { label: 'Email', type: 'text' },
@@ -43,9 +22,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         const user = await prisma.user.findUnique({
-          where: { 
-            email: credentials.email.toLowerCase().trim() 
-          },
+          where: { email: credentials.email.toLowerCase().trim() },
           select: {
             id: true,
             email: true,
@@ -69,11 +46,6 @@ export const authOptions: NextAuthOptions = {
           throw new Error('帳號尚未啟用')
         }
 
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { lastLoginAt: new Date() }
-        })
-
         return {
           id: user.id,
           email: user.email,
@@ -83,32 +55,26 @@ export const authOptions: NextAuthOptions = {
       }
     })
   ],
-  session: {
-    strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60
+  pages: {
+    signIn: '/login',
+    error: '/auth/error'
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: { token: JWT; user: any }) {
       if (user) {
         token.role = user.role
         token.id = user.id
       }
       return token
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       if (session.user) {
         session.user.role = token.role as string
         session.user.id = token.id as string
       }
       return session
     }
-  },
-  pages: {
-    signIn: '/login',
-    error: '/auth/error'
-  },
-  secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development'
+  }
 }
 
 // 處理 CORS 請求
@@ -140,18 +106,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       })
     }
 
-    // 測試資料庫連接
-    const isConnected = await testDatabaseConnection()
-    if (!isConnected) {
-      return res.status(500).json({ 
-        error: 'Database connection failed',
-        message: '資料庫連接失敗'
-      })
-    }
-
-    // 設置回應標頭
-    res.setHeader('Content-Type', 'application/json')
-
     // 處理 NextAuth
     const nextAuthResponse = await NextAuth(req, res, authOptions)
     return nextAuthResponse
@@ -161,7 +115,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       error: 'Authentication failed',
       message: error instanceof Error ? error.message : '登入過程發生錯誤'
     })
-  } finally {
-    await prisma.$disconnect()
   }
 } 

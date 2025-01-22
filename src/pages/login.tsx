@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { signIn, SignInResponse } from 'next-auth/react'
+import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import { Alert, Box, Button, Container, TextField, Typography, CircularProgress } from '@mui/material'
 import Head from 'next/head'
@@ -19,30 +19,22 @@ export default function Login() {
       setLoading(true)
       setError('')
 
-      const response = await signIn('credentials', {
+      const result = await signIn('credentials', {
         email: email.trim(),
         password: password.trim(),
         redirect: false
-      }) as SignInResponse
+      })
 
-      if (!response) {
-        throw new Error('登入失敗：伺服器無回應')
-      }
-
-      if (response.error) {
-        setError(response.error)
+      if (result?.error) {
+        setError(result.error)
         return
       }
 
-      if (response.ok) {
-        const returnUrl = router.query.callbackUrl as string || '/'
-        window.location.href = returnUrl
-      } else {
-        setError('登入失敗，請檢查您的帳號密碼')
+      if (result?.ok) {
+        router.push('/')
       }
     } catch (error) {
-      console.error('Login error:', error)
-      setError(error instanceof Error ? error.message : '登入時發生錯誤，請稍後再試')
+      setError('登入時發生錯誤，請稍後再試')
     } finally {
       setLoading(false)
     }
@@ -92,9 +84,6 @@ export default function Login() {
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
               error={!!error}
-              inputProps={{
-                maxLength: 255
-              }}
             />
             <TextField
               margin="normal"
@@ -109,9 +98,6 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
               error={!!error}
-              inputProps={{
-                maxLength: 255
-              }}
             />
             <Button
               type="submit"
