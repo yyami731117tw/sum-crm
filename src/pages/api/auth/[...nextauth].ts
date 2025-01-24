@@ -83,8 +83,9 @@ export const authOptions: NextAuthOptions = {
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   // 設置 CORS 頭
+  const origin = req.headers.origin || ''
   res.setHeader('Access-Control-Allow-Credentials', 'true')
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Origin', origin)
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
 
@@ -94,24 +95,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return
   }
 
-  // 處理 session 請求
-  if (req.method === 'GET' && req.url?.includes('/api/auth/session')) {
-    try {
-      const result = await NextAuth(req, res, authOptions)
-      return result
-    } catch (error) {
-      console.error('Session error:', error)
-      return res.status(200).json({ user: null })
-    }
-  }
-
-  // 處理其他 NextAuth 請求
-  try {
-    return await NextAuth(req, res, authOptions)
-  } catch (error) {
-    console.error('NextAuth error:', error)
-    return res.status(500).json({ error: 'Internal Server Error' })
-  }
+  // 處理所有 NextAuth 請求
+  return await NextAuth(req, res, authOptions)
 }
 
 export default handler 
