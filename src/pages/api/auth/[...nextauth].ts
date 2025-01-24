@@ -2,6 +2,7 @@ import NextAuth, { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { PrismaClient } from '@prisma/client'
 import { compare } from 'bcryptjs'
+import { NextApiRequest, NextApiResponse } from 'next'
 
 const prisma = new PrismaClient()
 
@@ -53,7 +54,8 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   session: {
-    strategy: 'jwt'
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60 // 30 天
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -78,4 +80,26 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET
 }
 
-export default NextAuth(authOptions) 
+async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // 設置 CORS 頭
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+
+  // 處理 OPTIONS 請求
+  if (req.method === 'OPTIONS') {
+    res.status(200).end()
+    return
+  }
+
+  try {
+    const result = await NextAuth(req, res, authOptions)
+    return result
+  } catch (error) {
+    console.error('NextAuth error:', error)
+    return res.status(500).json({ error: 'Internal Server Error' })
+  }
+}
+
+export default handler 
