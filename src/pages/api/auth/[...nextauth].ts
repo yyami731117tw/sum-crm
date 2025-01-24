@@ -55,7 +55,18 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60 // 30 天
+    maxAge: 30 * 24 * 60 * 60, // 30 天
+  },
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production'
+      }
+    }
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -88,6 +99,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   res.setHeader('Access-Control-Allow-Origin', origin)
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  res.setHeader('Content-Type', 'application/json')
 
   // 處理 OPTIONS 請求
   if (req.method === 'OPTIONS') {
