@@ -1,5 +1,6 @@
 import { withAuth } from 'next-auth/middleware'
 import { NextResponse } from 'next/server'
+import { getToken } from 'next-auth/jwt'
 
 // 定義公開路徑
 const publicPaths = ['/login', '/auth/error']
@@ -9,7 +10,16 @@ const adminPaths = ['/admin']
 const userPaths = ['/members', '/contracts', '/projects']
 
 export default withAuth(
-  function middleware(req) {
+  async function middleware(req) {
+    // 處理 session 請求
+    if (req.nextUrl.pathname === '/api/auth/session') {
+      const token = await getToken({ req })
+      if (!token) {
+        return NextResponse.json({ user: null }, { status: 200 })
+      }
+      return NextResponse.next()
+    }
+
     const token = req.nextauth.token
     const path = req.nextUrl.pathname
 
@@ -48,8 +58,8 @@ export default withAuth(
     callbacks: {
       authorized: ({ token, req }) => {
         const path = req.nextUrl.pathname
-        // 允許訪問公開頁面
-        if (publicPaths.some(p => path.startsWith(p))) {
+        // 允許訪問公開頁面和 session 請求
+        if (publicPaths.some(p => path.startsWith(p)) || path === '/api/auth/session') {
           return true
         }
         // 其他頁面需要驗證
