@@ -77,10 +77,11 @@ export const authOptions: NextAuthOptions = {
     signIn: '/login',
     error: '/auth/error'
   },
-  secret: process.env.NEXTAUTH_SECRET
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development'
 }
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   // 設置 CORS 頭
   res.setHeader('Access-Control-Allow-Credentials', 'true')
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -93,9 +94,20 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     return
   }
 
+  // 處理 session 請求
+  if (req.method === 'GET' && req.url?.includes('/api/auth/session')) {
+    try {
+      const result = await NextAuth(req, res, authOptions)
+      return result
+    } catch (error) {
+      console.error('Session error:', error)
+      return res.status(200).json({ user: null })
+    }
+  }
+
+  // 處理其他 NextAuth 請求
   try {
-    const result = await NextAuth(req, res, authOptions)
-    return result
+    return await NextAuth(req, res, authOptions)
   } catch (error) {
     console.error('NextAuth error:', error)
     return res.status(500).json({ error: 'Internal Server Error' })

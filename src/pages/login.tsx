@@ -23,7 +23,8 @@ export default function Login() {
         email: email.trim(),
         password: password.trim(),
         redirect: false,
-        callbackUrl: '/'
+        callbackUrl: '/',
+        action: '/api/auth/callback/credentials'
       })
 
       if (result?.error) {
@@ -32,7 +33,7 @@ export default function Login() {
       }
 
       if (result?.ok) {
-        router.push('/')
+        router.push(result.url || '/')
       }
     } catch (error) {
       setError('登入時發生錯誤，請稍後再試')
