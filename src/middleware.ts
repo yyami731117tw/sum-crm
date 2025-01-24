@@ -23,7 +23,6 @@ export default withAuth(
     // 如果是登入頁面
     if (path === '/login') {
       if (token) {
-        // 已登入用戶重定向到首頁
         return NextResponse.redirect(new URL('/', req.url))
       }
       return NextResponse.next()
@@ -36,22 +35,14 @@ export default withAuth(
 
     // 未登入用戶重定向到登入頁面
     if (!token) {
-      // 不添加 callbackUrl 參數
-      const loginUrl = new URL('/login', req.url)
-      return NextResponse.redirect(loginUrl)
+      return NextResponse.redirect(new URL('/login', req.url))
     }
 
     return NextResponse.next()
   },
   {
     callbacks: {
-      authorized: ({ req }) => {
-        const path = req.nextUrl.pathname
-        return path === '/login' || path.startsWith('/api/') || true
-      }
-    },
-    pages: {
-      signIn: '/login'
+      authorized: () => true
     }
   }
 )
