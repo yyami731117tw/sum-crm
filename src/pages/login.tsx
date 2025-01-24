@@ -23,8 +23,7 @@ export default function Login() {
         email: email.trim(),
         password: password.trim(),
         redirect: false,
-        callbackUrl: '/',
-        action: '/api/auth/callback/credentials'
+        callbackUrl: '/'
       })
 
       if (result?.error) {

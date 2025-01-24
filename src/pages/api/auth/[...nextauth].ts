@@ -60,6 +60,17 @@ export const authOptions: NextAuthOptions = {
   jwt: {
     maxAge: 30 * 24 * 60 * 60 // 30 天
   },
+  events: {
+    async signIn({ user }) {
+      console.log('User signed in:', user.email)
+    },
+    async signOut({ token }) {
+      console.log('User signed out')
+    },
+    async session({ session, token }) {
+      console.log('Session updated')
+    }
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -86,7 +97,20 @@ export const authOptions: NextAuthOptions = {
     error: '/auth/error'
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development'
+  debug: true
 }
 
-export default NextAuth(authOptions) 
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Credentials', 'true')
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '')
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    res.status(200).end()
+    return
+  }
+
+  return await NextAuth(req, res, authOptions)
+}
+
+export default handler 
