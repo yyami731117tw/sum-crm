@@ -36,7 +36,9 @@ export default withAuth(
 
     // 未登入用戶重定向到登入頁面
     if (!token) {
-      return NextResponse.redirect(new URL('/login', req.url))
+      // 不添加 callbackUrl 參數
+      const loginUrl = new URL('/login', req.url)
+      return NextResponse.redirect(loginUrl)
     }
 
     return NextResponse.next()
@@ -47,6 +49,9 @@ export default withAuth(
         const path = req.nextUrl.pathname
         return path === '/login' || path.startsWith('/api/') || true
       }
+    },
+    pages: {
+      signIn: '/login'
     }
   }
 )
