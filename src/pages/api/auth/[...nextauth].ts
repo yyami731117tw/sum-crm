@@ -55,18 +55,10 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 天
+    maxAge: 30 * 24 * 60 * 60 // 30 天
   },
-  cookies: {
-    sessionToken: {
-      name: `next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production'
-      }
-    }
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60 // 30 天
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -82,6 +74,11 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as string
       }
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith(baseUrl)) return url
+      if (url.startsWith('/')) return baseUrl + url
+      return baseUrl
     }
   },
   pages: {
@@ -92,23 +89,4 @@ export const authOptions: NextAuthOptions = {
   debug: process.env.NODE_ENV === 'development'
 }
 
-const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  // 設置 CORS 頭
-  const origin = req.headers.origin || ''
-  res.setHeader('Access-Control-Allow-Credentials', 'true')
-  res.setHeader('Access-Control-Allow-Origin', origin)
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-  res.setHeader('Content-Type', 'application/json')
-
-  // 處理 OPTIONS 請求
-  if (req.method === 'OPTIONS') {
-    res.status(200).end()
-    return
-  }
-
-  // 處理所有 NextAuth 請求
-  return await NextAuth(req, res, authOptions)
-}
-
-export default handler 
+export default NextAuth(authOptions) 
