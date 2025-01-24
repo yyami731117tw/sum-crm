@@ -9,19 +9,29 @@ const protectedPaths = [
   '/projects'
 ]
 
+// 定義公開路徑
+const publicPaths = [
+  '/login',
+  '/api/auth'
+]
+
 export default withAuth(
   function middleware(req) {
     const path = req.nextUrl.pathname
     const token = req.nextauth.token
     
-    // 如果是根路徑且未登入，重定向到登入頁面
-    if (path === '/' && !token) {
-      return NextResponse.redirect(new URL('/login', req.url))
+    // 如果是公開路徑，直接允許訪問
+    if (publicPaths.some(p => path.startsWith(p))) {
+      // 如果已登入且訪問登入頁面，重定向到首頁
+      if (token && path === '/login') {
+        return NextResponse.redirect(new URL('/', req.url))
+      }
+      return NextResponse.next()
     }
 
-    // 如果是登入頁面且已登入，重定向到首頁
-    if (path === '/login' && token) {
-      return NextResponse.redirect(new URL('/', req.url))
+    // 如果未登入，重定向到登入頁面
+    if (!token) {
+      return NextResponse.redirect(new URL('/login', req.url))
     }
 
     // 檢查是否為受保護的路徑
@@ -37,11 +47,11 @@ export default withAuth(
     callbacks: {
       authorized: ({ req }) => {
         const path = req.nextUrl.pathname
-        // 登入頁面和 API 路徑不需要驗證
-        if (path === '/login' || path.startsWith('/api/auth')) {
+        // 公開路徑不需要驗證
+        if (publicPaths.some(p => path.startsWith(p))) {
           return true
         }
-        // 其他頁面按照默認邏輯處理
+        // 其他頁面需要驗證
         return true
       }
     }
