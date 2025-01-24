@@ -12,16 +12,20 @@ const protectedPaths = [
 export default withAuth(
   function middleware(req) {
     const path = req.nextUrl.pathname
+    const token = req.nextauth.token
     
-    // 如果是登入頁面，允許訪問
-    if (path === '/login') {
-      return NextResponse.next()
+    // 如果是根路徑且未登入，重定向到登入頁面
+    if (path === '/' && !token) {
+      return NextResponse.redirect(new URL('/login', req.url))
+    }
+
+    // 如果是登入頁面且已登入，重定向到首頁
+    if (path === '/login' && token) {
+      return NextResponse.redirect(new URL('/', req.url))
     }
 
     // 檢查是否為受保護的路徑
     if (protectedPaths.some(p => path.startsWith(p))) {
-      const token = req.nextauth.token
-      
       if (!token) {
         return NextResponse.redirect(new URL('/login', req.url))
       }
@@ -46,6 +50,7 @@ export default withAuth(
 
 export const config = {
   matcher: [
+    '/',
     '/login',
     '/admin/:path*',
     '/members/:path*',
