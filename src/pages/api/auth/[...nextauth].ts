@@ -2,8 +2,6 @@ import NextAuth, { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { PrismaClient } from '@prisma/client'
 import { compare } from 'bcryptjs'
-import { JWT } from 'next-auth/jwt'
-import { NextApiRequest, NextApiResponse } from 'next'
 
 const prisma = new PrismaClient()
 
@@ -85,26 +83,4 @@ export const authOptions: NextAuthOptions = {
   debug: process.env.NODE_ENV === 'development'
 }
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // 設置 CORS 頭
-  res.setHeader('Access-Control-Allow-Credentials', 'true')
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-
-  // 處理 OPTIONS 請求
-  if (req.method === 'OPTIONS') {
-    res.status(200).end()
-    return
-  }
-
-  // 處理 GET 和 POST 請求
-  if (req.method === 'GET' || req.method === 'POST') {
-    return await NextAuth(req, res, authOptions)
-  }
-
-  // 其他請求方法返回 405
-  res.status(405).json({ error: '不支援的請求方法' })
-}
-
-export default handler 
+export default NextAuth(authOptions) 
