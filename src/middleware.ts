@@ -11,15 +11,6 @@ const userPaths = ['/members', '/contracts', '/projects']
 
 export default withAuth(
   async function middleware(req) {
-    // 處理 session 請求
-    if (req.nextUrl.pathname === '/api/auth/session') {
-      const token = await getToken({ req })
-      if (!token) {
-        return NextResponse.json({ user: null }, { status: 200 })
-      }
-      return NextResponse.next()
-    }
-
     const token = req.nextauth.token
     const path = req.nextUrl.pathname
 
@@ -58,8 +49,8 @@ export default withAuth(
     callbacks: {
       authorized: ({ token, req }) => {
         const path = req.nextUrl.pathname
-        // 允許訪問公開頁面和 session 請求
-        if (publicPaths.some(p => path.startsWith(p)) || path === '/api/auth/session') {
+        // 允許訪問公開頁面
+        if (publicPaths.some(p => path.startsWith(p))) {
           return true
         }
         // 其他頁面需要驗證
@@ -80,12 +71,10 @@ export const config = {
      */
     '/',
     '/login',
-    '/auth/:path*',
+    '/auth/error',
     '/admin/:path*',
     '/members/:path*',
     '/contracts/:path*',
     '/projects/:path*',
-    // 排除靜態資源和API路徑
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ]
 } 
