@@ -23,8 +23,7 @@ export default function Login() {
         email: email.trim(),
         password: password.trim(),
         redirect: false,
-        callbackUrl: '/',
-        action: '/api/auth/callback/credentials'
+        callbackUrl: '/'
       })
 
       if (result?.error) {
@@ -33,12 +32,7 @@ export default function Login() {
       }
 
       if (result?.ok) {
-        const session = await fetch('/api/auth/session')
-        if (session.ok) {
-          router.push(result.url || '/')
-        } else {
-          setError('獲取 session 失敗')
-        }
+        router.push(result.url || '/')
       }
     } catch (error) {
       setError('登入時發生錯誤，請稍後再試')
