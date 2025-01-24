@@ -13,6 +13,13 @@ declare module 'next-auth/jwt' {
 }
 
 export const authOptions: NextAuthOptions = {
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60 // 30 天
+  },
+  jwt: {
+    secret: process.env.NEXTAUTH_SECRET
+  },
   providers: [
     CredentialsProvider({
       name: 'Credentials',
