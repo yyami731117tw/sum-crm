@@ -5,21 +5,7 @@ import { compare } from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
-declare module 'next-auth/jwt' {
-  interface JWT {
-    id?: string
-    role?: string
-  }
-}
-
 export const authOptions: NextAuthOptions = {
-  session: {
-    strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60 // 30 天
-  },
-  jwt: {
-    secret: process.env.NEXTAUTH_SECRET
-  },
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -59,25 +45,28 @@ export const authOptions: NextAuthOptions = {
 
         return {
           id: user.id,
-          email: user.email,
+          email: user.email || '',
           name: user.name,
           role: user.role
         }
       }
     })
   ],
+  session: {
+    strategy: 'jwt'
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = user.role
         token.id = user.id
+        token.role = user.role
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.role = token.role as string
         session.user.id = token.id as string
+        session.user.role = token.role as string
       }
       return session
     }
@@ -86,8 +75,7 @@ export const authOptions: NextAuthOptions = {
     signIn: '/login',
     error: '/auth/error'
   },
-  secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development'
+  secret: process.env.NEXTAUTH_SECRET
 }
 
 export default NextAuth(authOptions) 
