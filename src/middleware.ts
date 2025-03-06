@@ -6,36 +6,38 @@ const protectedPaths = [
   '/admin',
   '/members',
   '/contracts',
-  '/projects'
+  '/projects',
+  '/'
 ]
 
 // 定義公開路徑
 const publicPaths = [
   '/login',
-  '/api/auth'
+  '/signup',
+  '/api/auth',
+  '/api/trpc'
 ]
 
 export default withAuth(
   function middleware(req) {
-    const path = req.nextUrl.pathname
-    const token = req.nextauth.token
-
-    // 如果是登入頁面
-    if (path === '/login') {
-      if (token) {
+    const { pathname } = req.nextUrl
+    const isAuth = !!req.nextauth.token
+    
+    // 處理公開路徑
+    if (publicPaths.some(path => pathname.startsWith(path))) {
+      // 如果已登入且嘗試訪問登入頁面，重定向到首頁
+      if (isAuth && pathname === '/login') {
         return NextResponse.redirect(new URL('/', req.url))
       }
       return NextResponse.next()
     }
 
-    // 如果是 API 路徑，允許訪問
-    if (path.startsWith('/api/')) {
+    // 處理受保護路徑
+    if (protectedPaths.some(path => pathname.startsWith(path))) {
+      if (!isAuth) {
+        return NextResponse.redirect(new URL('/login', req.url))
+      }
       return NextResponse.next()
-    }
-
-    // 未登入用戶重定向到登入頁面
-    if (!token) {
-      return NextResponse.redirect(new URL('/login', req.url))
     }
 
     return NextResponse.next()
@@ -48,12 +50,5 @@ export default withAuth(
 )
 
 export const config = {
-  matcher: [
-    '/',
-    '/login',
-    '/admin/:path*',
-    '/members/:path*',
-    '/contracts/:path*',
-    '/projects/:path*'
-  ]
+  matcher: ['/((?!api/trpc|_next/static|_next/image|favicon.ico).*)']
 } 

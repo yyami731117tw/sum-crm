@@ -1,25 +1,38 @@
-import Link from 'next/link'
 import { useRouter } from 'next/router'
+import Link from 'next/link'
+import { Users, UserPlus, Settings, LogOut, FileText } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
-import { Users, UserPlus, Settings, LogOut } from 'lucide-react'
 
-export function MainNav() {
+interface NavigationItem {
+  name: string
+  href: string
+  icon: React.ComponentType<any>
+  current: boolean
+}
+
+export function MainNav(): JSX.Element {
   const router = useRouter()
   const { logout } = useAuth()
   const pathname = router.pathname
 
-  const navigation = [
-    {
-      name: '用戶管理',
-      href: '/users',
-      icon: Users,
-      current: pathname === '/users'
-    },
+  const navigation: NavigationItem[] = [
     {
       name: '會員管理',
       href: '/members',
       icon: UserPlus,
       current: pathname === '/members'
+    },
+    {
+      name: '合約管理',
+      href: '/contracts',
+      icon: FileText,
+      current: pathname === '/contracts'
+    },
+    {
+      name: '用戶管理',
+      href: '/users',
+      icon: Users,
+      current: pathname === '/users'
     },
     {
       name: '系統設置',
@@ -43,22 +56,24 @@ export function MainNav() {
               {navigation.map((item) => (
                 <button
                   key={item.name}
-                  className={`mr-2 flex items-center px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground ${
-                    item.current ? 'bg-accent text-accent-foreground' : 'text-foreground'
+                  className={`mr-2 px-4 py-2 rounded-md ${
+                    item.current
+                      ? 'bg-primary text-primary-foreground'
+                      : 'hover:bg-accent hover:text-accent-foreground'
                   }`}
                   onClick={() => router.push(item.href)}
                 >
-                  <item.icon className="mr-2 h-4 w-4" />
+                  <item.icon className="mr-2 h-4 w-4 inline" />
                   {item.name}
                 </button>
               ))}
             </div>
           </div>
           <button
-            className="ml-auto flex items-center px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+            className="ml-auto px-4 py-2 rounded-md hover:bg-accent hover:text-accent-foreground"
             onClick={logout}
           >
-            <LogOut className="mr-2 h-4 w-4" />
+            <LogOut className="mr-2 h-4 w-4 inline" />
             登出
           </button>
         </div>

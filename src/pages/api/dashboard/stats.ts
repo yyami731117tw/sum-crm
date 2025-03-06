@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '@/lib/prisma'
 import { logger } from '@/utils/logger'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '../auth/[...nextauth]'
+import { authOptions } from '@/lib/auth.config'
 
 export default async function handler(
   req: NextApiRequest,
@@ -17,6 +17,16 @@ export default async function handler(
     const session = await getServerSession(req, res, authOptions)
     if (!session) {
       return res.status(401).json({ message: '未授權訪問' })
+    }
+
+    // 生成 ETag
+    const timestamp = new Date().toISOString().slice(0, 16) // 精確到分鐘
+    const etag = Buffer.from(timestamp).toString('base64')
+    
+    // 檢查客戶端的 If-None-Match 標頭
+    const clientEtag = req.headers['if-none-match']
+    if (clientEtag === etag) {
+      return res.status(304).end()
     }
 
     // 並行執行所有查詢以提高性能
@@ -55,12 +65,7 @@ export default async function handler(
           id: true,
           action: true,
           createdAt: true,
-          member: {
-            select: {
-              name: true,
-              memberNo: true
-            }
-          }
+          memberId: true
         }
       })
     ])
@@ -69,18 +74,20 @@ export default async function handler(
       id: activity.id,
       type: 'member',
       action: activity.action,
-      target: `${activity.member.name} (${activity.member.memberNo})`,
+      memberId: activity.memberId,
       date: activity.createdAt.toISOString()
     }))
 
-    // 設置快取標頭（5分鐘）
-    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate')
+    // 設置響應標頭
+    res.setHeader('ETag', etag)
+    res.setHeader('Cache-Control', 'private, no-cache, must-revalidate')
 
     return res.status(200).json({
       totalMembers,
       newMembersThisMonth,
       pendingTasks,
-      recentActivities: formattedActivities
+      recentActivities: formattedActivities,
+      timestamp
     })
 
   } catch (error) {
@@ -88,6 +95,12 @@ export default async function handler(
       error: error instanceof Error ? error.message : '未知錯誤',
       stack: error instanceof Error ? error.stack : undefined
     })
-    return res.status(500).json({ message: '獲取儀表板統計失敗，請稍後再試' })
+    
+    // 設置響應標頭以防止緩存錯誤響應
+    res.setHeader('Cache-Control', 'no-store')
+    return res.status(500).json({ 
+      message: '獲取儀表板統計失敗，請稍後再試',
+      timestamp: new Date().toISOString()
+    })
   }
 } 

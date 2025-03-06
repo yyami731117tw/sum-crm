@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { withAuth, withRole, withStatus } from '../../../lib/auth'
+import { withAuth, withRole, withStatus } from '../../../lib/auth.utils'
 import prisma from '../../../lib/prisma'
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
